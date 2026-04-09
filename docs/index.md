@@ -28,7 +28,8 @@ This wiki provides all workshop plans, labs, governance materials, and architect
 ## 🏗 Architecture & CI/CD
 - [CI/CD Architecture](./architecture/cicd-architecture.md)  
 - [Deployment Pipeline Practices](./architecture/cicd-architecture.md#deployment-pipelines)  
-- [Workspace Strategy](./architecture/workspace-strategy.md)
+- [Workspace Strategy](./architecture/workspace-strategy.md)  
+- [Branching Strategy — Feature Branch Development](./architecture/branching-strategy.md)
 
 ---
 

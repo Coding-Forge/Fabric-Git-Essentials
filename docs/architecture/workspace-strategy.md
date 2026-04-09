@@ -89,21 +89,30 @@ Apply the **principle of least privilege**. No team member should hold a role br
 
 ## Git Branch-to-Workspace Mapping
 
+The **branch-out strategy** pairs every feature branch with a dedicated personal or scoped workspace, keeping the shared Dev workspace clean and always reflecting the latest reviewed state of `main`.
+
 ```
-main ────────────────────────── WS-Dev-<team> (auto-sync)
-  └── feature/<alias>-<task>  ── WS-Dev-<alias> (optional personal workspace)
+main ──────────────────────────────── WS-Dev-<team>   (shared; auto-sync)
+  ├── feature/<alias>-<task>  ──────── WS-Dev-<alias>  (personal; isolated)
+  ├── feature/<alias2>-<task> ──────── WS-Dev-<alias2> (personal; isolated)
+  └── feature/<team>-<feature> ──────  WS-Dev-<team>-<feature> (scoped team feature)
 ```
 
 | Branch Pattern | Workspace | Notes |
 |---|---|---|
 | `main` | `WS-Dev-<team>` | Trunk; all PRs merge here; workspace auto-syncs |
-| `feature/*` | `WS-Dev-<alias>` (personal) | Optional; developer checks out branch to personal workspace |
+| `feature/<alias>-*` | `WS-Dev-<alias>` (personal) | Developer branches out to a personal workspace; isolated from shared workspace |
+| `feature/<team>-*` | `WS-Dev-<team>-<feature>` (scoped) | Multi-developer feature work in a shared-but-scoped feature workspace |
 | `release/*` | — | Tagged releases; content promoted to Test/Prod via pipeline |
 
 **Key rules:**
+- **Always branch out.** Do not modify items directly in `WS-Dev-<team>`. Create a feature branch and work in a personal or scoped workspace.  
 - Never connect `WS-Test` or `WS-Prod` to a Git branch. Promotion through Deployment Pipelines is the only authorized path.  
 - Never commit directly to `main`. All changes go through a PR with at least one review.  
-- Delete feature branches after merge to keep the branch list clean.
+- Delete feature branches **and** their associated workspaces after merge.  
+- Keep feature branches short-lived (target < 5 business days) to minimise merge conflicts.
+
+> **Deep dive:** See [Branching Strategy](branching-strategy.md) for the full branch-out workflow, topology diagrams, when-to-use guidance, and anti-patterns.
 
 ---
 
@@ -129,6 +138,7 @@ main ─────────────────────────
 
 ## Related Documents
 
+- [Branching Strategy](branching-strategy.md) — branch-out pattern, personal workspaces, parallel development  
 - [CI/CD Architecture](cicd-architecture.md)  
 - [Governance Checklist](../governance/governance-checklist.md)  
 - [Lab 1 — Connect Workspace to Git](../workshop-plan/labs/lab1-connect-git.md)

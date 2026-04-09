@@ -210,6 +210,31 @@ Use this checklist to confirm you have completed the lab successfully:
 
 ---
 
+## Extension — Branch-Out Strategy (Personal Feature Workspace)
+
+In this lab you connected a workspace to `main` and switched it to a feature branch. In real team development, the recommended pattern goes one step further: each feature branch gets its own **dedicated personal workspace** — you never work directly in the shared team workspace.
+
+### Why branch out?
+
+- Your in-progress work (broken measures, experimental layouts) is invisible to teammates in the shared workspace  
+- You can iterate freely without risk of disrupting others  
+- Reviewers can connect to your feature workspace to see live rendered reports, not just file diffs  
+- Deleting the feature workspace and branch is a complete, clean rollback  
+
+### How to set up a personal feature workspace
+
+1. Click **+ New workspace** in the Fabric portal left nav.  
+2. Name it `WS-Dev-<your-alias>` (e.g., `WS-Dev-bcampbell`).  
+3. Assign it to the same Fabric capacity as the shared team workspace.  
+4. Go to **Workspace settings → Git integration** and connect it to the same repo — but set the **Branch** to your feature branch, not `main`.  
+5. Click **Connect and sync**. The workspace loads from your feature branch.  
+6. Work in this personal workspace for the duration of the feature.  
+7. After your PR merges, **delete this workspace** — its branch is gone and so is the workspace.
+
+For the complete workflow, topology diagrams, naming conventions, and anti-patterns, see the [Branching Strategy](../../architecture/branching-strategy.md) architecture document.
+
+---
+
 ## Next Steps
 
-Proceed to **[Lab 2 — Build a CI Pipeline for PBIP](lab2-ci-pipeline.md)** to automate validation of the artifacts you just pushed to your repository.
+Proceed to **[Lab 2 — CI Pipeline & Workspace Sync for PBIP](lab2-ci-pipeline.md)** to automate validation of the artifacts you just pushed to your repository.

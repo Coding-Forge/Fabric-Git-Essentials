@@ -56,13 +56,34 @@ Enables:
 - Branching strategies  
 - CI automation  
 
-## Recommended branching strategy
-- **Trunk‑based development**  
-- Short‑lived feature branches (`feature/*`)  
-- Protected `main` branch  
+## Recommended Branching Strategy
+
+### Core principles
+- **Trunk‑based development** — `main` is always deployable  
+- Short‑lived feature branches (`feature/<alias>-<task>`) — target < 5 days  
+- Protected `main` branch — no direct commits; PRs required  
 - Mandatory PRs with reviewer requirements  
 - Status checks: schema validation, DAX tests, linting  
 - Tag releases as: `vYYYY.MM.DD`  
+
+### Branch-Out Strategy — Feature Workspaces
+
+Fabric's Git integration enables a powerful pattern that goes beyond standard branching: each feature branch is paired with a **dedicated personal or scoped Fabric workspace**. Developers do not work in the shared Dev workspace — they branch out.
+
+| Workspace | Branch | Purpose |
+|---|---|---|
+| `WS-Dev-<team>` | `main` | Shared; always reflects latest reviewed state |
+| `WS-Dev-<alias>` | `feature/<alias>-*` | Personal; fully isolated development |
+| `WS-Dev-<team>-<feature>` | `feature/<team>-*` | Scoped; multi-developer feature collaboration |
+
+**Why it matters:**
+- In-progress and experimental changes never appear in the shared workspace  
+- Reviewers can connect to a PR's feature workspace to preview live rendered reports before approving  
+- Multiple developers work in parallel with zero coordination overhead  
+- Safe experimentation — delete the branch and workspace to undo everything  
+- Mirrors modern software engineering "review app" / "preview environment" patterns applied to BI  
+
+See the [Branching Strategy architecture doc](../../docs/architecture/branching-strategy.md) for the full workflow, topology diagrams, and anti-patterns.
 
 ---
 

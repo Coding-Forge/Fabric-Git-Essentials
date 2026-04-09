@@ -142,13 +142,19 @@ Before promoting from **Test → Prod**:
 
 ## Workspace-to-Branch Mapping
 
-| Workspace | Branch | Git Integration |
-|---|---|---|
-| `WS-Dev-<team>` | `main` | Connected — auto-sync on merge |
-| `WS-Test-<team>` | — | Promoted via Deployment Pipeline, not Git |
-| `WS-Prod-<team>` | — | Promoted via Deployment Pipeline, not Git |
+The **branch-out strategy** extends the standard Dev/Test/Prod topology with personal and scoped feature workspaces. Each feature branch has a corresponding isolated workspace; only `main` feeds the shared team Dev workspace.
 
-> Only the Dev workspace is Git-connected. Test and Prod receive content exclusively through Fabric Deployment Pipelines to prevent unauthorized direct edits.
+| Workspace | Branch | Git Integration | Purpose |
+|---|---|---|---|
+| `WS-Dev-<team>` | `main` | Connected — auto-sync on merge | Shared team baseline |
+| `WS-Dev-<alias>` | `feature/<alias>-*` | Connected to feature branch | Personal isolated development |
+| `WS-Dev-<team>-<feature>` | `feature/<team>-*` | Connected to feature branch | Scoped multi-developer feature |
+| `WS-Test-<team>` | — | Promoted via Deployment Pipeline, not Git | UAT / integration |
+| `WS-Prod-<team>` | — | Promoted via Deployment Pipeline, not Git | Live production |
+
+> Personal and scoped feature workspaces are **ephemeral** — they are created for the duration of the feature branch and deleted after the PR merges. Only the shared Dev, Test, and Prod workspaces are permanent.
+>
+> See [Branching Strategy](branching-strategy.md) for the full branch-out workflow.
 
 ---
 

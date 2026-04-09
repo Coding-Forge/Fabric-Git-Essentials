@@ -55,16 +55,19 @@ Key references:
   Explains the structure of `.pbip` (TMDL, JSON, YAML).
 - **Git Integration in Fabric (Admin + UX)**  
   Covers enabling Git integration and setting repo/branch mappings.
-- **Branching Strategy Guidance**  
+- **Branching Strategy Guidance** — see [Branching Strategy](../docs/architecture/branching-strategy.md)  
   Concepts:
   - Trunk‑based dev  
-  - Short-lived feature branches  
-  - Workspace branching (“branch → new workspace”)  
-  - Avoid editing directly in shared workspaces  
+  - Short-lived feature branches (`feature/<alias>-<task>`)  
+  - **Branch-out strategy:** each feature branch paired with a dedicated personal or scoped Fabric workspace  
+  - Personal workspace (`WS-Dev-<alias>`) connected to feature branch for full isolation  
+  - Reviewer preview: connect to the PR's feature workspace to see live rendered reports  
+  - Ephemeral workspaces — delete branch and workspace together after PR merges  
+  - Never edit directly in the shared Dev workspace  
 - **Microsoft Learn — Git Integration**  
   Baseline fundamentals for participants who are new to Git in Fabric.
 
-These resources help attendees understand *why* Git matters and *how* Fabric synchronizes workspace items.
+These resources help attendees understand *why* Git matters, *how* Fabric synchronizes workspace items, and *why* the branch-out strategy is essential for safe parallel development in BI teams.
 
 ---
 
