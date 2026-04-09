@@ -26,7 +26,7 @@ Participants will learn workspace–repo integration, branching strategies, PR w
 | 11:30–12:15 | Collaboration patterns & governance best practices                     |
 | 12:15–13:00 | Lunch                                                                  |
 | 13:00–13:45 | Deployment Strategy: Dev → Test → Prod; CI/CD with Azure DevOps        |
-| 13:45–14:45 | **Lab #2:** Build CI pipeline for PBIP & automated validations         |
+| 13:45–14:45 | **Lab #2:** CI pipeline for PBIP, workspace Git sync (manual & automated) |
 | 14:45–15:00 | Break                                                                  |
 | 15:00–16:00 | Solving session: design 2–3 dashboard pages & semantic model changes   |
 | 16:00–16:30 | Publishing artifacts & release checklist                               |
@@ -131,15 +131,28 @@ Example:
 
 ---
 
-# 7. Lab #2 — Azure DevOps CI Pipeline for PBIP
+# 7. Lab #2 — CI Pipeline & Workspace Sync for PBIP
 
 ## Objectives
-- Build CI pipeline in YAML  
-- Validate PBIP metadata  
-- Run automated tests  
-- Publish artifacts  
+- Build a 4-stage CI/CD pipeline in YAML  
+- Validate PBIP schema and lint rules with `pbi-tools`  
+- Run DAX unit tests and publish JUnit results  
+- Publish `pbip-artifacts` to Azure DevOps  
+- Set the pipeline as a required status check on `main`  
+- Sync the Fabric Dev workspace using **two approaches**:
+  - **Approach A** — Manual sync via the Fabric portal Source control panel  
+  - **Approach B** — Automated sync triggered by the pipeline using the Fabric REST API  
 
-## Example YAML components
+## Pipeline Stages Summary
+
+| Stage | Trigger | Purpose |
+|---|---|---|
+| **Validate** | Every push / PR | `pbi-tools` schema validation + `pbip-lint` |
+| **Test** | After Validate | DAX unit tests, JUnit XML output |
+| **Publish** | After Test | Upload `pbip-artifacts` to pipeline storage |
+| **SyncFabricDev** | `main` merges only | Call Fabric REST API `updateFromGit` to sync Dev workspace |
+
+## Key YAML Pattern
 
 ```yaml
 trigger:
@@ -151,19 +164,44 @@ trigger:
 pool:
   vmImage: 'windows-latest'
 
-steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.x'
+stages:
+  - stage: Validate
+    jobs:
+      - job: ValidatePBIP
+        steps:
+          - script: pip install pbi-tools pbip-lint
+          - script: pbi-tools validate --input fabric-workspace
+          - script: pbip-lint --path fabric-workspace --config .pbiplintrc.json
 
-  - script: pip install pbi-tools
-    displayName: "Install pbi-tools"
+  - stage: Test
+    dependsOn: Validate
+    jobs:
+      - job: DaxTests
+        steps:
+          - script: python tests/run_dax_tests.py --model-path fabric-workspace
 
-  - script: pbi-tools validate --input ./pbip
-    displayName: "Validate PBIP"
+  - stage: Publish
+    dependsOn: Test
+    jobs:
+      - job: PublishArtifacts
+        steps:
+          - task: PublishBuildArtifacts@1
+            inputs:
+              artifactName: pbip-artifacts
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathToPublish: "$(Build.SourcesDirectory)"
-      artifactName: "pbip-artifacts"
+  - stage: SyncFabricDev
+    dependsOn: Publish
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: TriggerFabricSync
+        steps:
+          - script: python scripts/sync_fabric_workspace.py
 ```
+
+## Workspace Sync — Approach A (Manual, Portal)
+
+After a PR merges to `main`, a developer opens the Fabric Dev workspace, clicks the **Source control icon**, reviews incoming changes in the side panel, and clicks **Update all**. See [Lab 2](labs/lab2-ci-pipeline.md#approach-a--manual-workspace-git-sync) for the full step-by-step UI walkthrough.
+
+## Workspace Sync — Approach B (Automated, REST API)
+
+The fourth pipeline stage calls `scripts/sync_fabric_workspace.py`, which authenticates as a service principal and posts to the Fabric `updateFromGit` REST API endpoint. The workspace is updated automatically on every merge to `main` without any manual action. Credentials are stored in Azure Key Vault and surfaced via an ADO variable group. See [Lab 2](labs/lab2-ci-pipeline.md#approach-b--pipeline-triggered-sync-fabric-rest-api) for setup details.

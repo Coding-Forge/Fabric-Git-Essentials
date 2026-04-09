@@ -13,8 +13,9 @@ This wiki provides all workshop plans, labs, governance materials, and architect
 ---
 
 ## 🧪 Hands‑On Labs
-- [Lab 1 — Connect Fabric Workspace to Git](./labs/lab1-connect-git.md)  
-- [Lab 2 — Build CI Pipeline for PBIP](./labs/lab2-ci-pipeline.md)
+- [Lab 1 — Connect Fabric Workspace to Git](./workshop-plan/labs/lab1-connect-git.md)  
+- [Lab 2 — CI Pipeline & Workspace Sync for PBIP](./workshop-plan/labs/lab2-ci-pipeline.md)  
+- [Lab 3 — Fabric Deployment Pipelines (Dev → Test → Prod)](./workshop-plan/labs/lab3-deployment-pipelines.md)
 
 ---
 
@@ -26,7 +27,8 @@ This wiki provides all workshop plans, labs, governance materials, and architect
 
 ## 🏗 Architecture & CI/CD
 - [CI/CD Architecture](./architecture/cicd-architecture.md)  
-- [Deployment Pipeline Practices](./architecture/cicd-architecture.md#deployment-pipelines)
+- [Deployment Pipeline Practices](./architecture/cicd-architecture.md#deployment-pipelines)  
+- [Workspace Strategy](./architecture/workspace-strategy.md)
 
 ---
 

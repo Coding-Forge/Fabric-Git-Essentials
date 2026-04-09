@@ -142,24 +142,32 @@ Key messages:
 
 ---
 
-## 2.6 Lab #2 — CI Pipeline for PBIP & Automated Validations
+## 2.6 Lab #2 — CI Pipeline & Workspace Sync for PBIP
 
 Primary references:
-- **Lab #2 Guide — CI for PBIP**  
-  Includes YAML patterns for:
-  - PBIP schema validation  
-  - DAX unit tests  
-  - Lint rules  
-  - Publishing artifacts
+- **Lab #2 Guide — CI Pipeline & Workspace Sync for PBIP**  
+  Covers four pipeline stages and two workspace sync approaches:
+  - PBIP schema validation with `pbi-tools`  
+  - DAX unit tests with JUnit output  
+  - Lint rules via `pbip-lint`  
+  - Publishing `pbip-artifacts`  
+  - **Approach A:** Manual sync via Fabric portal Source control panel (UI walkthrough with Mermaid flow)  
+  - **Approach B:** Automated sync via Fabric REST API `updateFromGit` using a service principal and Key Vault  
+- **`scripts/sync_fabric_workspace.py`**  
+  Python script committed to the repo that authenticates as a service principal and calls the Fabric `updateFromGit` API with long-running operation polling.  
+- **Azure DevOps Variable Group `fabric-cd-vars`**  
+  Holds `FABRIC_TENANT_ID`, `FABRIC_CLIENT_ID`, `FABRIC_WORKSPACE_ID`, and the Key Vault-linked `FABRIC_CLIENT_SECRET`.  
 - **AzureDevOps Deep Dive**  
   Shows integration with dashboards and test plans.
 - **Microsoft Learn — CI/CD Tutorial**  
   Mirrors the steps of building a working PBIP validation pipeline.
 
 Lab #2 Outcomes:
-- Working CI pipeline  
-- PR branch policies enforced  
-- PBIP validation occurs automatically  
+- Working 4-stage CI/CD pipeline (Validate → Test → Publish → SyncFabricDev)  
+- PR branch policies enforced; CI is a required status check on `main`  
+- PBIP validation occurs automatically on every push  
+- Dev workspace syncs automatically after every merge to `main` (Approach B)  
+- Participants can also sync manually via the Fabric portal Source control panel (Approach A)  
 
 ---
 
@@ -274,13 +282,24 @@ Supporting documents:
 
 ```text
 /docs
+  index.md
   /workshop-plan
     Fabric_Git_Workshop_Plan.md
     Supporting_Documents_for_Workshop.md
-  /labs
-    lab1-connect-git.md
-    lab2-ci-pipeline.md
+    /labs
+      lab1-connect-git.md
+      lab2-ci-pipeline.md
+      lab3-deployment-pipelines.md
   /governance
     governance-checklist.md
   /architecture
     cicd-architecture.md
+    workspace-strategy.md
+    fabric-git-integration.md
+/scripts
+  sync_fabric_workspace.py
+/tests
+  run_dax_tests.py
+azure-pipelines.yml
+.pbiplintrc.json
+```
