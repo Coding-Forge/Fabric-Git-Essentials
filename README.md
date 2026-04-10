@@ -1,15 +1,36 @@
 
----
-title: "Supporting Documents for Fabric + Git Workshop"
-description: "Mapped reference materials, resource links, and detailed topic-by-topic support for the Fabric + Git Version Control Workshop."
-author: Brandon Campbell
-version: 1.0
+# Fabric + Git Essentials Workshop
+
+> **Version:** 1.1 &nbsp;|&nbsp; **Author:** Brandon Campbell &nbsp;|&nbsp; **Updated:** April 2026
+
+A hands-on workshop covering Git integration, CI/CD automation, and deployment best practices for **Microsoft Fabric** and **Power BI** (PBIP format).
+
+This README provides a **topic-by-topic index** of supporting resources, architecture docs, lab guides, and reference materials used throughout the workshop.
+
 ---
 
-# Supporting Documents for Fabric + Git Workshop
-This document provides a **topic‑by‑topic mapping** of supporting resources, internal references, lab materials, and guides used throughout the **Fabric + Git Version Control Workshop**.
+## Quick Navigation
 
-It acts as a companion index to the main workshop plan, ensuring you can quickly attach the correct internal documents and reference material to each session.
+| Section | Description |
+|---------|-------------|
+| [1. Workshop Topics Table](#1-workshop-topics--supporting-documents-table) | Agenda-mapped resource overview |
+| [2. Detailed Breakdowns](#2-detailed-topicby-topic-resource-breakdown) | Per-topic doc references |
+| [3. Best Practices Summary](#3-best-practices-summary) | Governance, Git, CI/CD, Embedded |
+| [4. Folder Structure](#4-appendix-repository-folder-structure) | Actual repo layout |
+
+### Architecture Docs
+- [Fabric + Git Integration](docs/architecture/fabric-git-integration.md) — diagrams for the full integration, PBIP workflow, CI pipeline, deployment pipeline, end-to-end DevOps, and Power BI Embedded
+- [Branching Strategy](docs/architecture/branching-strategy.md)
+- [CI/CD Architecture](docs/architecture/cicd-architecture.md)
+- [Workspace Strategy](docs/architecture/workspace-strategy.md)
+
+### Labs
+- [Lab 1 — Connect Workspace to Git](docs/workshop-plan/labs/lab1-connect-git.md)
+- [Lab 2 — Build CI Pipeline for PBIP](docs/workshop-plan/labs/lab2-ci-pipeline.md)
+- [Lab 3 — Deployment Pipelines](docs/workshop-plan/labs/lab3-deployment-pipelines.md)
+
+### Governance
+- [Governance Checklist](docs/governance/governance-checklist.md)
 
 ---
 
@@ -23,7 +44,7 @@ It acts as a companion index to the main workshop plan, ensuring you can quickly
 | **Collaboration Patterns & Best Practices**<br>(11:30–12:15) | DataOps deck; Governance essentials; RACI examples; Go‑Live assessment |
 | **Deployment Strategy: Dev→Test→Prod**<br>(13:00–13:45) | CI/CD Delivery Guide; Enterprise‑scale Power BI Dev examples; Deployment pipeline docs |
 | **Lab #2 — Build CI Pipeline for PBIP**<br>(13:45–14:45) | CI lab guide (YAML examples, PBIP validation); ADO test integration; MS Learn pipeline tutorials |
-| **Dashboard Design Solving Session**<br>(15:00–16:00) | Visualization best practices; Persona & decision frameworks; Wireframe examples |
+| **Lab #3 — Fabric Deployment Pipelines**<br>(15:00–16:00) | [Lab 3 guide](docs/workshop-plan/labs/lab3-deployment-pipelines.md); Architecture diagrams; Governance checklist; Deployment rules & promotion guidance |
 | **Publishing Artifacts & Release Checklist**<br>(16:00–16:30) | Release checklist; Prod readiness; RLS/CLS validation; Sensitivity labels guidance |
 | **Power BI Embedded POC + Communication Plan**<br>(16:30–17:00) | Embedded analytics deck; Service principal setup guide; Comms plan templates |
 
@@ -163,28 +184,32 @@ Lab #2 Outcomes:
 
 ---
 
-## 2.7 Solving Session: Dashboard Pages & Semantic Model Design
+## 2.7 Lab #3 — Fabric Deployment Pipelines: Dev → Test → Prod
 
-Resources:
-- **Visualization Best Practices Guide**  
-  Principles:
-  - Clarity  
-  - Minimalism  
-  - Accessibility  
-  - Chart selection patterns
-- **Persona & Decision Frameworks** (AA Module 4.1)  
-  Helps identify key decisions dashboards must enable.
-- **Design Jam Examples (Wireframes)**  
-  Show real-world design workshop artifacts:
-  - Job stories  
-  - UX flows  
-  - Page layouts
+Primary references:
+- **[Lab #3 Guide — Fabric Deployment Pipelines](docs/workshop-plan/labs/lab3-deployment-pipelines.md)**  
+  Covers:
+  - Creating a three-stage deployment pipeline in the Fabric portal  
+  - Binding `WS-Dev`, `WS-Test`, and `WS-Prod` workspaces to their stages  
+  - Configuring **deployment rules** to swap data source parameters per environment  
+  - Reviewing the **comparison diff** before promoting content  
+  - Promoting **Dev → Test** and verifying the deployment log  
+  - Completing the UAT checklist (RLS testing, refresh validation, rule verification)  
+  - Gating **Test → Prod** with a manual approval step  
+  - Verifying Prod content and confirming semantic model refresh against the Prod database
+- **Architecture Diagrams — [Deployment Pipeline Flow](docs/architecture/fabric-git-integration.md)**  
+  Visual reference for the three-stage promotion model.
+- **[Governance Checklist](docs/governance/governance-checklist.md)**  
+  UAT gates and compliance checks required before Prod promotion.
+- **Microsoft Learn — Fabric Deployment Pipelines**  
+  Official docs for stage binding, selective deployment, and REST API automation.
 
-Activities:
-- Define personas  
-- Sketch 2–3 dashboard pages  
-- Evaluate model gaps  
-- Convert sketches into backlog items  
+Lab #3 Outcomes:
+- Three-stage Fabric Deployment Pipeline configured and bound to workspaces  
+- Deployment rules in place to swap data source connections per environment  
+- Dev workspace content successfully promoted to Test  
+- UAT checklist completed; Test → Prod promotion gated and executed  
+- Prod workspace verified with a passing semantic model refresh  
 
 ---
 
@@ -270,17 +295,27 @@ Supporting documents:
 
 ---
 
-# 4. Appendix: Suggested Folder Structure
+# 4. Appendix: Repository Folder Structure
 
 ```text
-/docs
-  /workshop-plan
-    Fabric_Git_Workshop_Plan.md
-    Supporting_Documents_for_Workshop.md
-  /labs
-    lab1-connect-git.md
-    lab2-ci-pipeline.md
-  /governance
-    governance-checklist.md
-  /architecture
-    cicd-architecture.md
+/
+├── README.md
+├── Supporting_Docs_For_Workshop.md
+├── FabricGitIntegration.html
+└── docs/
+    ├── index.md
+    ├── architecture/
+    │   ├── fabric-git-integration.md   ← all architecture diagrams
+    │   ├── branching-strategy.md
+    │   ├── cicd-architecture.md
+    │   ├── workspace-strategy.md
+    │   └── images/
+    │       └── fabgitplantuml.puml
+    ├── governance/
+    │   └── governance-checklist.md
+    └── workshop-plan/
+        ├── Fabric_Git_Workshop_Plan.md
+        └── labs/
+            ├── lab1-connect-git.md
+            ├── lab2-ci-pipeline.md
+            └── lab3-deployment-pipelines.md
