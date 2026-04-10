@@ -30,6 +30,10 @@ This README provides a **topic-by-topic index** of supporting resources, archite
 
 > Render with the [Marp for VS Code](https://marketplace.visualstudio.com/items?itemName=marp-team.marp-vscode) extension, or export to PDF/HTML via `npx @marp-team/marp-cli`.
 
+### PowerPoint Exports
+Pre-generated `.pptx` files are in the `powerpoint/` folder — one per deck, with the same filename stem.
+These are generated from the Marp source using `python-pptx` and can be opened directly in PowerPoint or Google Slides.
+
 ### Architecture Docs
 - [Fabric + Git Integration](docs/architecture/fabric-git-integration.md) — diagrams for the full integration, PBIP workflow, CI pipeline, deployment pipeline, end-to-end DevOps, and Power BI Embedded
 - [Branching Strategy](docs/architecture/branching-strategy.md)
@@ -323,6 +327,15 @@ Supporting documents:
 │   ├── 06-lab2-ci-pipeline.md
 │   ├── 07-lab3-deployment-pipelines.md
 │   └── 08-release-embedded.md
+├── powerpoint/
+│   ├── 01-kickoff-overview.pptx
+│   ├── 02-version-control-pbip.pptx
+│   ├── 03-lab1-connect-git.pptx
+│   ├── 04-collaboration-governance.pptx
+│   ├── 05-deployment-strategy.pptx
+│   ├── 06-lab2-ci-pipeline.pptx
+│   ├── 07-lab3-deployment-pipelines.pptx
+│   └── 08-release-embedded.pptx
 └── docs/
     ├── index.md
     ├── architecture/
