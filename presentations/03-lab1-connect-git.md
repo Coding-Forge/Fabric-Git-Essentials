@@ -18,6 +18,10 @@ style: |
   h2 { color: #0f5132; border-bottom: 3px solid #0f5132; padding-bottom: 0.2em; }
   table { width: 100%; font-size: 0.82em; }
   th { background-color: #0f5132; color: #ffffff; }
+  td { color: #1a1a1a; }
+  tr:nth-child(even) td { background-color: #f0f0f0; }
+  section.step td { color: #1a1a1a; }
+  section.step tr:nth-child(even) td { background-color: #e8e8e8; }
   code { background-color: #f0fff4; color: #1a1a1a; border-radius: 4px; padding: 2px 5px; }
   pre { background-color: #1a1a2e; border-radius: 6px; }
   pre code { background-color: transparent; color: #c9d1d9; }

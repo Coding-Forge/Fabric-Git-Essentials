@@ -16,7 +16,12 @@ style: |
   section.lead h1, section.lead h2 { color: #ffffff; }
   h2 { color: #0078D4; border-bottom: 3px solid #0078D4; padding-bottom: 0.2em; }
   table { width: 100%; font-size: 0.85em; }
-  th { background-color: #0078D4; color: #ffffff; }
+  th { background-color: #004f8e; color: #ffffff; }
+  td { color: #1a1a1a; }
+  tr:nth-child(even) td { background-color: #f0f0f0; }
+  section.dark th { background-color: #003a6c; color: #ffffff; }
+  section.dark td { color: #e8e8e8; }
+  section.dark tr:nth-child(even) td { background-color: rgba(255,255,255,0.1); }
   code { background-color: #f0f4ff; color: #1a1a1a; border-radius: 4px; }
   pre { background-color: #1a1a2e; border-radius: 6px; }
   pre code { background-color: transparent; color: #c9d1d9; }

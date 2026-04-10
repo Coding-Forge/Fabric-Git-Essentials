@@ -18,6 +18,14 @@ style: |
   h2 { color: #1a1a2e; border-bottom: 3px solid #1a1a2e; padding-bottom: 0.2em; }
   table { width: 100%; font-size: 0.82em; }
   th { background-color: #1a1a2e; color: #ffffff; }
+  td { color: #1a1a1a; }
+  tr:nth-child(even) td { background-color: #f0f0f0; }
+  section.dark th { background-color: #0a0a1a; color: #ffffff; }
+  section.dark td { color: #e8e8e8; }
+  section.dark tr:nth-child(even) td { background-color: rgba(255,255,255,0.1); }
+  section.green th { background-color: #166534; color: #ffffff; }
+  section.green td { color: #1a1a1a; }
+  section.green tr:nth-child(even) td { background-color: #d4edda; }
   code { background-color: #f0f4ff; color: #1a1a1a; border-radius: 4px; padding: 2px 5px; }
   pre { background-color: #1a1a2e; border-radius: 6px; }
   pre code { background-color: transparent; color: #c9d1d9; }

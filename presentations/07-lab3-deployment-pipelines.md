@@ -17,7 +17,14 @@ style: |
   section.lead p { color: #cce4ff; }
   h2 { color: #0078D4; border-bottom: 3px solid #0078D4; padding-bottom: 0.2em; }
   table { width: 100%; font-size: 0.82em; }
-  th { background-color: #0078D4; color: #ffffff; }
+  th { background-color: #004f8e; color: #ffffff; }
+  td { color: #1a1a1a; }
+  tr:nth-child(even) td { background-color: #f0f0f0; }
+  section.dark th { background-color: #003a6c; color: #ffffff; }
+  section.dark td { color: #e8e8e8; }
+  section.dark tr:nth-child(even) td { background-color: rgba(255,255,255,0.1); }
+  section.step td { color: #1a1a1a; }
+  section.step tr:nth-child(even) td { background-color: #e8e8e8; }
   code { background-color: #f0f4ff; color: #1a1a1a; border-radius: 4px; padding: 2px 5px; }
   section.dark {
     background-color: #1a1a2e;
@@ -29,7 +36,7 @@ style: |
   section.warn {
     background-color: #fff8e6;
   }
-  section.warn h2 { color: #856404; border-color: #856404; }
+  section.warn h2 { color: #5c4400; border-color: #5c4400; }
 ---
 <!-- class: lead -->
 

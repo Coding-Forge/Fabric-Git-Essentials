@@ -18,6 +18,13 @@ style: |
   h2 { color: #4b0082; border-bottom: 3px solid #4b0082; padding-bottom: 0.2em; }
   table { width: 100%; font-size: 0.82em; }
   th { background-color: #4b0082; color: #ffffff; }
+  td { color: #1a1a1a; }
+  tr:nth-child(even) td { background-color: #f0f0f0; }
+  section.dark th { background-color: #3a0063; color: #ffffff; }
+  section.dark td { color: #e8e8e8; }
+  section.dark tr:nth-child(even) td { background-color: rgba(255,255,255,0.1); }
+  section.warning td { color: #1a1a1a; }
+  section.warning tr:nth-child(even) td { background-color: #f5ead0; }
   code { background-color: #f5f0ff; color: #1a1a1a; border-radius: 4px; padding: 2px 5px; }
   section.dark {
     background-color: #1a1a2e;
@@ -28,7 +35,7 @@ style: |
   section.warning {
     background-color: #fff8e6;
   }
-  section.warning h2 { color: #856404; border-color: #856404; }
+  section.warning h2 { color: #5c4400; border-color: #5c4400; }
 ---
 <!-- class: lead -->
 

@@ -25,8 +25,24 @@ style: |
     font-size: 0.85em;
   }
   section.slide th {
-    background-color: #0078D4;
+    background-color: #004f8e;
     color: #ffffff;
+  }
+  section.slide td {
+    color: #1a1a1a;
+  }
+  section.slide tr:nth-child(even) td {
+    background-color: #f0f0f0;
+  }
+  section.dark th {
+    background-color: #003a6c;
+    color: #ffffff;
+  }
+  section.dark td {
+    color: #e8e8e8;
+  }
+  section.dark tr:nth-child(even) td {
+    background-color: rgba(255,255,255,0.1);
   }
   code {
     background-color: #f0f4ff;
