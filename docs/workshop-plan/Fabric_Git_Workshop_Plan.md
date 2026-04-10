@@ -28,7 +28,7 @@ Participants will learn workspace–repo integration, branching strategies, PR w
 | 13:00–13:45 | Deployment Strategy: Dev → Test → Prod; CI/CD with Azure DevOps        |
 | 13:45–14:45 | **Lab #2:** CI pipeline for PBIP, workspace Git sync (manual & automated) |
 | 14:45–15:00 | Break                                                                  |
-| 15:00–16:00 | Solving session: design 2–3 dashboard pages & semantic model changes   |
+| 15:00–16:00 | **Lab #3:** Fabric Deployment Pipelines — bind workspaces, configure deployment rules, promote Dev → Test → Prod |
 | 16:00–16:30 | Publishing artifacts & release checklist                               |
 | 16:30–17:00 | SDA webapp team POC: Power BI Embedded + communications plan           |
 
@@ -226,3 +226,34 @@ After a PR merges to `main`, a developer opens the Fabric Dev workspace, clicks 
 ## Workspace Sync — Approach B (Automated, REST API)
 
 The fourth pipeline stage calls `scripts/sync_fabric_workspace.py`, which authenticates as a service principal and posts to the Fabric `updateFromGit` REST API endpoint. The workspace is updated automatically on every merge to `main` without any manual action. Credentials are stored in Azure Key Vault and surfaced via an ADO variable group. See [Lab 2](labs/lab2-ci-pipeline.md#approach-b--pipeline-triggered-sync-fabric-rest-api) for setup details.
+
+---
+
+# 8. Lab #3 — Fabric Deployment Pipelines (Dev → Test → Prod)
+
+## Objectives
+- Create a three-stage Fabric Deployment Pipeline in the Fabric portal  
+- Bind `WS-Dev`, `WS-Test`, and `WS-Prod` workspaces to their respective stages  
+- Configure **deployment rules** to swap data source parameters (server, database) per environment  
+- Review the **comparison diff** between stages before promoting  
+- Promote content **Dev → Test** and validate via UAT checklist  
+- Gate **Test → Prod** with a manual approval  
+- Verify Prod workspace content and confirm semantic model refresh  
+
+## Prerequisites
+- Labs 1 and 2 completed — CI pipeline passing on `main`, Dev workspace has validated PBIP content  
+- Three Fabric capacity-backed workspaces: `WS-Dev-<team>`, `WS-Test-<team>`, `WS-Prod-<team>`  
+- **Admin** role on all three workspaces  
+- Fabric Admin toggle enabled: **Users can create and use deployment pipelines**  
+- Sample semantic model uses Power Query parameters for server and database name  
+
+## Key Concepts
+
+| Concept | Description |
+|---|---|
+| **Stage** | Development, Test, or Production — each bound to exactly one workspace |
+| **Deployment rules** | Per-stage overrides applied at promotion time (e.g., swap connection strings) |
+| **Comparison view** | Shows items that differ between adjacent stages before promoting |
+| **Selective deployment** | Promotes a subset of items rather than the full workspace |
+
+See [Lab 3](labs/lab3-deployment-pipelines.md) for the full step-by-step walkthrough.
