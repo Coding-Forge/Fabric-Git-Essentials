@@ -30,6 +30,13 @@ style: |
   }
   section.slide td {
     color: #1a1a1a;
+    background-color: #ffffff;
+  }
+  section.slide td code {
+    background-color: #e0e7f1;
+    color: #0a0a0a;
+    padding: 2px 5px;
+    border-radius: 4px;
   }
   section.slide tr:nth-child(even) td {
     background-color: #f0f0f0;
@@ -39,10 +46,17 @@ style: |
     color: #ffffff;
   }
   section.dark td {
-    color: #e8e8e8;
+    color: #ffffff;
+    background-color: #1a1a2e;
+  }
+  section.dark td code {
+    background-color: #2d2d4a;
+    color: #ffffff;
+    padding: 2px 5px;
+    border-radius: 4px;
   }
   section.dark tr:nth-child(even) td {
-    background-color: rgba(255,255,255,0.1);
+    background-color: #2a2a42;
   }
   code {
     background-color: #f0f4ff;

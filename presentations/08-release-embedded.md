@@ -17,14 +17,17 @@ style: |
   section.lead p { color: #adbdcc; }
   h2 { color: #1a1a2e; border-bottom: 3px solid #1a1a2e; padding-bottom: 0.2em; }
   table { width: 100%; font-size: 0.82em; }
-  th { background-color: #1a1a2e; color: #ffffff; }
-  td { color: #1a1a1a; }
-  tr:nth-child(even) td { background-color: #f0f0f0; }
+  section th { background-color: #1a1a2e; color: #ffffff; }
+  section td { color: #1a1a1a; background-color: #ffffff; }
+  section td code { background-color: #e0e7f1; color: #0a0a0a; padding: 2px 5px; border-radius: 4px; }
+  section tr:nth-child(even) td { background-color: #f0f0f0; }
   section.dark th { background-color: #0a0a1a; color: #ffffff; }
-  section.dark td { color: #e8e8e8; }
-  section.dark tr:nth-child(even) td { background-color: rgba(255,255,255,0.1); }
+  section.dark td { color: #ffffff; background-color: #0f172a; }
+  section.dark td code { background-color: #1e293b; color: #ffffff; padding: 2px 5px; border-radius: 4px; }
+  section.dark tr:nth-child(even) td { background-color: #1e293b; }
   section.green th { background-color: #166534; color: #ffffff; }
-  section.green td { color: #1a1a1a; }
+  section.green td { color: #1a1a1a; background-color: #f0fdf4; }
+  section.green td code { background-color: #d4edda; color: #0a0a0a; padding: 2px 5px; border-radius: 4px; }
   section.green tr:nth-child(even) td { background-color: #d4edda; }
   code { background-color: #f0f4ff; color: #1a1a1a; border-radius: 4px; padding: 2px 5px; }
   pre { background-color: #1a1a2e; border-radius: 6px; }
