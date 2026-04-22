@@ -65,19 +65,21 @@ style: |
 ## The PBIP File Structure
 
 ```
-fabric-workspace/
-├── SalesReport.Report/
-│   ├── report.json          ← pages, visuals, layout
+projects/
+├── git-essential-demo.pbip
+├── git-essential-demo.Report/
 │   ├── definition.pbir
+│   ├── definition/
+│   │   └── report.json
 │   └── StaticResources/
 │       └── SharedResources/
-└── SalesModel.SemanticModel/
-    ├── definition/
-    │   ├── tables/
-    │   │   ├── Sales.tmdl   ← measures, columns, partitions
-    │   │   └── Date.tmdl
-    │   └── relationships.tmdl
-    └── definition.pbism
+└── git-essential-demo.SemanticModel/
+  ├── definition.pbism
+  └── definition/
+    ├── tables/
+    │   ├── Sales.tmdl
+    │   └── Date.tmdl
+    └── relationships.tmdl
 ```
 
 All files are **plain text** → diffable, reviewable, mergeable.

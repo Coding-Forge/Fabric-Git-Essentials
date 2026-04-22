@@ -142,15 +142,16 @@ Before we start, confirm you have:
 **Power BI Projects (.pbip)** store reports and semantic models as **human-readable text files**:
 
 ```
-/fabric-workspace
-  /SalesReport.Report
-    report.json           ← visuals, pages, formatting
+/projects
+  git-essential-demo.pbip
+  /git-essential-demo.Report
     definition.pbir
-  /SalesModel.SemanticModel
-    model.bim             ← or TMDL folder
+    definition/report.json
+  /git-essential-demo.SemanticModel
+    definition.pbism
     definition/
       tables/
-        Sales.tmdl        ← measures, columns, relationships
+        Sales.tmdl
       relationships.tmdl
 ```
 

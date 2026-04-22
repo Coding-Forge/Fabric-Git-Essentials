@@ -100,7 +100,7 @@ By the end of this lab you will have:
 | Organization | Your org name |
 | Repository | `fabric-git-essentials-<team>` |
 | Branch | `main` |
-| Folder path | `/fabric-workspace` |
+| Folder path | `/projects` |
 
 6. Click **Connect and sync**
 
@@ -116,7 +116,7 @@ After connecting, Fabric exports all workspace items to the repo.
 - The Source control panel shows "0 pending changes"
 
 **In the repo (Azure DevOps / GitHub):**
-- Navigate to `Repos → Files → /fabric-workspace`
+- Navigate to `Repos → Files → /projects`
 - You should see PBIP folders for each report and semantic model
 
 > ✅ Checkpoint: If you can see the files in the repo, Part 1 is complete.
@@ -153,7 +153,7 @@ git push -u origin feature/<your-alias>-lab1
 4. Open **Workspace settings → Git integration**
 5. Connect to your **feature branch** (not `main`):
    - Branch: `feature/<your-alias>-lab1`
-   - Folder: `/fabric-workspace`
+  - Folder: `/projects`
 6. Click **Connect and sync**
 
 Your personal workspace is now isolated from the shared one. ✅

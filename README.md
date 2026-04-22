@@ -25,6 +25,7 @@ This README provides a **topic-by-topic index** of supporting resources, archite
 - [04 — Collaboration & Governance](presentations/04-collaboration-governance.md)
 - [05 — Deployment Strategy](presentations/05-deployment-strategy.md)
 - [06 — Lab 2: CI Pipeline for PBIP](presentations/06-lab2-ci-pipeline.md)
+- [06a — Lab 2 Facilitator Briefing (One Slide)](presentations/06a-lab2-facilitator-briefing.md)
 - [07 — Lab 3: Fabric Deployment Pipelines](presentations/07-lab3-deployment-pipelines.md)
 - [08 — Release Checklist & Power BI Embedded](presentations/08-release-embedded.md)
 
@@ -42,7 +43,7 @@ These are generated from the Marp source using `python-pptx` and can be opened d
 
 ### Labs
 - [Lab 1 — Connect Workspace to Git](docs/workshop-plan/labs/lab1-connect-git.md)
-- [Lab 2 — Build CI Pipeline for PBIP](docs/workshop-plan/labs/lab2-ci-pipeline.md)
+- [Lab 2 — CI Pipeline Validation for the Power BI Project](docs/workshop-plan/labs/lab2-ci-pipeline.md)
 - [Lab 3 — Deployment Pipelines](docs/workshop-plan/labs/lab3-deployment-pipelines.md)
 
 ### Governance

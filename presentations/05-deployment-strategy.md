@@ -75,16 +75,15 @@ Developer → feature branch → PR → CI ✅ → merge to main
 
 ---
 
-## CI Pipeline — 4 Stages
+## CI Pipeline — 3 Stages
 
 | Stage | Trigger | What It Does |
 |-------|---------|-------------|
-| **Validate** | Every push / PR | `pbi-tools validate` + `pbip-lint` |
+| **Validate** | Every push / PR | PBIP structure + dataset/report quality checks |
 | **Test** | After Validate | DAX unit tests → JUnit XML |
 | **Publish** | After Test | Upload `pbip-artifacts` to ADO |
-| **SyncFabricDev** | `main` merges only | REST API call → sync Dev workspace |
 
-All 4 stages must be **green** before any workspace promotion happens.
+All 3 stages must be **green** before any workspace promotion happens.
 
 ---
 <!-- class: dark -->
@@ -101,23 +100,26 @@ stages:
     jobs:
       - job: ValidatePBIP
         steps:
-          - script: pip install pbi-tools pbip-lint
-          - script: pbi-tools validate --input fabric-workspace
-          - script: pbip-lint --path fabric-workspace
+          - script: python tests/validate_pbip_structure.py --pbip-path "$(PBIP_PATH)"
+      - job: Build_Datasets
+      - job: Build_Reports
 
   - stage: Test
     dependsOn: Validate
     jobs:
       - job: DaxTests
         steps:
-          - script: python tests/run_dax_tests.py
+          - script: python tests/run_dax_tests.py --model-path "$(PBIP_PATH)"
 
-  - stage: SyncFabricDev
-    condition: eq(variables['Build.SourceBranch'], 'refs/heads/main')
+  - stage: Publish
+    dependsOn: Test
     jobs:
-      - job: TriggerFabricSync
+      - job: PublishArtifacts
         steps:
-          - script: python scripts/sync_fabric_workspace.py
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathToPublish: '$(Build.SourcesDirectory)/$(PBIP_PATH)'
+              artifactName: 'pbip-artifacts'
 ```
 
 ---
@@ -133,14 +135,11 @@ Good for: individual developers, on-demand pulls after a merge.
 
 ---
 
-## Approach B — Automated Workspace Sync (REST API)
+## Workspace Sync in This Workshop
 
-- The `SyncFabricDev` pipeline stage calls the Fabric `updateFromGit` REST endpoint
-- Dev workspace updated automatically on every merge to `main`
-- Credentials stored in **Azure Key Vault** → surfaced via ADO variable group
-- No human action required after a PR merges
-
-Good for: teams that want a fully automated inner loop.
+- After merge, sync the Dev workspace from the Fabric Source control panel
+- The workshop pipeline focuses on CI validation and artifact publishing
+- Automated workspace sync can be added later as an extension if needed
 
 ---
 

@@ -50,8 +50,8 @@ Use this checklist at each stage of the development lifecycle to ensure Fabric w
 
 ### 2.1 Code Quality
 
-- [ ] `pbi-tools validate` passes locally before opening the PR  
-- [ ] `pbip-lint` passes with zero errors  
+- [ ] `tests/validate_pbip_structure.py` passes before opening the PR  
+- [ ] Dataset and report quality rule checks pass in CI  
 - [ ] No hardcoded connection strings, passwords, or keys in PBIP JSON/YAML/TMDL  
 - [ ] Measure and column descriptions added for all new model objects (or waived by BI Lead)  
 
@@ -64,7 +64,7 @@ Use this checklist at each stage of the development lifecycle to ensure Fabric w
 
 ### 2.3 Semantic Model
 
-- [ ] No duplicate measures (check via `pbi-tools` output or Tabular Editor BPA)  
+- [ ] No duplicate measures (check via Tabular Editor BPA output in CI)  
 - [ ] Relationship cardinality is correct — no unintentional many-to-many relationships  
 - [ ] All date tables are marked as *Date Table* with the correct date column  
 - [ ] Import vs DirectQuery mode is intentional and documented in the PR description  

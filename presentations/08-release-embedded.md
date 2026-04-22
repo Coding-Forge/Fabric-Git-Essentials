@@ -74,7 +74,7 @@ These must be **green** before the Deployment Pipeline runs:
 
 - [ ] CI pipeline passing on `main` — all 3 stages (Validate, Test, Publish)
 - [ ] JUnit test results: **0 failures**
-- [ ] No `pbip-lint` errors
+- [ ] Dataset and report quality rule checks pass
 - [ ] `pbip-artifacts` published to ADO and downloadable
 - [ ] Dev workspace synced to latest `main` (Approach A or B)
 - [ ] Deployment rules verified for Test **and** Prod
@@ -88,7 +88,7 @@ These must be **green** before the Deployment Pipeline runs:
 - [ ] Visuals accessible: sufficient contrast, alt-text on images, descriptive tooltips
 - [ ] No placeholder or test pages committed or published
 - [ ] Page navigation consistent with UX standard
-- [ ] No duplicate measures (validated via `pbi-tools` output or Tabular Editor BPA)
+- [ ] No duplicate measures (validated via Tabular Editor BPA)
 - [ ] All new model objects have descriptions (or waived by BI Lead)
 - [ ] Dataset refresh in Test: **succeeded**
 
@@ -125,12 +125,11 @@ From the CI pipeline `Publish` stage:
 
 ```
 pbip-artifacts/
-  fabric-workspace/
-    SalesReport.Report/         ← validated report PBIP
-    SalesModel.SemanticModel/   ← validated model PBIP
+  projects/
+    git-essential-demo.Report/          ← validated report PBIP
+    git-essential-demo.SemanticModel/   ← validated model PBIP
   test-results/
-    test-results.xml            ← JUnit DAX test output
-  validation-report.json        ← pbi-tools schema results
+    dax-test-results.xml        ← JUnit DAX test output
 ```
 
 These artifacts are stored in **Azure DevOps Pipelines** and can be:

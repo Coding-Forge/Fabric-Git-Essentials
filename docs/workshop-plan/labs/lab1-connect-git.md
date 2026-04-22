@@ -63,7 +63,7 @@ By the end of the lab your workspace will be under full source control and every
    | Project | *(Azure DevOps only)* Your project name |
    | Repository | The repo designated for this workshop |
    | Branch | `main` |
-   | Folder path | `/fabric-workspace` *(or as directed by facilitator)* |
+   | Folder path | `/projects` *(or as directed by facilitator)* |
 
 4. Click **Connect and sync**.
 
@@ -84,17 +84,18 @@ After connecting, Fabric performs an initial synchronization and exports all wor
 ### 2.2 Confirm Artifacts in the Repo
 
 1. Open your repo in Azure DevOps or GitHub.  
-2. Navigate to the folder path you specified (e.g., `/fabric-workspace`).  
+2. Navigate to the folder path you specified (e.g., `/projects`).  
 3. Verify the PBIP folder structure exists:
 
 ```
-fabric-workspace/
-  SalesReport.Report/
-    definition.pbir
-    report.json
-  SalesModel.SemanticModel/
-    definition.pbism
-    model.bim          ← or TMDL folder if TMDL is enabled
+projects/
+   git-essential-demo.pbip
+   git-essential-demo.Report/
+      definition.pbir
+      definition/report.json
+   git-essential-demo.SemanticModel/
+      definition.pbism
+      definition/model.tmdl
 ```
 
 ---

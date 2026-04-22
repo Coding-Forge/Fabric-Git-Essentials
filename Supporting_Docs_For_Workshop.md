@@ -145,32 +145,29 @@ Key messages:
 
 ---
 
-## 2.6 Lab #2 — CI Pipeline & Workspace Sync for PBIP
+## 2.6 Lab #2 — CI Pipeline Validation for the Power BI Project
 
 Primary references:
-- **Lab #2 Guide — CI Pipeline & Workspace Sync for PBIP**  
-  Covers four pipeline stages and two workspace sync approaches:
-  - PBIP schema validation with `pbi-tools`  
-  - DAX unit tests with JUnit output  
-  - Lint rules via `pbip-lint`  
+- **Lab #2 Guide — CI Pipeline Validation for the Power BI Project**  
+  Covers the current 3-stage Azure DevOps pipeline:
+  - PBIP structure validation with `tests/validate_pbip_structure.py`  
+  - Dataset and report quality rules using Tabular Editor, PBI Inspector, and `scripts/Prepare-QualityRules.ps1`  
+  - DAX unit tests with JUnit output from `tests/run_dax_tests.py`  
   - Publishing `pbip-artifacts`  
-  - **Approach A:** Manual sync via Fabric portal Source control panel (UI walkthrough with Mermaid flow)  
-  - **Approach B:** Automated sync via Fabric REST API `updateFromGit` using a service principal and Key Vault  
-- **`scripts/sync_fabric_workspace.py`**  
-  Python script committed to the repo that authenticates as a service principal and calls the Fabric `updateFromGit` API with long-running operation polling.  
-- **Azure DevOps Variable Group `fabric-cd-vars`**  
-  Holds `FABRIC_TENANT_ID`, `FABRIC_CLIENT_ID`, `FABRIC_WORKSPACE_ID`, and the Key Vault-linked `FABRIC_CLIENT_SECRET`.  
+- **`projects/azure-pipelines.yml`**  
+  Source-of-truth pipeline YAML used by the workshop.  
+- **Project rules and scripts**  
+  `Rules-Dataset.json`, `Rules-Report.json`, and `scripts/Prepare-QualityRules.ps1` drive branch-aware quality checks.  
 - **AzureDevOps Deep Dive**  
   Shows integration with dashboards and test plans.
 - **Microsoft Learn — CI/CD Tutorial**  
   Mirrors the steps of building a working PBIP validation pipeline.
 
 Lab #2 Outcomes:
-- Working 4-stage CI/CD pipeline (Validate → Test → Publish → SyncFabricDev)  
+- Working 3-stage CI pipeline (Validate → Test → Publish)  
 - PR branch policies enforced; CI is a required status check on `main`  
 - PBIP validation occurs automatically on every push  
-- Dev workspace syncs automatically after every merge to `main` (Approach B)  
-- Participants can also sync manually via the Fabric portal Source control panel (Approach A)  
+- Participants use the same pipeline and project files found in the `projects` folder  
 
 ---
 
@@ -299,10 +296,14 @@ Supporting documents:
     cicd-architecture.md
     workspace-strategy.md
     fabric-git-integration.md
-/scripts
-  sync_fabric_workspace.py
-/tests
-  run_dax_tests.py
-azure-pipelines.yml
-.pbiplintrc.json
+/projects
+  azure-pipelines.yml
+  git-essential-demo.pbip
+  Rules-Dataset.json
+  Rules-Report.json
+  /scripts
+    Prepare-QualityRules.ps1
+  /tests
+    run_dax_tests.py
+    validate_pbip_structure.py
 ```

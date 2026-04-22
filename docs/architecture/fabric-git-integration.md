@@ -54,7 +54,7 @@ flowchart LR
 flowchart TD
     Trigger[Git Trigger<br/>Feature Branch or Main]
     Agent[Build Agent]
-    Validate[pbi-tools Validate<br/>Schema/DAX/Lint]
+    Validate[PBIP Structure + Quality Rules<br/>Validate/Rules/DAX]
     Tests[Unit Tests<br/>Model / Measures]
     Artifacts[Publish Artifacts]
     Status[CI Status Checks]

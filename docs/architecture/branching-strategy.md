@@ -108,7 +108,7 @@ Create a new Fabric workspace dedicated to this feature. This prevents any in-pr
 2. Go to **Workspace settings → Git integration**.  
 3. Connect to the same repo used by the team.  
 4. Set the **Branch** to your feature branch (e.g., `feature/bcampbell-sales-ytd`).  
-5. Set the **Folder path** to the same folder used by the shared workspace (e.g., `/fabric-workspace`).  
+5. Set the **Folder path** to the same folder used by the shared workspace (e.g., `/projects`).  
 6. Click **Connect and sync**.
 
 Fabric pulls the current state of `main` (via the feature branch, which was just created from it) into the new workspace. You start with a clean baseline that mirrors production.

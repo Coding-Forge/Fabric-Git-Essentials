@@ -61,18 +61,16 @@ The CI pipeline (defined in `azure-pipelines.yml`) runs on every push to `main` 
 flowchart TD
     Trigger[Git Trigger\nfeature/* or main]
     Agent[Windows Build Agent]
-    Install[Install pbi-tools\n+ pbip-lint]
-    Validate[pbi-tools validate\nSchema / Metadata]
-    Lint[pbip-lint\nFormatting Rules]
+    Validate[Run PBIP Structure Validation\nvalidate_pbip_structure.py]
+    Quality[Run Dataset + Report Quality Rules\nPrepare-QualityRules.ps1]
     DaxTests[DAX Unit Tests\nJUnit XML output]
     Publish[Publish Artifacts\npbip-artifacts]
     Status[CI Status Check\nreported to PR]
 
     Trigger --> Agent
-    Agent --> Install
-    Install --> Validate
-    Validate --> Lint
-    Lint --> DaxTests
+    Agent --> Validate
+    Validate --> Quality
+    Quality --> DaxTests
     DaxTests --> Publish
     Publish --> Status
 ```
@@ -81,7 +79,7 @@ flowchart TD
 
 | Stage | Steps | Failure Behaviour |
 |---|---|---|
-| **Validate** | `pbi-tools validate`, `pbip-lint` | Fails build immediately |
+| **Validate** | `validate_pbip_structure.py`, dataset rules, report rules | Fails build immediately |
 | **Test** | DAX unit tests via `run_dax_tests.py` | Fails build; JUnit results published |
 | **Publish** | `PublishBuildArtifacts` | Skipped if prior stage fails |
 

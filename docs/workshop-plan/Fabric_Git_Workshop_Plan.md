@@ -152,26 +152,22 @@ Example:
 
 ---
 
-# 7. Lab #2 — CI Pipeline & Workspace Sync for PBIP
+# 7. Lab #2 — CI Pipeline Validation for the Power BI Project
 
 ## Objectives
-- Build a 4-stage CI/CD pipeline in YAML  
-- Validate PBIP schema and lint rules with `pbi-tools`  
+- Use the existing YAML pipeline at `projects/azure-pipelines.yml`  
+- Validate PBIP structure and run dataset/report quality rules  
 - Run DAX unit tests and publish JUnit results  
 - Publish `pbip-artifacts` to Azure DevOps  
 - Set the pipeline as a required status check on `main`  
-- Sync the Fabric Dev workspace using **two approaches**:
-  - **Approach A** — Manual sync via the Fabric portal Source control panel  
-  - **Approach B** — Automated sync triggered by the pipeline using the Fabric REST API  
 
 ## Pipeline Stages Summary
 
 | Stage | Trigger | Purpose |
 |---|---|---|
-| **Validate** | Every push / PR | `pbi-tools` schema validation + `pbip-lint` |
+| **Validate** | Every push / PR | PBIP structure validation + dataset/report quality rules |
 | **Test** | After Validate | DAX unit tests, JUnit XML output |
 | **Publish** | After Test | Upload `pbip-artifacts` to pipeline storage |
-| **SyncFabricDev** | `main` merges only | Call Fabric REST API `updateFromGit` to sync Dev workspace |
 
 ## Key YAML Pattern
 
@@ -183,23 +179,27 @@ trigger:
       - feature/*
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'windows-2022'
+
+variables:
+  PBIP_PATH: '.'
+  PYTHON_VERSION: '3.11'
 
 stages:
   - stage: Validate
     jobs:
       - job: ValidatePBIP
         steps:
-          - script: pip install pbi-tools pbip-lint
-          - script: pbi-tools validate --input fabric-workspace
-          - script: pbip-lint --path fabric-workspace --config .pbiplintrc.json
+          - script: python tests/validate_pbip_structure.py --pbip-path "$(PBIP_PATH)"
+      - job: Build_Datasets
+      - job: Build_Reports
 
   - stage: Test
     dependsOn: Validate
     jobs:
       - job: DaxTests
         steps:
-          - script: python tests/run_dax_tests.py --model-path fabric-workspace
+          - script: python tests/run_dax_tests.py --model-path "$(PBIP_PATH)"
 
   - stage: Publish
     dependsOn: Test
@@ -208,24 +208,11 @@ stages:
         steps:
           - task: PublishBuildArtifacts@1
             inputs:
+              pathToPublish: '$(Build.SourcesDirectory)/$(PBIP_PATH)'
               artifactName: pbip-artifacts
-
-  - stage: SyncFabricDev
-    dependsOn: Publish
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-    jobs:
-      - job: TriggerFabricSync
-        steps:
-          - script: python scripts/sync_fabric_workspace.py
 ```
 
-## Workspace Sync — Approach A (Manual, Portal)
-
-After a PR merges to `main`, a developer opens the Fabric Dev workspace, clicks the **Source control icon**, reviews incoming changes in the side panel, and clicks **Update all**. See [Lab 2](labs/lab2-ci-pipeline.md#approach-a--manual-workspace-git-sync) for the full step-by-step UI walkthrough.
-
-## Workspace Sync — Approach B (Automated, REST API)
-
-The fourth pipeline stage calls `scripts/sync_fabric_workspace.py`, which authenticates as a service principal and posts to the Fabric `updateFromGit` REST API endpoint. The workspace is updated automatically on every merge to `main` without any manual action. Credentials are stored in Azure Key Vault and surfaced via an ADO variable group. See [Lab 2](labs/lab2-ci-pipeline.md#approach-b--pipeline-triggered-sync-fabric-rest-api) for setup details.
+See [Lab 2](labs/lab2-ci-pipeline.md) for the full hands-on walkthrough using the current project files under `projects`.
 
 ---
 
