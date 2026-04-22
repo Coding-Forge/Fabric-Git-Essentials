@@ -35,6 +35,9 @@ This README provides a **topic-by-topic index** of supporting resources, archite
 Pre-generated `.pptx` files are in the `powerpoint/` folder — one per deck, with the same filename stem.
 These are generated from the Marp source using `python-pptx` and can be opened directly in PowerPoint or Google Slides.
 
+- [06a Facilitator Briefing (PPTX)](powerpoint/06a-lab2-facilitator-briefing.pptx)
+- [06a Facilitator Briefing (PDF)](powerpoint/06a-lab2-facilitator-briefing.pdf)
+
 ### Architecture Docs
 - [Fabric + Git Integration](docs/architecture/fabric-git-integration.md) — diagrams for the full integration, PBIP workflow, CI pipeline, deployment pipeline, end-to-end DevOps, and Power BI Embedded
 - [Branching Strategy](docs/architecture/branching-strategy.md)
