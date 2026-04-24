@@ -232,7 +232,7 @@
     {
       "id": "ENSURE_PAGES_DO_NOT_SCROLL_VERTICALLY",
       "name": "Ensure pages do not scroll vertically",
-      "description": "Visible pages should fit standard canvas height.",
+      "description": "Visible pages should fit supported canvas heights, including 4K.",
       "logType": "error",
       "itemType": "Report",
       "disabled": false,
@@ -251,7 +251,7 @@
                         {
                           "var": "height"
                         },
-                        720
+                        2160
                       ]
                     },
                     {
