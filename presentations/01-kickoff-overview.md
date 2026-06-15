@@ -152,7 +152,7 @@ Before we start, confirm you have:
     definition/
       tables/
         Sales.tmdl
-      relationships.tmdl
+      relationships.tmdl   # optional for single-table models
 ```
 
 This makes every change **diff-able, reviewable, and automatable**.

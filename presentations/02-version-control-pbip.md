@@ -79,7 +79,7 @@ projects/
     ├── tables/
     │   ├── Sales.tmdl
     │   └── Date.tmdl
-    └── relationships.tmdl
+    └── relationships.tmdl   # optional for single-table models
 ```
 
 All files are **plain text** → diffable, reviewable, mergeable.

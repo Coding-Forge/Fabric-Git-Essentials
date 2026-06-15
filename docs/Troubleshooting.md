@@ -15,7 +15,8 @@ What to check:
 - the repository root contains exactly one `.pbip` file
 - the PBIP `artifacts[0].report.path` points to the report folder
 - `definition.pbir` contains a valid `datasetReference.byPath.path`
-- the semantic model includes `definition.pbism`, `definition/model.tmdl`, and `definition/relationships.tmdl`
+- the semantic model includes `definition.pbism` and `definition/model.tmdl`
+- `definition/relationships.tmdl` is optional; single-table semantic models may not have relationships
 
 Relevant validator:
 

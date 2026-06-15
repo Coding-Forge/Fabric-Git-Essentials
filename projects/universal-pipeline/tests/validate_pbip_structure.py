@@ -68,11 +68,6 @@ def validate_pbip_structure(root: Path) -> list[str]:
                 errors,
                 "semantic model model.tmdl file",
             )
-            _assert_exists(
-                semantic_model_dir / "definition" / "relationships.tmdl",
-                errors,
-                "semantic model relationships.tmdl file",
-            )
 
     return errors
 
