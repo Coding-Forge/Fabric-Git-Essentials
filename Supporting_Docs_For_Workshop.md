@@ -22,7 +22,7 @@ It acts as a companion index to the main workshop plan, ensuring you can quickly
 | **Lab #1 — Connect Workspace to Git**<br>(10:30–11:30) | Lab Guide for Git connection; Branded slides; CI/CD architecture diagrams |
 | **Collaboration Patterns & Best Practices**<br>(11:30–12:15) | DataOps deck; Governance essentials; RACI examples; Go‑Live assessment |
 | **Deployment Strategy: Dev→Test→Prod**<br>(13:00–13:45) | CI/CD Delivery Guide; Enterprise‑scale Power BI Dev examples; Deployment pipeline docs |
-| **Lab #2 — CI Pipeline Validation for the Power BI Project**<br>(13:45–14:45) | CI lab guide (YAML examples, PBIP validation); ADO test integration; MS Learn pipeline tutorials |
+| **Lab #2 — CI/CD Pipeline for the Power BI Project**<br>(13:45–14:45) | CI/CD lab guide (YAML examples, PBIP validation, artifact publication, workspace deployment); ADO test integration; MS Learn pipeline tutorials |
 | **Dashboard Design Solving Session**<br>(15:00–16:00) | Visualization best practices; Persona & decision frameworks; Wireframe examples |
 | **Publishing Artifacts & Release Checklist**<br>(16:00–16:30) | Release checklist; Prod readiness; RLS/CLS validation; Sensitivity labels guidance |
 | **Power BI Embedded POC + Communication Plan**<br>(16:30–17:00) | Embedded analytics deck; Service principal setup guide; Comms plan templates |
@@ -147,10 +147,10 @@ Key messages:
 
 ---
 
-## 2.6 Lab #2 — CI Pipeline Validation for the Power BI Project
+## 2.6 Lab #2 — CI/CD Pipeline for the Power BI Project
 
 Primary references:
-- **Lab #2 Guide — CI Pipeline Validation for the Power BI Project**  
+- **Lab #2 Guide — CI/CD Pipeline for the Power BI Project**  
   Covers the current 5-stage Azure DevOps CI/CD pipeline:
   - PBIP structure validation with `tests/validate_pbip_structure.py`  
   - Dataset and report quality rules using Tabular Editor, PBI Inspector, and `scripts/Prepare-QualityRules.ps1`  
@@ -164,11 +164,11 @@ Primary references:
 - **AzureDevOps Deep Dive**  
   Shows integration with dashboards and test plans.
 - **Microsoft Learn — CI/CD Tutorial**  
-  Mirrors the steps of building a working PBIP validation pipeline.
+  Mirrors the steps of building a working PBIP validation and deployment pipeline.
 
 Lab #2 Outcomes:
 - Working 5-stage CI/CD pipeline (Validate → Test → Publish → Deploy Dev or Feature)  
-- PR branch policies enforced; CI is a required status check on `main`  
+- PR branch policies enforced; the CI/CD pipeline is a required status check on `main`  
 - PBIP validation, testing, artifact publication, and workspace deployment occur automatically on configured branches  
 - Participants use the same pipeline and project files found in the `projects` folder  
 
@@ -204,8 +204,9 @@ Activities:
 Supporting documents:
 - **Workshop Overview — Release Checklist**  
   Items include:
-  - CI green  
+  - CI/CD pipeline green  
   - Schema diff validated  
+  - Dev deployment completed from the validated `pbip-drop` artifact  
   - Dev → Test promotion  
   - RLS check  
   - App publishing
@@ -271,6 +272,8 @@ Supporting documents:
 
 ### CI/CD
 - Automate schema validation  
+- Publish validated PBIP artifacts from the YAML pipeline  
+- Deploy `main` and `develop` to Dev, and `feature/*` branches to isolated feature workspaces  
 - Treat PBIP artifacts as code  
 - Use service principals and secured variable groups or Key Vault-linked variable groups for deployment secrets  
 

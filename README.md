@@ -9,7 +9,7 @@ This README provides a **topic-by-topic index** of supporting resources, archite
 
 > PBIP artifacts are intentionally **not committed** in this repository. Bring your own PBIP files locally under `projects/` (or `projects/pbip-local/`) and keep reusable CI/CD assets (`Rules-*.json`, `scripts/`, `tests/`, `azure-pipelines.yml`) in source control.
 >
-> This repo now also includes a reusable **universal Fabric CI pipeline** under `projects/universal-pipeline/`. The intent is to host one shared template repo for Fabric artifact validation/deployment, while each project repo keeps only a small consumer `azure-pipelines.yml`.
+> This repo now also includes a reusable **universal Fabric CI/CD pipeline** under `projects/universal-pipeline/`. The intent is to host one shared template repo for Fabric artifact validation/deployment, while each project repo keeps only a small consumer `azure-pipelines.yml`.
 
 ---
 
@@ -20,7 +20,9 @@ This README provides a **topic-by-topic index** of supporting resources, archite
 | [1. Workshop Topics Table](#1-workshop-topics--supporting-documents-table) | Agenda-mapped resource overview |
 | [2. Detailed Breakdowns](#2-detailed-topicby-topic-resource-breakdown) | Per-topic doc references |
 | [3. Best Practices Summary](#3-best-practices-summary) | Governance, Git, CI/CD, Embedded |
-| [4. Folder Structure](#4-appendix-repository-folder-structure) | Actual repo layout |
+| [4. Contributing](#4-contributing) | How to suggest improvements or changes |
+| [5. Disclaimer](#5-disclaimer) | Example-code and as-is notice |
+| [6. Folder Structure](#6-appendix-repository-folder-structure) | Actual repo layout |
 
 ### CI/CD Pipeline Options
 - Use [projects/azure-pipelines.yml](projects/azure-pipelines.yml) for the workshop's PBIP-specific Azure DevOps CI/CD walkthrough. It validates, tests, publishes `pbip-drop`, then deploys to Dev or feature workspaces with [projects/scripts/deploy-dynamic.ps1](projects/scripts/deploy-dynamic.ps1).
@@ -74,7 +76,7 @@ This pattern keeps feature-branch feedback fast while preserving stricter enforc
 - [03 — Lab 1: Connect Workspace to Git](presentations/03-lab1-connect-git.md)
 - [04 — Collaboration & Governance](presentations/04-collaboration-governance.md)
 - [05 — Deployment Strategy](presentations/05-deployment-strategy.md)
-- [06 — Lab 2: CI Pipeline for PBIP](presentations/06-lab2-ci-pipeline.md)
+- [06 — Lab 2: CI/CD Pipeline for PBIP](presentations/06-lab2-ci-pipeline.md)
 - [06a — Lab 2 Facilitator Briefing (One Slide)](presentations/06a-lab2-facilitator-briefing.md)
 - [07 — Lab 3: Fabric Deployment Pipelines](presentations/07-lab3-deployment-pipelines.md)
 - [08 — Release Checklist & Power BI Embedded](presentations/08-release-embedded.md)
@@ -89,14 +91,14 @@ These are generated from the Marp source using `python-pptx` and can be opened d
 - [06a Facilitator Briefing (PDF)](powerpoint/06a-lab2-facilitator-briefing.pdf)
 
 ### Architecture Docs
-- [Fabric + Git Integration](docs/architecture/fabric-git-integration.md) — diagrams for the full integration, PBIP workflow, CI pipeline, deployment pipeline, end-to-end DevOps, and Power BI Embedded
+- [Fabric + Git Integration](docs/architecture/fabric-git-integration.md) — diagrams for the full integration, PBIP workflow, CI/CD pipeline, deployment pipeline, end-to-end DevOps, and Power BI Embedded
 - [Branching Strategy](docs/architecture/branching-strategy.md)
 - [CI/CD Architecture](docs/architecture/cicd-architecture.md)
 - [Workspace Strategy](docs/architecture/workspace-strategy.md)
 
 ### Labs
 - [Lab 1 — Connect Workspace to Git](docs/workshop-plan/labs/lab1-connect-git.md)
-- [Lab 2 — CI Pipeline Validation for the Power BI Project](docs/workshop-plan/labs/lab2-ci-pipeline.md)
+- [Lab 2 — CI/CD Pipeline for the Power BI Project](docs/workshop-plan/labs/lab2-ci-pipeline.md)
 - [Lab 3 — Deployment Pipelines](docs/workshop-plan/labs/lab3-deployment-pipelines.md)
 
 ### Governance
@@ -113,7 +115,7 @@ These are generated from the Marp source using `python-pptx` and can be opened d
 | **Lab #1 — Connect Workspace to Git**<br>(10:30–11:30) | Lab Guide for Git connection; Branded slides; CI/CD architecture diagrams |
 | **Collaboration Patterns & Best Practices**<br>(11:30–12:15) | DataOps deck; Governance essentials; RACI examples; Go‑Live assessment |
 | **Deployment Strategy: Dev→Test→Prod**<br>(13:00–13:45) | CI/CD Delivery Guide; Enterprise‑scale Power BI Dev examples; Deployment pipeline docs |
-| **Lab #2 — CI Pipeline Validation for the Power BI Project**<br>(13:45–14:45) | CI lab guide (YAML examples, PBIP validation); ADO test integration; MS Learn pipeline tutorials |
+| **Lab #2 — CI/CD Pipeline for the Power BI Project**<br>(13:45–14:45) | CI/CD lab guide (YAML examples, PBIP validation, artifact publication, workspace deployment); ADO test integration; MS Learn pipeline tutorials |
 | **Lab #3 — Fabric Deployment Pipelines**<br>(15:00–16:00) | [Lab 3 guide](docs/workshop-plan/labs/lab3-deployment-pipelines.md); Architecture diagrams; Governance checklist; Deployment rules & promotion guidance |
 | **Publishing Artifacts & Release Checklist**<br>(16:00–16:30) | Release checklist; Prod readiness; RLS/CLS validation; Sensitivity labels guidance |
 | **Power BI Embedded POC + Communication Plan**<br>(16:30–17:00) | Embedded analytics deck; Service principal setup guide; Comms plan templates |
@@ -235,10 +237,10 @@ Key messages:
 
 ---
 
-## 2.6 Lab #2 — CI Pipeline for PBIP & Automated Validations
+## 2.6 Lab #2 — CI/CD Pipeline for PBIP
 
 Primary references:
-- **Lab #2 Guide — CI for PBIP**  
+- **Lab #2 Guide — CI/CD Pipeline for PBIP**  
   Includes YAML patterns for:
   - PBIP schema validation  
   - DAX unit tests  
@@ -248,11 +250,11 @@ Primary references:
 - **AzureDevOps Deep Dive**  
   Shows integration with dashboards and test plans.
 - **Microsoft Learn — CI/CD Tutorial**  
-  Mirrors the steps of building a working PBIP validation pipeline.
+  Mirrors the steps of building a working PBIP validation and deployment pipeline.
 
 Lab #2 Outcomes:
 - Working CI/CD pipeline  
-- PR branch policies enforced  
+- PR branch policies enforced with the CI/CD pipeline as the required status check  
 - PBIP validation, testing, artifact publication, and workspace deployment occur automatically  
 
 ---
@@ -358,6 +360,8 @@ Supporting documents:
 
 ### CI/CD
 - Automate schema validation  
+- Publish validated PBIP artifacts from the YAML pipeline  
+- Deploy `main` and `develop` to Dev, and `feature/*` branches to isolated feature workspaces  
 - Treat PBIP artifacts as code  
 - Use service principals and secured variable groups or Key Vault-linked variable groups for deployment secrets  
 
@@ -368,7 +372,33 @@ Supporting documents:
 
 ---
 
-# 4. Appendix: Repository Folder Structure
+# 4. Contributing
+
+Contributions are welcome when they improve the workshop, clarify the learning path, or make the examples easier to adapt in real Fabric and Power BI environments.
+
+Suggested contribution workflow:
+
+1. Create a short-lived branch such as `feature/<alias>-<change>` or `docs/<alias>-<topic>`.
+2. Keep changes focused on one topic, lab, script, or pipeline behavior.
+3. Update related documentation when changing YAML, PowerShell, tests, rules, or workshop flow.
+4. Run the relevant local checks before opening a pull request. For PBIP validation changes, start with [projects/tests/validate_pbip_structure.py](projects/tests/validate_pbip_structure.py) and the quality-rule preparation script.
+5. Open a pull request with a clear summary, testing notes, and any environment assumptions.
+
+Good contributions include documentation fixes, clearer lab steps, safer validation rules, reusable pipeline improvements, and examples that help teams adapt the workshop to their own Fabric tenant. Avoid committing tenant-specific IDs, client secrets, tokens, real customer data, exported PBIP files that should remain local, or environment-specific values that belong in variable groups or secure configuration.
+
+---
+
+# 5. Disclaimer
+
+This repository contains workshop material and example automation code. The YAML pipelines, PowerShell scripts, validation rules, tests, and deployment examples are provided as reference implementations and starting points only.
+
+Before using any code from this repository in your own environment, review it carefully, modify it for your tenant, workspace topology, security model, naming conventions, branch policies, and deployment process, and verify it with non-production workspaces and test data. You are responsible for validating permissions, service principal configuration, secrets handling, Fabric tenant settings, API behavior, and deployment outcomes in your environment.
+
+The contents of this repository are provided "as is" without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, and non-infringement. The authors and contributors are not liable for any damages, data loss, service interruption, security issue, or other impact arising from use of these examples.
+
+---
+
+# 6. Appendix: Repository Folder Structure
 
 ```text
 /
