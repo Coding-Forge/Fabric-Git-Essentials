@@ -92,6 +92,7 @@ These are generated from the Marp source using `python-pptx` and can be opened d
 
 ### Architecture Docs
 - [Fabric + Git Integration](docs/architecture/fabric-git-integration.md) — diagrams for the full integration, PBIP workflow, CI/CD pipeline, deployment pipeline, end-to-end DevOps, and Power BI Embedded
+- [GitHub Best Practices for Fabric Git Integration](docs/architecture/github-fabric-git-best-practices.md)
 - [Branching Strategy](docs/architecture/branching-strategy.md)
 - [CI/CD Architecture](docs/architecture/cicd-architecture.md)
 - [Workspace Strategy](docs/architecture/workspace-strategy.md)

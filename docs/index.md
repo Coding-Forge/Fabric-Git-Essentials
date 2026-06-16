@@ -21,11 +21,13 @@ This wiki provides all workshop plans, labs, governance materials, and architect
 
 ## 🛡 Governance & Standards
 - [Governance Checklist](./governance/governance-checklist.md)  
+- [GitHub Best Practices for Fabric Git Integration](./architecture/github-fabric-git-best-practices.md)  
 - [Workspace Strategy](./architecture/workspace-strategy.md)
 
 ---
 
 ## 🏗 Architecture & CI/CD
+- [GitHub Best Practices for Fabric Git Integration](./architecture/github-fabric-git-best-practices.md)  
 - [CI/CD Architecture](./architecture/cicd-architecture.md)  
 - [Deployment Pipeline Practices](./architecture/cicd-architecture.md#deployment-pipelines)  
 - [Workspace Strategy](./architecture/workspace-strategy.md)  
