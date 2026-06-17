@@ -34,7 +34,7 @@ on:
         type: boolean
 
 env:
-  PROJECT_ROOT: projects
+  PROJECT_ROOT: shared
   PBIP_PATH: shared/pbip-local
   PYTHON_VERSION: "3.11"
   DEPLOY_SCRIPT_PATH: shared/scripts/deploy-dynamic.ps1
@@ -92,7 +92,15 @@ jobs:
       - name: Prepare dataset rules for branch policy
         shell: pwsh
         run: |
-          $repoPath = Join-Path "$env:GITHUB_WORKSPACE" "$env:PROJECT_ROOT"
+          $repoPathCandidates = @(
+            (Join-Path "$env:GITHUB_WORKSPACE" "$env:PROJECT_ROOT"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "shared"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "projects")
+          ) | Select-Object -Unique
+          $repoPath = $repoPathCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($repoPath)) {
+            throw "Could not resolve project root folder. Checked: $($repoPathCandidates -join ', ')"
+          }
           $tempPath = Join-Path "$env:RUNNER_TEMP" "pbip-quality"
 
           $sourceRulesPath = Join-Path $repoPath "Rules-Dataset.json"
@@ -115,8 +123,27 @@ jobs:
       - name: Run dataset rules
         shell: pwsh
         run: |
-          $repoPath = Join-Path "$env:GITHUB_WORKSPACE" "$env:PROJECT_ROOT"
-          $pbipPath = Join-Path "$env:GITHUB_WORKSPACE" "$env:PBIP_PATH"
+          $repoPathCandidates = @(
+            (Join-Path "$env:GITHUB_WORKSPACE" "$env:PROJECT_ROOT"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "shared"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "projects")
+          ) | Select-Object -Unique
+          $repoPath = $repoPathCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($repoPath)) {
+            throw "Could not resolve project root folder. Checked: $($repoPathCandidates -join ', ')"
+          }
+
+          $pbipPathCandidates = @(
+            (Join-Path "$env:GITHUB_WORKSPACE" "$env:PBIP_PATH"),
+            (Join-Path $repoPath "pbip-local"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "shared/pbip-local"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "projects/pbip-local")
+          ) | Select-Object -Unique
+          $pbipPath = $pbipPathCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($pbipPath)) {
+            throw "Could not resolve PBIP path. Checked: $($pbipPathCandidates -join ', ')"
+          }
+
           $tempPath = Join-Path "$env:RUNNER_TEMP" "pbip-quality"
           $toolPath = Join-Path $tempPath "TE\TabularEditor.exe"
           $rulesPath = Join-Path $tempPath "Rules-Dataset.effective.json"
@@ -181,7 +208,15 @@ jobs:
       - name: Prepare report rules for branch policy
         shell: pwsh
         run: |
-          $repoPath = Join-Path "$env:GITHUB_WORKSPACE" "$env:PROJECT_ROOT"
+          $repoPathCandidates = @(
+            (Join-Path "$env:GITHUB_WORKSPACE" "$env:PROJECT_ROOT"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "shared"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "projects")
+          ) | Select-Object -Unique
+          $repoPath = $repoPathCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($repoPath)) {
+            throw "Could not resolve project root folder. Checked: $($repoPathCandidates -join ', ')"
+          }
           $tempPath = Join-Path "$env:RUNNER_TEMP" "pbip-quality"
 
           $sourceRulesPath = Join-Path $repoPath "Rules-Report.json"
@@ -204,7 +239,24 @@ jobs:
       - name: Run report rules
         shell: pwsh
         run: |
-          $pbipPath = Join-Path "$env:GITHUB_WORKSPACE" "$env:PBIP_PATH"
+          $repoPathCandidates = @(
+            (Join-Path "$env:GITHUB_WORKSPACE" "$env:PROJECT_ROOT"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "shared"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "projects")
+          ) | Select-Object -Unique
+          $repoPath = $repoPathCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+          $pbipPathCandidates = @(
+            (Join-Path "$env:GITHUB_WORKSPACE" "$env:PBIP_PATH"),
+            (Join-Path $repoPath "pbip-local"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "shared/pbip-local"),
+            (Join-Path "$env:GITHUB_WORKSPACE" "projects/pbip-local")
+          ) | Select-Object -Unique
+          $pbipPath = $pbipPathCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if ([string]::IsNullOrWhiteSpace($pbipPath)) {
+            throw "Could not resolve PBIP path. Checked: $($pbipPathCandidates -join ', ')"
+          }
+
           $tempPath = Join-Path "$env:RUNNER_TEMP" "pbip-quality"
           $toolPath = Join-Path $tempPath "PBIInspector\win-x64\CLI\PBIRInspectorCLI.exe"
           $rulesPath = Join-Path $tempPath "Rules-Report.effective.json"
@@ -338,6 +390,31 @@ jobs:
               throw "Downloaded PBIP artifact folder not found: $artifactPath"
           }
 
+            $pbipPathCandidates = @(
+              (Join-Path $artifactPath "shared/pbip-local"),
+              (Join-Path $artifactPath "projects/pbip-local"),
+              (Join-Path $artifactPath "pbip-local"),
+              (Join-Path "$env:GITHUB_WORKSPACE" "$env:PBIP_PATH"),
+              $artifactPath
+            ) | Select-Object -Unique
+
+            $resolvedPbipPath = $null
+            foreach ($candidate in $pbipPathCandidates) {
+              if (Test-Path $candidate) {
+                $hasPbipFile = Get-ChildItem -Path $candidate -Filter '*.pbip' -File -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($hasPbipFile) {
+                  $resolvedPbipPath = $candidate
+                  break
+                }
+              }
+            }
+
+            if ([string]::IsNullOrWhiteSpace($resolvedPbipPath)) {
+              throw "Could not resolve PBIP folder containing a .pbip file. Checked: $($pbipPathCandidates -join ', ')"
+            }
+
+            Write-Host "Resolved PBIP folder for deployment: $resolvedPbipPath"
+
           & $deployScriptPath `
             -Branch "$env:GITHUB_REF" `
             -TenantId $env:TENANT_ID `
@@ -345,7 +422,7 @@ jobs:
             -ClientSecret $env:CLIENT_SECRET `
             -DevWorkspaceId $env:DEV_WORKSPACE_ID `
             -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
-            -PbipPath $artifactPath
+            -PbipPath $resolvedPbipPath
 
   deploy_feature:
     name: Deploy to Feature Workspace
@@ -396,6 +473,31 @@ jobs:
               throw "Downloaded PBIP artifact folder not found: $artifactPath"
           }
 
+            $pbipPathCandidates = @(
+              (Join-Path $artifactPath "shared/pbip-local"),
+              (Join-Path $artifactPath "projects/pbip-local"),
+              (Join-Path $artifactPath "pbip-local"),
+              (Join-Path "$env:GITHUB_WORKSPACE" "$env:PBIP_PATH"),
+              $artifactPath
+            ) | Select-Object -Unique
+
+            $resolvedPbipPath = $null
+            foreach ($candidate in $pbipPathCandidates) {
+              if (Test-Path $candidate) {
+                $hasPbipFile = Get-ChildItem -Path $candidate -Filter '*.pbip' -File -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($hasPbipFile) {
+                  $resolvedPbipPath = $candidate
+                  break
+                }
+              }
+            }
+
+            if ([string]::IsNullOrWhiteSpace($resolvedPbipPath)) {
+              throw "Could not resolve PBIP folder containing a .pbip file. Checked: $($pbipPathCandidates -join ', ')"
+            }
+
+            Write-Host "Resolved PBIP folder for deployment: $resolvedPbipPath"
+
           & $deployScriptPath `
             -Branch "$env:GITHUB_REF" `
             -TenantId $env:TENANT_ID `
@@ -404,5 +506,5 @@ jobs:
             -DevWorkspaceId $env:DEV_WORKSPACE_ID `
             -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
             -FeatureWorkspacePrefix $env:FEATURE_WORKSPACE_PREFIX `
-            -PbipPath $artifactPath
+            -PbipPath $resolvedPbipPath
 

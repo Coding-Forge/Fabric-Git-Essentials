@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fabric + Git Workshop Summary Poster</title>
+  <title>Fabric + Git Workshop Essentials</title>
   <style>
     :root {
       --header-bg: linear-gradient(135deg, #2b5396 0%, #2b7696d1 100%);
@@ -177,6 +177,53 @@
       font-size: 14px;
       color: var(--text-muted);
     }
+
+    .links-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .links-grid a {
+      display: block;
+      color: var(--brand);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .links-grid a:last-child {
+      border-bottom: none;
+    }
+
+    .links-grid a:hover {
+      color: var(--brand-hover);
+      text-decoration: underline;
+    }
+
+    .platform-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    .platform-row code {
+      background: var(--page-bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 13px;
+      color: var(--brand);
+      white-space: nowrap;
+    }
+
+    .platform-row span {
+      color: var(--text-secondary);
+    }
   </style>
 </head>
 <body>
@@ -184,7 +231,7 @@
     <header>
       <div class="header-title">Fabric + Git Workshop Essentials</div>
       <div class="header-subtitle">Power BI DevOps Enablement</div>
-      <div class="header-description">A visual summary of key insights, best practices, and hands-on labs from the Fabric + Git integration workshop.</div>
+      <div class="header-description">A visual summary of key insights, best practices, and hands-on labs from the Fabric + Git integration workshop. Covers CI/CD for both Azure DevOps and GitHub Actions.</div>
     </header>
     <div class="content">
       <div class="column">
@@ -192,10 +239,12 @@
           <h2>Key Takeaways</h2>
           <ul>
             <li><strong>PBIP Format:</strong> Enables version control of Power BI assets via Git.</li>
-            <li><strong>CI/CD Pipelines:</strong> Automate validation and deployment using Azure DevOps.</li>
+            <li><strong>CI/CD Pipelines:</strong> Automate validation and deployment using Azure DevOps <em>or</em> GitHub Actions.</li>
+            <li><strong>Sparse Checkout:</strong> Clone only the folders you need — platform presets for AzDO or GitHub.</li>
+            <li><strong>Universal Pipeline:</strong> One shared template repo consumed by many Fabric project repos.</li>
             <li><strong>Governance:</strong> Enforce RLS/CLS, workspace roles, and naming conventions.</li>
             <li><strong>Embedded Analytics:</strong> Use service principals for secure Power BI embedding.</li>
-            <li><strong>Collaboration:</strong> Use Teams channels and PR templates for streamlined teamwork.</li>
+            <li><strong>Security:</strong> Automated secret scanning on every push and PR.</li>
           </ul>
         </div>
 
@@ -220,6 +269,10 @@
           <div class="flow-step">
             <h4>Lab 2</h4>
             <p>CI pipeline with PBIP validation & quality gates</p>
+          </div>
+          <div class="flow-step">
+            <h4>Lab 3</h4>
+            <p>Fabric Deployment Pipelines: Dev → Test → Prod promotion</p>
           </div>
           <div class="flow-step">
             <h4>Dashboard Design</h4>
@@ -253,11 +306,11 @@
               <p>Workshop Agenda Topics</p>
             </div>
             <div class="stat">
-              <h3>2</h3>
+              <h3>3</h3>
               <p>Hands-on Labs</p>
             </div>
             <div class="stat">
-              <h3>16+</h3>
+              <h3>20+</h3>
               <p>Supporting Documents</p>
             </div>
             <div class="stat">
@@ -300,6 +353,30 @@
         </div>
 
         <div class="card">
+          <h2>Repo Structure by Platform</h2>
+          <div class="platform-row"><code>.github/</code><span>GitHub Actions workflows &amp; CI setup</span></div>
+          <div class="platform-row"><code>azdo/</code><span>Azure DevOps YAML pipeline definitions</span></div>
+          <div class="platform-row"><code>shared/scripts/</code><span>Deployment &amp; quality rule prep scripts</span></div>
+          <div class="platform-row"><code>shared/tests/</code><span>PBIP structure validation &amp; DAX test runners</span></div>
+          <div class="platform-row"><code>shared/universal-pipeline/</code><span>Reusable template repo pattern for multi-project Fabric CI</span></div>
+          <div class="platform-row"><code>docs/</code><span>Architecture, governance, labs &amp; troubleshooting guides</span></div>
+        </div>
+
+        <div class="card">
+          <h2>Quick Links</h2>
+          <div class="links-grid">
+            <a href="https://github.com/Coding-Forge/Fabric-Git-Essentials#readme" target="_blank" rel="noopener">📋 README &amp; Full Resource Index</a>
+            <a href="https://github.com/Coding-Forge/Fabric-Git-Essentials/blob/main/docs/architecture/cicd-architecture.md" target="_blank" rel="noopener">🏗️ CI/CD Architecture</a>
+            <a href="https://github.com/Coding-Forge/Fabric-Git-Essentials/blob/main/docs/workshop-plan/labs/lab1-connect-git.md" target="_blank" rel="noopener">🧪 Lab 1 — Connect Workspace to Git</a>
+            <a href="https://github.com/Coding-Forge/Fabric-Git-Essentials/blob/main/docs/workshop-plan/labs/lab2-ci-pipeline.md" target="_blank" rel="noopener">🧪 Lab 2 — CI/CD Pipeline for PBIP</a>
+            <a href="https://github.com/Coding-Forge/Fabric-Git-Essentials/blob/main/docs/workshop-plan/labs/lab3-deployment-pipelines.md" target="_blank" rel="noopener">🧪 Lab 3 — Fabric Deployment Pipelines</a>
+            <a href="https://github.com/Coding-Forge/Fabric-Git-Essentials/blob/main/shared/universal-pipeline/README.md" target="_blank" rel="noopener">🔁 Universal Pipeline Template</a>
+            <a href="https://github.com/Coding-Forge/Fabric-Git-Essentials/blob/main/docs/faq.md" target="_blank" rel="noopener">❓ FAQ &amp; Troubleshooting</a>
+            <a href="https://github.com/Coding-Forge/Fabric-Git-Essentials/blob/main/docs/governance/governance-checklist.md" target="_blank" rel="noopener">✅ Governance Checklist</a>
+          </div>
+        </div>
+
+        <div class="card">
           <h2>Governance Best Practices</h2>
           <ul class="checklist">
             <li>Use Dev/Test/Prod workspace separation</li>
@@ -324,5 +401,15 @@
       </div>
     </div>
   </div>
+
+  <footer style="text-align:center; padding: 24px 16px 32px; font-size: 14px; color: var(--text-muted);">
+    <a href="https://github.com/Coding-Forge/Fabric-Git-Essentials"
+       target="_blank"
+       rel="noopener noreferrer"
+       style="color: var(--brand); text-decoration: none; font-weight: 600;">
+      &#128196; View source &amp; documentation on GitHub
+    </a>
+  </footer>
+
 </body>
 </html>
