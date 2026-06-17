@@ -1,0 +1,30 @@
+---
+references:
+  - "File: /shared/scripts/Clone-SparseAzDoProfile.ps1"
+generationTime: 2026-06-17T15:58:40.855Z
+---
+flowchart TD
+    A(["Start: Clone-SparseAzDoProfile"]) --> B["Accept parameters:<br/>RepoUrl, Destination, Branch"]
+    B --> C{{"Git installed?"}}
+    C -->|No| D["❌ Throw error:<br/>Git not found"]
+    D --> Z(["End: Failure"])
+    C -->|Yes| E{{"Destination<br/>provided?"}}
+    E -->|Yes| F["Use provided<br/>Destination"]
+    E -->|No| G["Extract repo name<br/>from RepoUrl"]
+    G --> H{{"Repo name<br/>valid?"}}
+    H -->|No| I["❌ Throw error:<br/>Cannot infer name"]
+    I --> Z
+    H -->|Yes| J["Set Destination<br/>to repo name"]
+    F --> K{{"Destination path<br/>exists?"}}
+    J --> K
+    K -->|Yes| L["❌ Throw error:<br/>Path exists"]
+    L --> Z
+    K -->|No| M["Execute:<br/>git clone --filter=blob:none<br/>--no-checkout --branch"]
+    M --> N["Push-Location to<br/>Destination directory"]
+    N --> O["Execute:<br/>git sparse-checkout init"]
+    O --> P["Execute:<br/>git sparse-checkout set<br/>azdo shared docs"]
+    P --> Q["Execute:<br/>git checkout Branch"]
+    Q --> R["Write success message<br/>to console"]
+    R --> S["Pop-Location"]
+    S --> T(["✅ End: Success"])
+    N -.->|on error| S

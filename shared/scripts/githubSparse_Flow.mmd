@@ -1,0 +1,38 @@
+---
+references:
+  - "File: /shared/scripts/Clone-SparseGitHubProfile.ps1"
+generationTime: 2026-06-17T16:02:12.743Z
+---
+flowchart TD
+    A(["Start: Clone-SparseGitHubProfile"]) --> B["Receive parameters:<br/>RepoUrl, Destination, Branch"]
+    B --> C{{"Git installed<br/>on PATH?"}}
+    C -->|No| D["❌ Throw error:<br/>Git not installed"]
+    D --> Z(["End: Failure"])
+    C -->|Yes| E{{"Destination<br/>parameter<br/>provided?"}}
+    E -->|Yes| F["Use provided<br/>Destination"]
+    E -->|No| G["Extract repo name<br/>from RepoUrl"]
+    G --> H{{"Repo name<br/>valid?"}}
+    H -->|No| I["❌ Throw error:<br/>Cannot infer name"]
+    I --> Z
+    H -->|Yes| J["Set Destination<br/>= repo name"]
+    F --> K{{"Destination path<br/>already exists?"}}
+    J --> K
+    K -->|Yes| L["❌ Throw error:<br/>Path exists"]
+    L --> Z
+    K -->|No| M["Execute git clone:<br/>--filter=blob:none<br/>--no-checkout<br/>--branch"]
+    M --> N["Write status:<br/>Cloning message"]
+    N --> O["Push-Location to<br/>Destination"]
+    O --> P["Execute:<br/>git sparse-checkout init<br/>--cone"]
+    P --> Q["Execute:<br/>git sparse-checkout set<br/>.github shared docs"]
+    Q --> R["Execute:<br/>git checkout Branch"]
+    R --> S["Write success:<br/>Sparse checkout<br/>configured"]
+    S --> T["Write included folders:<br/>.github, shared, docs"]
+    T --> U["Write working directory<br/>path"]
+    U --> V["Pop-Location"]
+    V --> W(["✅ End: Success"])
+    P -.->|finally: cleanup| V
+    Q -.->|finally: cleanup| V
+    R -.->|finally: cleanup| V
+    S -.->|finally: cleanup| V
+    T -.->|finally: cleanup| V
+    U -.->|finally: cleanup| V

@@ -42,6 +42,43 @@ Each CI platform folder contains entry-point pipeline definitions that reference
 - Use [.github/workflows/powerbi-ci.yml](.github/workflows/powerbi-ci.yml) for GitHub Actions-based PBIP validation in GitHub-hosted repos.
 - Use [.github/README.md](.github/README.md) for a dedicated GitHub project setup guide.
 
+### Sparse Clone Presets
+
+This repo includes ready-to-run PowerShell scripts that clone only the folders needed for a platform profile.
+
+- Azure DevOps profile script: [shared/scripts/Clone-SparseAzDoProfile.ps1](shared/scripts/Clone-SparseAzDoProfile.ps1)
+- GitHub profile script: [shared/scripts/Clone-SparseGitHubProfile.ps1](shared/scripts/Clone-SparseGitHubProfile.ps1)
+
+Run either script from any PowerShell prompt:
+
+```powershell
+# Azure DevOps profile (.github is omitted)
+./shared/scripts/Clone-SparseAzDoProfile.ps1 -RepoUrl https://github.com/<org>/<repo>.git -Destination Fabric-AzDo
+
+# GitHub profile (azdo is omitted)
+./shared/scripts/Clone-SparseGitHubProfile.ps1 -RepoUrl https://github.com/<org>/<repo>.git -Destination Fabric-GitHub
+```
+
+Default included folders per profile:
+
+- Azure DevOps: `azdo`, `shared`, `docs`
+- GitHub: `.github`, `shared`, `docs`
+
+Use a different branch with `-Branch`:
+
+```powershell
+./shared/scripts/Clone-SparseAzDoProfile.ps1 -RepoUrl https://github.com/<org>/<repo>.git -Destination Fabric-AzDo-Dev -Branch develop
+```
+
+To apply a preset on an existing clone:
+
+```powershell
+git sparse-checkout init --cone
+git sparse-checkout set azdo shared docs    # Azure DevOps preset
+# or
+git sparse-checkout set .github shared docs # GitHub preset
+```
+
 ### GitHub Actions CI (Power BI)
 
 The GitHub Actions workflow at [.github/workflows/powerbi-ci.yml](.github/workflows/powerbi-ci.yml) mirrors the workshop CI pattern: Validate -> Quality Rules -> DAX Tests -> Publish Artifacts.
