@@ -65,7 +65,7 @@ jobs:
     name: Run Dataset Quality Rules
     runs-on: windows-latest
     needs: validate_pbip
-    if: ${{ needs.validate_pbip.result == 'success' && env.SKIP_DATASET_RULES != 'true' }}
+    if: ${{ needs.validate_pbip.result == 'success' && vars.PBIP_CI_SKIP_DATASET_RULES != 'true' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -154,7 +154,7 @@ jobs:
     name: Run Report Quality Rules
     runs-on: windows-latest
     needs: validate_pbip
-    if: ${{ needs.validate_pbip.result == 'success' && env.SKIP_REPORT_RULES != 'true' }}
+    if: ${{ needs.validate_pbip.result == 'success' && vars.PBIP_CI_SKIP_REPORT_RULES != 'true' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -235,7 +235,7 @@ jobs:
     name: Run DAX Unit Tests
     runs-on: ubuntu-latest
     needs: validate_pbip
-    if: ${{ needs.validate_pbip.result == 'success' && env.SKIP_DAX_TESTS != 'true' }}
+    if: ${{ needs.validate_pbip.result == 'success' && vars.PBIP_CI_SKIP_DAX_TESTS != 'true' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -270,7 +270,7 @@ jobs:
     if: >-
       ${{
         always() &&
-        env.SKIP_PUBLISH != 'true' &&
+        vars.PBIP_CI_SKIP_PUBLISH != 'true' &&
         needs.validate_pbip.result == 'success' &&
         (needs.dataset_rules.result == 'success' || needs.dataset_rules.result == 'skipped') &&
         (needs.report_rules.result == 'success' || needs.report_rules.result == 'skipped') &&
