@@ -455,7 +455,6 @@ The contents of this repository are provided "as is" without warranty of any kin
 /
 ├── README.md
 ├── Supporting_Docs_For_Workshop.md
-├── FabricGitIntegration.html
 ├── presentations/
 │   ├── 01-kickoff-overview.md
 │   ├── 02-version-control-pbip.md
@@ -475,6 +474,7 @@ The contents of this repository are provided "as is" without warranty of any kin
 │   ├── 07-lab3-deployment-pipelines.pptx
 │   └── 08-release-embedded.pptx
 └── docs/
+  ├── index.html                 ← GitHub Pages landing page
     ├── index.md
     ├── architecture/
     │   ├── fabric-git-integration.md   ← all architecture diagrams
