@@ -65,16 +65,16 @@ flowchart TD
 
 ## Azure DevOps Pipeline Detail
 
-The project-local pipeline (defined in `projects/azure-pipelines.yml`) runs on pushes to `main`, `develop`, and `feature/*`, and on PRs targeting `main` or `develop`.
+The project-local pipeline (defined in `azdo/azure-pipelines.yml`) runs on pushes to `main`, `develop`, and `feature/*`, and on PRs targeting `main` or `develop`.
 
 Two implementation patterns are valid:
 
 | Pattern | When to use it |
 |---|---|
-| **Project-local pipeline** | Single workshop repo or a team that wants one self-contained YAML file such as `projects/azure-pipelines.yml` |
+| **Project-local pipeline** | Single workshop repo or a team that wants one self-contained YAML file such as `azdo/azure-pipelines.yml` |
 | **Shared template pipeline** | Multiple Fabric repos that should all use the same validation, test, and publish logic from a central template repo |
 
-The shared-template option is documented in [projects/universal-pipeline/README.md](../../projects/universal-pipeline/README.md).
+The shared-template option is documented in [shared/universal-pipeline/README.md](../../shared/universal-pipeline/README.md).
 
 ```mermaid
 flowchart TD
@@ -210,3 +210,5 @@ The **branch-out strategy** extends the standard Dev/Test/Prod topology with per
 - [Workspace Strategy](workspace-strategy.md)  
 - [Governance Checklist](../governance/governance-checklist.md)  
 - [Fabric + Git Integration Architecture](fabric-git-integration.md)
+
+

@@ -125,7 +125,7 @@ From the CI pipeline `Publish` stage:
 
 ```
 pbip-drop/
-  projects/
+  shared/
     <your-project>.Report/          ← validated report PBIP
     <your-project>.SemanticModel/   ← validated model PBIP
   test-results/
@@ -248,3 +248,4 @@ _Fabric + Git Essentials_
 - [Architecture Diagrams](../docs/architecture/fabric-git-integration.md)
 - [Microsoft Learn — Fabric Git Integration](https://learn.microsoft.com/fabric/cicd/git-integration/intro-to-git-integration)
 - [Microsoft Learn — Deployment Pipelines](https://learn.microsoft.com/fabric/cicd/deployment-pipelines/intro-to-deployment-pipelines)
+

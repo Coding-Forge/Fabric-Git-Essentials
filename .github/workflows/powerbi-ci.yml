@@ -1,13 +1,15 @@
-name: Power BI CI
+name: Power BI CI/CD
 
 on:
   push:
     branches:
       - main
+      - develop
       - feature/**
   pull_request:
     branches:
       - main
+      - develop
   workflow_dispatch:
     inputs:
       skip_dataset_rules:
@@ -33,8 +35,9 @@ on:
 
 env:
   PROJECT_ROOT: projects
-  PBIP_PATH: projects/pbip-local
+  PBIP_PATH: shared/pbip-local
   PYTHON_VERSION: "3.11"
+  DEPLOY_SCRIPT_PATH: shared/scripts/deploy-dynamic.ps1
   # Optional repo/org variables to set defaults across all runs.
   # Valid values: true or false.
   SKIP_DATASET_RULES: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_dataset_rules || vars.PBIP_CI_SKIP_DATASET_RULES || 'false' }}
@@ -56,7 +59,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Run PBIP structure validation
-        run: python projects/tests/validate_pbip_structure.py --pbip-path "${{ env.PBIP_PATH }}"
+        run: python shared/tests/validate_pbip_structure.py --pbip-path "${{ env.PBIP_PATH }}"
 
   dataset_rules:
     name: Run Dataset Quality Rules
@@ -246,7 +249,7 @@ jobs:
         run: pip install semantic-link-labs
 
       - name: Execute DAX unit tests
-        run: python projects/tests/run_dax_tests.py --model-path "${{ env.PBIP_PATH }}"
+        run: python shared/tests/run_dax_tests.py --model-path "${{ env.PBIP_PATH }}"
 
       - name: Upload JUnit test results
         if: always()
@@ -283,3 +286,123 @@ jobs:
           name: pbip-artifacts
           path: ${{ env.PBIP_PATH }}
           if-no-files-found: error
+
+  deploy_dev:
+    name: Deploy to Dev Workspace
+    runs-on: windows-latest
+    needs: publish_artifacts
+    if: ${{ github.event_name != 'pull_request' && needs.publish_artifacts.result == 'success' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') }}
+    environment: dev
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download PBIP artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pbip-artifacts
+          path: pbip-drop
+
+      - name: Deploy PBIP to Dev workspace
+        shell: pwsh
+        env:
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          APP_ID: ${{ secrets.APP_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          DEV_WORKSPACE_ID: ${{ secrets.DEV_WORKSPACE_ID }}
+          DEV_WORKSPACE_NAME: ${{ vars.DEV_WORKSPACE_NAME }}
+        run: |
+          $requiredVariables = @{
+              TENANT_ID = $env:TENANT_ID
+              APP_ID = $env:APP_ID
+              CLIENT_SECRET = $env:CLIENT_SECRET
+          }
+
+          foreach ($variableName in $requiredVariables.Keys) {
+              if ([string]::IsNullOrWhiteSpace($requiredVariables[$variableName])) {
+                  throw "Missing required GitHub secret: $variableName"
+              }
+          }
+
+          if ([string]::IsNullOrWhiteSpace($env:DEV_WORKSPACE_ID) -and [string]::IsNullOrWhiteSpace($env:DEV_WORKSPACE_NAME)) {
+              throw "Set DEV_WORKSPACE_ID (secret) or DEV_WORKSPACE_NAME (repository/environment variable)."
+          }
+
+          $deployScriptPath = Join-Path "$env:GITHUB_WORKSPACE" "$env:DEPLOY_SCRIPT_PATH"
+          if (!(Test-Path $deployScriptPath)) {
+              throw "Deployment script not found: $deployScriptPath"
+          }
+
+          $artifactPath = Join-Path "$env:GITHUB_WORKSPACE" "pbip-drop"
+          if (!(Test-Path $artifactPath)) {
+              throw "Downloaded PBIP artifact folder not found: $artifactPath"
+          }
+
+          & $deployScriptPath `
+            -Branch "$env:GITHUB_REF" `
+            -TenantId $env:TENANT_ID `
+            -AppId $env:APP_ID `
+            -ClientSecret $env:CLIENT_SECRET `
+            -DevWorkspaceId $env:DEV_WORKSPACE_ID `
+            -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
+            -PbipPath $artifactPath
+
+  deploy_feature:
+    name: Deploy to Feature Workspace
+    runs-on: windows-latest
+    needs: publish_artifacts
+    if: ${{ github.event_name != 'pull_request' && needs.publish_artifacts.result == 'success' && startsWith(github.ref, 'refs/heads/feature/') }}
+    environment: feature
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download PBIP artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pbip-artifacts
+          path: pbip-drop
+
+      - name: Deploy PBIP to feature workspace
+        shell: pwsh
+        env:
+          TENANT_ID: ${{ secrets.TENANT_ID }}
+          APP_ID: ${{ secrets.APP_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          DEV_WORKSPACE_ID: ${{ secrets.DEV_WORKSPACE_ID }}
+          DEV_WORKSPACE_NAME: ${{ vars.DEV_WORKSPACE_NAME }}
+          FEATURE_WORKSPACE_PREFIX: ${{ vars.FEATURE_WORKSPACE_PREFIX }}
+        run: |
+          $requiredVariables = @{
+              TENANT_ID = $env:TENANT_ID
+              APP_ID = $env:APP_ID
+              CLIENT_SECRET = $env:CLIENT_SECRET
+              FEATURE_WORKSPACE_PREFIX = $env:FEATURE_WORKSPACE_PREFIX
+          }
+
+          foreach ($variableName in $requiredVariables.Keys) {
+              if ([string]::IsNullOrWhiteSpace($requiredVariables[$variableName])) {
+                  throw "Missing required setting for feature deployment: $variableName"
+              }
+          }
+
+          $deployScriptPath = Join-Path "$env:GITHUB_WORKSPACE" "$env:DEPLOY_SCRIPT_PATH"
+          if (!(Test-Path $deployScriptPath)) {
+              throw "Deployment script not found: $deployScriptPath"
+          }
+
+          $artifactPath = Join-Path "$env:GITHUB_WORKSPACE" "pbip-drop"
+          if (!(Test-Path $artifactPath)) {
+              throw "Downloaded PBIP artifact folder not found: $artifactPath"
+          }
+
+          & $deployScriptPath `
+            -Branch "$env:GITHUB_REF" `
+            -TenantId $env:TENANT_ID `
+            -AppId $env:APP_ID `
+            -ClientSecret $env:CLIENT_SECRET `
+            -DevWorkspaceId $env:DEV_WORKSPACE_ID `
+            -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
+            -FeatureWorkspacePrefix $env:FEATURE_WORKSPACE_PREFIX `
+            -PbipPath $artifactPath
+

@@ -170,13 +170,13 @@ For the workshop, your lab partner can act as the reviewer. For production use:
 
 The validation script (`validate_pbip_structure.py`) looks for PBIP artifacts under the path set by the `PBIP_PATH` variable (default: `pbip-local`). PBIP files are **not committed to the repo** — they must be placed locally on the build agent.
 
-For the workshop pipeline (`projects/azure-pipelines.yml`):
+For the workshop pipeline (`azdo/azure-pipelines.yml`):
 
-1. Confirm your PBIP project files exist under `projects/pbip-local/` in the repo **or** are placed there during the pipeline run.
-2. If running against your own project, place the `.pbip` file and its associated report/model folders under `projects/pbip-local/` before running.
+1. Confirm your PBIP project files exist under `shared/pbip-local/` in the repo **or** are placed there during the pipeline run.
+2. If running against your own project, place the `.pbip` file and its associated report/model folders under `shared/pbip-local/` before running.
 3. Check the pipeline variable `PBIP_PATH` — if your folder is named differently, update the variable in the YAML.
 
-> See also: [Lab 2 — CI Pipeline](workshop-plan/labs/lab2-ci-pipeline.md), Part 1. [projects/pbip-local/README.md](../projects/pbip-local/README.md).
+> See also: [Lab 2 — CI Pipeline](workshop-plan/labs/lab2-ci-pipeline.md), Part 1. [shared/pbip-local/README.md](../shared/pbip-local/README.md).
 
 ---
 
@@ -185,18 +185,18 @@ For the workshop pipeline (`projects/azure-pipelines.yml`):
 1. Open the failing job in the Azure DevOps pipeline run.
 2. Expand the **Run Dataset Quality Rules** step.
 3. Look for lines beginning with `[Error]` or rule IDs (e.g., `BPA_001`). Each failed rule has an ID, severity, and description.
-4. Cross-reference the rule ID against `projects/Rules-Dataset.json` — the `name` and `description` fields explain what the rule enforces.
+4. Cross-reference the rule ID against `shared/Rules-Dataset.json` — the `name` and `description` fields explain what the rule enforces.
 5. Fix the semantic model violation (e.g., add a measure description, remove a many-to-many relationship) and re-push.
 
 If the rule is a false positive or does not apply to your project, you can disable it by removing or commenting out the rule entry in `Rules-Dataset.json`.
 
-> See also: [Lab 2](workshop-plan/labs/lab2-ci-pipeline.md), Part 2 — Validate Stage. [projects/Rules-Dataset.json](../projects/Rules-Dataset.json).
+> See also: [Lab 2](workshop-plan/labs/lab2-ci-pipeline.md), Part 2 — Validate Stage. [shared/Rules-Dataset.json](../shared/Rules-Dataset.json).
 
 ---
 
 ### Q: The Report Quality Rules job fails. Where do report rules come from?
 
-Report rules are defined in `projects/Rules-Report.json`. The job uses **PBI Inspector** to evaluate these rules against the `.Report/definition/` folder of the PBIP artifact.
+Report rules are defined in `shared/Rules-Report.json`. The job uses **PBI Inspector** to evaluate these rules against the `.Report/definition/` folder of the PBIP artifact.
 
 Common rule failures and fixes:
 
@@ -207,7 +207,7 @@ Common rule failures and fixes:
 | Tooltip is empty | Custom tooltip page is blank | Fill in tooltip content or remove the tooltip assignment |
 | Image alt-text missing | An image visual has no alt-text | Add alt-text via the visual's accessibility options |
 
-> See also: [projects/Rules-Report.json](../projects/Rules-Report.json).
+> See also: [shared/Rules-Report.json](../shared/Rules-Report.json).
 
 ---
 
@@ -262,10 +262,10 @@ trigger:
       - feature/*
   paths:
     include:
-      - projects/**
+      - shared/**
 ```
 
-The `paths` filter ensures the pipeline only triggers when files under `projects/` change, avoiding spurious runs from documentation-only commits.
+The `paths` filter ensures the pipeline only triggers when files under `shared/` change, avoiding spurious runs from documentation-only commits.
 
 ---
 
@@ -282,7 +282,7 @@ parameters:
 
 The PBIP structure validation (`validate_pbip_structure.py`) and DAX tests (`run_dax_tests.py`) are Python-based and run on Linux without modification.
 
-> See also: [projects/universal-pipeline/README.md](../projects/universal-pipeline/README.md) — Parameters table.
+> See also: [shared/universal-pipeline/README.md](../shared/universal-pipeline/README.md) — Parameters table.
 
 ---
 
@@ -290,7 +290,7 @@ The PBIP structure validation (`validate_pbip_structure.py`) and DAX tests (`run
 
 ### Q: What is the difference between the project-local pipeline and the universal pipeline?
 
-| | Project-local (`projects/azure-pipelines.yml`) | Universal (`projects/universal-pipeline/`) |
+| | Project-local (`azdo/azure-pipelines.yml`) | Universal (`shared/universal-pipeline/`) |
 |---|---|---|
 | **Location** | Lives inside this workshop repo | Intended to live in a separate `fabric-pipeline-templates` ADO repo |
 | **Best for** | Single repo, self-contained workshop | Multiple Fabric repos sharing one CI definition |
@@ -299,7 +299,7 @@ The PBIP structure validation (`validate_pbip_structure.py`) and DAX tests (`run
 
 For the workshop, use the project-local pipeline. For production multi-repo setups, see the universal pipeline.
 
-> See also: [projects/universal-pipeline/README.md](../projects/universal-pipeline/README.md).
+> See also: [shared/universal-pipeline/README.md](../shared/universal-pipeline/README.md).
 
 ---
 
@@ -311,7 +311,7 @@ For the workshop, use the project-local pipeline. For production multi-repo setu
    - **Project Settings → Repositories → fabric-pipeline-templates → Security**
    - Find `{ProjectName} Build Service ({OrgName})` and set **Read** to **Allow**.
 
-> See also: [projects/universal-pipeline/README.md](../projects/universal-pipeline/README.md) — Step 1: Grant repo access.
+> See also: [shared/universal-pipeline/README.md](../shared/universal-pipeline/README.md) — Step 1: Grant repo access.
 
 ---
 
@@ -329,7 +329,7 @@ extends:
 
 Available skip flags: `skipDatasetRules`, `skipReportRules`, `skipDaxTests`, `skipPublish`.
 
-> See also: [projects/universal-pipeline/README.md](../projects/universal-pipeline/README.md) — Parameters table.
+> See also: [shared/universal-pipeline/README.md](../shared/universal-pipeline/README.md) — Parameters table.
 
 ---
 
@@ -639,7 +639,7 @@ All files are text-based and human-readable, making them diff-able in Git pull r
 1. Open the `.pbix` file in Power BI Desktop (November 2023 build or later).
 2. Go to **File → Save as**.
 3. Change the file type to **Power BI Project (*.pbip)**.
-4. Save to the `projects/pbip-local/` folder.
+4. Save to the `shared/pbip-local/` folder.
 5. The `.pbip` pointer file and the `.Report/` and `.SemanticModel/` folders are created.
 
 Confirm the TMDL format is used (not legacy JSON model) by checking whether `definition/model.tmdl` exists.
@@ -652,7 +652,7 @@ The DAX test script runs regardless of whether the model has measures — it sim
 
 If you want to skip DAX tests entirely for a project without measures (e.g., a report-only workspace), set `skipDaxTests: true` in the consumer pipeline parameters.
 
-> See also: [projects/universal-pipeline/README.md](../projects/universal-pipeline/README.md) — Parameters.
+> See also: [shared/universal-pipeline/README.md](../shared/universal-pipeline/README.md) — Parameters.
 
 ---
 
@@ -713,3 +713,5 @@ Consider scripting this via the Power BI REST API if you manage many models.
 ---
 
 *For issues not covered here, check the [Microsoft Fabric documentation](https://learn.microsoft.com/fabric/) or raise a question in the workshop Teams channel.*
+
+

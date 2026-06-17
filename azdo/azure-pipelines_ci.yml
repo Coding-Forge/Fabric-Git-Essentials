@@ -16,7 +16,7 @@ pool:
   vmImage: 'windows-2022'
 
 variables:
-  PROJECT_ROOT: '.'
+  PROJECT_ROOT: 'shared'
   PBIP_PATH: 'pbip-local'
   PYTHON_VERSION: '3.11'
 
@@ -36,7 +36,7 @@ stages:
           displayName: 'Set Python version to: $(PYTHON_VERSION)'
 
         - script: |
-            python tests/validate_pbip_structure.py --pbip-path "$(PBIP_PATH)"
+            python $(PROJECT_ROOT)/tests/validate_pbip_structure.py --pbip-path "$(PROJECT_ROOT)/$(PBIP_PATH)"
           displayName: 'Run PBIP structure validation'
 
     - job: Build_Datasets
@@ -243,7 +243,7 @@ stages:
       displayName: 'Install semantic-link-labs'
 
     - script: |
-        python tests/run_dax_tests.py --model-path "$(PBIP_PATH)"
+        python $(PROJECT_ROOT)/tests/run_dax_tests.py --model-path "$(PROJECT_ROOT)/$(PBIP_PATH)"
       displayName: 'Execute DAX unit tests'
 
     - task: PublishTestResults@2
@@ -267,7 +267,7 @@ stages:
 
     - task: PublishBuildArtifacts@1
       inputs:
-        pathToPublish: '$(Build.SourcesDirectory)/$(PBIP_PATH)'
+        pathToPublish: '$(Build.SourcesDirectory)/$(PROJECT_ROOT)/$(PBIP_PATH)'
         artifactName: 'pbip-artifacts'
         publishLocation: 'Container'
       displayName: 'Publish PBIP artifacts'

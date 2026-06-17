@@ -21,6 +21,7 @@ This wiki provides all workshop plans, labs, governance materials, and architect
 
 ## 🛡 Governance & Standards
 - [Governance Checklist](./governance/governance-checklist.md)  
+- [OneLake Security Guidance](./governance/onelake-security.md)  
 - [GitHub Best Practices for Fabric Git Integration](./architecture/github-fabric-git-best-practices.md)  
 - [Workspace Strategy](./architecture/workspace-strategy.md)
 

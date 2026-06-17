@@ -34,20 +34,21 @@ style: |
 # Lab 2 Facilitator Briefing (Quick Readout)
 
 ## What Changed
-- Lab 2 now uses the existing pipeline at `projects/azure-pipelines.yml`
+- Lab 2 now uses the existing pipeline at `azdo/azure-pipelines.yml`
 - The core flow is now **Validate -> Test -> Publish -> Deploy**
 - `main` and `develop` deploy to Dev; `feature/*` deploys to a prefixed feature workspace
-- Deployment uses `projects/scripts/deploy-dynamic.ps1` and service principal variables
+- Deployment uses `shared/scripts/deploy-dynamic.ps1` and service principal variables
 - Legacy examples (`pbi-tools`, `pbip-lint`, `SyncFabricDev`) were removed from participant instructions
 - Path examples were normalized to `/projects`
 - PBIP artifacts are not committed in this repo; participants bring their own local PBIP files
 
 ## What Participants Must Do
-- Create pipeline from existing YAML: `/projects/azure-pipelines.yml`
+- Create pipeline from existing YAML: `/azdo/azure-pipelines.yml`
 - Verify stage order and green status: Validate, Test, Publish, then Deploy_Dev or Deploy_Feature
 - Check `pbip-drop` in the Artifacts tab
 - Confirm deployment logs end with `Fabric PBIP deployment completed.`
 - Set this pipeline as required build validation for `main`
 
 ## 30-Second Script
-"In this lab, we are using the pipeline already in the repo instead of creating a new one. Point Azure DevOps to `projects/azure-pipelines.yml`, run it, confirm Validate, Test, Publish, and the branch deploy stage are green, then make that pipeline required on `main`."
+"In this lab, we are using the pipeline already in the repo instead of creating a new one. Point Azure DevOps to `azdo/azure-pipelines.yml`, run it, confirm Validate, Test, Publish, and the branch deploy stage are green, then make that pipeline required on `main`."
+

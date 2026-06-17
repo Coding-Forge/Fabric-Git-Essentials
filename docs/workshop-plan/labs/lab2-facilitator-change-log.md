@@ -12,26 +12,26 @@ Use this quick brief before Lab 2 so participants follow the current repository 
 
 ## What Changed
 
-1. Lab 2 now points to the existing pipeline file at `projects/azure-pipelines.yml`.
+1. Lab 2 now points to the existing pipeline file at `azdo/azure-pipelines.yml`.
 2. Lab 2 now teaches the current 5-stage flow: Validate -> Test -> Publish -> Deploy_Dev or Deploy_Feature.
 3. References to legacy examples (`pbi-tools`, `pbip-lint`, and `SyncFabricDev`) were removed from Lab 2 materials.
 4. Folder path examples were normalized to `/projects`.
 5. Repository now excludes PBIP artifacts by design; participants bring their own PBIP locally.
 6. Validation and deployment guidance now matches existing scripts and rule files:
-   - `projects/tests/validate_pbip_structure.py`
-   - `projects/tests/run_dax_tests.py`
-   - `projects/scripts/Prepare-QualityRules.ps1`
-   - `projects/scripts/deploy-dynamic.ps1`
-   - `projects/Rules-Dataset.json`
-   - `projects/Rules-Report.json`
+   - `shared/tests/validate_pbip_structure.py`
+   - `shared/tests/run_dax_tests.py`
+   - `shared/scripts/Prepare-QualityRules.ps1`
+   - `shared/scripts/deploy-dynamic.ps1`
+   - `shared/Rules-Dataset.json`
+   - `shared/Rules-Report.json`
 
 ## Facilitator Talk Track (2-3 minutes)
 
-"For this workshop, we are not creating a new YAML pipeline from scratch. We are using the pipeline that already exists in the repo at projects/azure-pipelines.yml. Your goal in Lab 2 is to register and run that pipeline, verify Validate, Test, Publish, and the branch-appropriate deploy stage, and enforce it as a required PR check on main."
+"For this workshop, we are not creating a new YAML pipeline from scratch. We are using the pipeline that already exists in the repo at azdo/azure-pipelines.yml. Your goal in Lab 2 is to register and run that pipeline, verify Validate, Test, Publish, and the branch-appropriate deploy stage, and enforce it as a required PR check on main."
 
 ## What Participants Should Actually Do
 
-1. Select existing YAML file path: `/projects/azure-pipelines.yml` when creating the pipeline.
+1. Select existing YAML file path: `/azdo/azure-pipelines.yml` when creating the pipeline.
 2. Confirm stage sequence: Validate -> Test -> Publish -> Deploy_Dev or Deploy_Feature.
 3. Review test output in the pipeline Tests tab.
 4. Verify `pbip-drop` in the Artifacts tab.
@@ -44,7 +44,7 @@ Use this quick brief before Lab 2 so participants follow the current repository 
    A: "The workshop now mirrors the real pipeline implementation in this repo, which uses PBIP structure checks plus dataset/report quality rule execution."
 
 2. Q: "Where are the Power BI project files expected by the pipeline?"
-   A: "Participants add their own PBIP locally under `projects` or `projects/pbip-local`. The repo stores reusable assets only: tests, scripts, rules, and pipeline YAML."
+   A: "Participants add their own PBIP locally under `projects` or `shared/pbip-local`. The repo stores reusable assets only: tests, scripts, rules, and pipeline YAML."
 
 3. Q: "Are we doing automatic workspace sync in Lab 2?"
    A: "Yes. The current pipeline deploys the validated PBIP artifact directly with `scripts/deploy-dynamic.ps1`: `main` and `develop` target Dev, while `feature/*` targets prefixed feature workspaces."
@@ -67,3 +67,5 @@ Use this quick brief before Lab 2 so participants follow the current repository 
   - `presentations/01-kickoff-overview.md`
   - `presentations/04-collaboration-governance.md`
   - `presentations/08-release-embedded.md`
+
+

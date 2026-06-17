@@ -155,7 +155,7 @@ Example:
 # 7. Lab #2 — CI Pipeline Validation for the Power BI Project
 
 ## Objectives
-- Use the existing YAML pipeline at `projects/azure-pipelines.yml`  
+- Use the existing YAML pipeline at `azdo/azure-pipelines.yml`  
 - Validate PBIP structure and run dataset/report quality rules  
 - Run DAX unit tests and publish JUnit results  
 - Publish `pbip-drop` to Azure DevOps  
@@ -235,7 +235,7 @@ stages:
 
 See [Lab 2](labs/lab2-ci-pipeline.md) for the full hands-on walkthrough using the current project files under `projects`.
 
-For the reusable multi-repo variant, see [projects/universal-pipeline/README.md](../../projects/universal-pipeline/README.md).
+For the reusable multi-repo variant, see [shared/universal-pipeline/README.md](../../shared/universal-pipeline/README.md).
 
 ---
 
@@ -267,3 +267,5 @@ For the reusable multi-repo variant, see [projects/universal-pipeline/README.md]
 | **Selective deployment** | Promotes a subset of items rather than the full workspace |
 
 See [Lab 3](labs/lab3-deployment-pipelines.md) for the full step-by-step walkthrough.
+
+

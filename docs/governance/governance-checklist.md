@@ -32,6 +32,7 @@ Use this checklist at each stage of the development lifecycle to ensure Fabric w
 - [ ] Roles assigned following least-privilege model (see [Workspace Strategy](../architecture/workspace-strategy.md))  
 - [ ] No personal accounts hold Admin or Member in **Prod** other than the team lead **[BLOCK]**  
 - [ ] **Service principal** is created and assigned for CI/CD operations; human credentials are not embedded in pipelines **[BLOCK]**  
+- [ ] OneLake data access model reviewed for lakehouses, warehouses, shortcuts, and item shares (see [OneLake Security Guidance](onelake-security.md))  
 - [ ] Access reviewed and approved by the BI Lead or IT Security  
 
 ### 1.3 Git Integration
@@ -108,6 +109,9 @@ Use this checklist at each stage of the development lifecycle to ensure Fabric w
   - [ ] Each persona tested with `USERPRINCIPALNAME()` or role membership  
   - [ ] No row data leaks across role boundaries  
 - [ ] **CLS (Column-Level Security)** reviewed — sensitive columns hidden from non-privileged roles  
+- [ ] **OneLake security roles** reviewed for lakehouses and data items; Viewer users receive only intended table, folder, row, and column access  
+- [ ] Lakehouse `DefaultReader` roles reviewed, modified, or removed where broad ReadAll access is not appropriate  
+- [ ] OneLake shortcuts reviewed for source ownership, data classification, and effective access  
 - [ ] **Sensitivity labels** applied to datasets and reports per data classification policy  
 - [ ] No PII or confidential data in report titles, tooltips, or visible measure strings  
 
@@ -165,6 +169,7 @@ Use this checklist at each stage of the development lifecycle to ensure Fabric w
 ## Related Documents
 
 - [Workspace Strategy](../architecture/workspace-strategy.md)  
+- [OneLake Security Guidance](onelake-security.md)  
 - [CI/CD Architecture](../architecture/cicd-architecture.md)  
 - [Lab 1 — Connect Workspace to Git](../workshop-plan/labs/lab1-connect-git.md)  
-- [Lab 2 — CI Pipeline Validation for the Power BI Project](../workshop-plan/labs/lab2-ci-pipeline.md)
+- [Lab 2 — CI/CD Pipeline for the Power BI Project](../workshop-plan/labs/lab2-ci-pipeline.md)

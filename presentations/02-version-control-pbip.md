@@ -65,7 +65,7 @@ style: |
 ## The PBIP File Structure
 
 ```
-projects/
+shared/
 ├── <your-project>.pbip
 ├── <your-project>.Report/
 │   ├── definition.pbir
@@ -228,3 +228,4 @@ feature/<alias>-<short-description>
 
 **Lab 1 starts at 10:30**
 Come back with your environment ready ✅
+

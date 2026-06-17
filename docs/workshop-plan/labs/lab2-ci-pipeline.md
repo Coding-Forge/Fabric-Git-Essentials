@@ -1,6 +1,6 @@
 ---
 title: "Lab 2 - CI/CD Pipeline for the Power BI Project"
-description: "Step-by-step lab guide for using the existing Azure DevOps pipeline YAML in projects/azure-pipelines.yml to validate, test, publish, and deploy PBIP artifacts."
+description: "Step-by-step lab guide for using the existing Azure DevOps pipeline YAML in azdo/azure-pipelines.yml to validate, test, publish, and deploy PBIP artifacts."
 lab: 2
 duration: "60 minutes"
 ---
@@ -9,9 +9,9 @@ duration: "60 minutes"
 
 ## Overview
 
-In this lab you will use the existing Azure DevOps pipeline definition at `projects/azure-pipelines.yml` to validate, test, publish, and deploy the Power BI Project artifacts used in the workshop.
+In this lab you will use the existing Azure DevOps pipeline definition at `azdo/azure-pipelines.yml` to validate, test, publish, and deploy the Power BI Project artifacts used in the workshop.
 
-This lab focuses on the **project-local** CI/CD pipeline pattern. If your organization wants one shared CI definition for many Fabric repositories, see the reusable template guidance in [projects/universal-pipeline/README.md](../../../projects/universal-pipeline/README.md). That pattern keeps a small consumer YAML in each repo and centralizes the Validate, Test, and Publish stages in one shared template repo.
+This lab focuses on the **project-local** CI/CD pipeline pattern. If your organization wants one shared CI definition for many Fabric repositories, see the reusable template guidance in [shared/universal-pipeline/README.md](../../../shared/universal-pipeline/README.md). That pattern keeps a small consumer YAML in each repo and centralizes the Validate, Test, and Publish stages in one shared template repo.
 
 The project-local pipeline runs five stages:
 
@@ -27,7 +27,7 @@ By the end of the lab, every PR targeting `main` can be gated by this pipeline s
 
 ## Objectives
 
-1. Review the existing pipeline YAML at `projects/azure-pipelines.yml`
+1. Review the existing pipeline YAML at `azdo/azure-pipelines.yml`
 2. Understand how the Validate stage runs PBIP and quality-rule checks
 3. Understand how the Test stage runs DAX unit tests
 4. Verify `pbip-drop` publication in the Publish stage
@@ -42,8 +42,8 @@ By the end of the lab, every PR targeting `main` can be gated by this pipeline s
 |---|---|
 | Azure DevOps project | Contributor access to create and run pipelines |
 | Repository | This workshop repository with the existing `projects` folder |
-| Pipeline YAML | Existing file: `projects/azure-pipelines.yml` |
-| PBIP project artifacts | Place your own PBIP files locally under `projects/pbip-local`; repository includes rules, scripts, tests, and pipeline YAML |
+| Pipeline YAML | Existing file: `azdo/azure-pipelines.yml` |
+| PBIP project artifacts | Place your own PBIP files locally under `shared/pbip-local`; repository includes rules, scripts, tests, and pipeline YAML |
 | Agent pool | Microsoft-hosted Windows agent (configured as `windows-2022` in YAML) |
 | Service principal | Tenant settings allow the service principal, and it has access to the Dev workspace |
 | Pipeline variables | Variable group or pipeline variables for `TenantId`, `AppId`, `ClientSecret`, `DevWorkspaceId` or `DEV_WORKSPACE_NAME`, and `FeatureWorkspacePrefix` for feature deployments |
@@ -52,7 +52,7 @@ By the end of the lab, every PR targeting `main` can be gated by this pipeline s
 
 ## Part 1 - Review the Existing YAML Pipeline
 
-Open `projects/azure-pipelines.yml` and confirm the key settings:
+Open `azdo/azure-pipelines.yml` and confirm the key settings:
 
 ```yaml
 trigger:
@@ -85,7 +85,7 @@ variables:
 
 This tells Azure DevOps to run on pushes and PRs, use a Windows 2022 hosted agent, read deployment secrets from `pbip-shared-secrets`, and deploy the published PBIP artifact with `scripts/deploy-dynamic.ps1`.
 
-If you later move to a shared-enterprise model, these same settings become template parameters instead of hardcoded repo-local variables. The included universal example under `projects/universal-pipeline/` shows that pattern.
+If you later move to a shared-enterprise model, these same settings become template parameters instead of hardcoded repo-local variables. The included universal example under `shared/universal-pipeline/` shows that pattern.
 
 ---
 
@@ -163,7 +163,7 @@ Before running the pipeline, confirm the service principal is allowed by Fabric 
 1. Go to **Pipelines -> New pipeline**.
 2. Choose your Git provider and repository.
 3. Select **Existing Azure Pipelines YAML file**.
-4. Set YAML path to `/projects/azure-pipelines.yml`.
+4. Set YAML path to `/azdo/azure-pipelines.yml`.
 5. Run the pipeline.
 
 ### Verify the run
@@ -201,7 +201,7 @@ After this, PRs into `main` must pass the pipeline before merge.
 
 ## Validation Checklist
 
-- [ ] `projects/azure-pipelines.yml` is used by the Azure DevOps pipeline
+- [ ] `azdo/azure-pipelines.yml` is used by the Azure DevOps pipeline
 - [ ] Validate stage runs PBIP structure and dataset/report quality jobs
 - [ ] Test stage runs `tests/run_dax_tests.py` and publishes JUnit results
 - [ ] Publish stage outputs the `pbip-drop` artifact
@@ -216,7 +216,7 @@ After this, PRs into `main` must pass the pipeline before merge.
 
 | Issue | Resolution |
 |---|---|
-| `No .pbip file found` | Ensure your local PBIP project files are present under `projects/pbip-local`. |
+| `No .pbip file found` | Ensure your local PBIP project files are present under `shared/pbip-local`. |
 | Dataset/report quality job fails | Review logs for failing rule IDs. Adjust project content or update rules files as needed. |
 | DAX test stage fails | Check `tests/run_dax_tests.py` output and verify semantic model files exist. |
 | Test results not shown | Confirm JUnit XML files are created under `test-results` before `PublishTestResults@2` runs. |
@@ -231,4 +231,6 @@ After this, PRs into `main` must pass the pipeline before merge.
 
 Proceed to **[Lab 3 - Fabric Deployment Pipelines (Dev -> Test -> Prod)](lab3-deployment-pipelines.md)**.
 
-For a multi-repo operating model, review [projects/universal-pipeline/README.md](../../../projects/universal-pipeline/README.md) after completing this lab.
+For a multi-repo operating model, review [shared/universal-pipeline/README.md](../../../shared/universal-pipeline/README.md) after completing this lab.
+
+

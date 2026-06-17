@@ -157,7 +157,7 @@ Primary references:
   - DAX unit tests with JUnit output from `tests/run_dax_tests.py`  
   - Publishing `pbip-drop` as a pipeline artifact  
   - Deploying to Dev or feature workspaces with `scripts/deploy-dynamic.ps1`  
-- **`projects/azure-pipelines.yml`**  
+- **`azdo/azure-pipelines.yml`**  
   Source-of-truth pipeline YAML used by the workshop.  
 - **Project rules and scripts**  
   `Rules-Dataset.json`, `Rules-Report.json`, `scripts/Prepare-QualityRules.ps1`, and `scripts/deploy-dynamic.ps1` drive branch-aware quality checks and workspace deployment.  
@@ -302,9 +302,10 @@ Supporting documents:
     cicd-architecture.md
     workspace-strategy.md
     fabric-git-integration.md
-/projects
+/azdo
   azure-pipelines.yml
   azure-pipelines_ci.yml
+/projects
   Rules-Dataset.json
   Rules-Report.json
   /scripts
@@ -319,3 +320,4 @@ Supporting documents:
     <your-project>.Report/         (local, not committed)
     <your-project>.SemanticModel/  (local, not committed)
 ```
+

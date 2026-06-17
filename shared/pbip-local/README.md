@@ -13,4 +13,4 @@ The repository keeps reusable CI assets only:
 - `Rules-Report.json`
 - `scripts/`
 - `tests/`
-- `azure-pipelines.yml`
+- `azdo/azure-pipelines.yml`

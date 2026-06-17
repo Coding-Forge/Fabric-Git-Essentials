@@ -40,7 +40,7 @@ Validate -> Test -> Publish -> Deploy
 
 By the end of this lab you will have:
 
-1. Used the existing pipeline YAML at `projects/azure-pipelines.yml`
+1. Used the existing pipeline YAML at `azdo/azure-pipelines.yml`
 2. Verified CI/CD triggers for `main`, `develop`, and `feature/*`
 3. Reviewed Validate jobs for PBIP structure and quality rules
 4. Reviewed DAX unit test execution and JUnit publishing
@@ -66,13 +66,13 @@ By the end of this lab you will have:
 
 | File | Purpose |
 |---|---|
-| `projects/azure-pipelines.yml` | Azure DevOps pipeline definition |
-| `projects/tests/validate_pbip_structure.py` | PBIP structure validation script |
-| `projects/tests/run_dax_tests.py` | DAX test runner |
-| `projects/scripts/Prepare-QualityRules.ps1` | Branch-aware quality rule preparation |
-| `projects/scripts/deploy-dynamic.ps1` | Fabric REST API deployment helper |
-| `projects/Rules-Dataset.json` | Dataset quality rules |
-| `projects/Rules-Report.json` | Report quality rules |
+| `azdo/azure-pipelines.yml` | Azure DevOps pipeline definition |
+| `shared/tests/validate_pbip_structure.py` | PBIP structure validation script |
+| `shared/tests/run_dax_tests.py` | DAX test runner |
+| `shared/scripts/Prepare-QualityRules.ps1` | Branch-aware quality rule preparation |
+| `shared/scripts/deploy-dynamic.ps1` | Fabric REST API deployment helper |
+| `shared/Rules-Dataset.json` | Dataset quality rules |
+| `shared/Rules-Report.json` | Report quality rules |
 
 ---
 
@@ -201,7 +201,7 @@ Both stages download `pbip-drop` and run `scripts/deploy-dynamic.ps1`.
 1. Pipelines -> New pipeline
 2. Select repository
 3. Choose Existing YAML
-4. Path: `/projects/azure-pipelines.yml`
+4. Path: `/azdo/azure-pipelines.yml`
 5. Run
 
 Expected order: Validate -> Test -> Publish -> Deploy_Dev or Deploy_Feature
@@ -221,7 +221,7 @@ Result: PRs to `main` must pass this pipeline.
 
 ## Lab 2 Validation Checklist
 
-- [ ] Pipeline uses `projects/azure-pipelines.yml`
+- [ ] Pipeline uses `azdo/azure-pipelines.yml`
 - [ ] Validate stage passes all jobs
 - [ ] Test stage publishes JUnit results
 - [ ] Publish stage generates `pbip-drop`
@@ -236,3 +236,5 @@ Result: PRs to `main` must pass this pipeline.
 ### 14:45 - 15:00
 
 Lab 3 starts at 15:00
+
+

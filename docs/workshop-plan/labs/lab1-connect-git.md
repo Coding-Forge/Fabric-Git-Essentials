@@ -88,7 +88,7 @@ After connecting, Fabric performs an initial synchronization and exports all wor
 3. Verify the PBIP folder structure exists:
 
 ```
-projects/
+shared/
    <your-project>.pbip
    <your-project>.Report/
       definition.pbir
@@ -239,3 +239,4 @@ For the complete workflow, topology diagrams, naming conventions, and anti-patte
 ## Next Steps
 
 Proceed to **[Lab 2 — CI/CD Pipeline for PBIP](lab2-ci-pipeline.md)** to automate validation, artifact publication, and workspace deployment for the artifacts you just pushed to your repository.
+

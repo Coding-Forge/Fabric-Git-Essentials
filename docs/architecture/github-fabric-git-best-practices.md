@@ -41,7 +41,7 @@ repo-root/
 |   `-- workflows/
 |       `-- powerbi-ci.yml
 |-- docs/
-|-- projects/
+|-- shared/
 |   |-- <project>.pbip
 |   |-- <project>.Report/
 |   |-- <project>.SemanticModel/
@@ -248,17 +248,17 @@ Example:
 
 ```text
 # Semantic model and dataset governance
-/projects/**/*.SemanticModel/ @org/bi-model-owners
-/projects/**/Rules-Dataset.json @org/bi-governance
+/shared/**/*.SemanticModel/ @org/bi-model-owners
+/shared/**/Rules-Dataset.json @org/bi-governance
 
 # Report design
-/projects/**/*.Report/ @org/report-reviewers
-/projects/**/Rules-Report.json @org/bi-governance
+/shared/**/*.Report/ @org/report-reviewers
+/shared/**/Rules-Report.json @org/bi-governance
 
 # Automation and deployment
 /.github/workflows/ @org/devops-owners
-/projects/scripts/ @org/devops-owners
-/projects/tests/ @org/devops-owners
+/shared/scripts/ @org/devops-owners
+/shared/tests/ @org/devops-owners
 
 # Documentation
 /docs/ @org/bi-enablement

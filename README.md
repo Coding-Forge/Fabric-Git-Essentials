@@ -7,9 +7,9 @@ A hands-on workshop covering Git integration, CI/CD automation, and deployment b
 
 This README provides a **topic-by-topic index** of supporting resources, architecture docs, lab guides, and reference materials used throughout the workshop.
 
-> PBIP artifacts are intentionally **not committed** in this repository. Bring your own PBIP files locally under `projects/` (or `projects/pbip-local/`) and keep reusable CI/CD assets (`Rules-*.json`, `scripts/`, `tests/`, `azure-pipelines.yml`) in source control.
+> PBIP artifacts are intentionally **not committed** in this repository. Bring your own PBIP files locally under `shared/` (or `shared/pbip-local/`) and keep reusable CI/CD assets (`Rules-*.json`, `scripts/`, `tests/`, `azdo/azure-pipelines.yml`) in source control.
 >
-> This repo now also includes a reusable **universal Fabric CI/CD pipeline** under `projects/universal-pipeline/`. The intent is to host one shared template repo for Fabric artifact validation/deployment, while each project repo keeps only a small consumer `azure-pipelines.yml`.
+> This repo now also includes a reusable **universal Fabric CI/CD pipeline** under `shared/universal-pipeline/`. The intent is to host one shared template repo for Fabric artifact validation/deployment, while each project repo keeps only a small consumer `azure-pipelines.yml`.
 
 ---
 
@@ -24,9 +24,21 @@ This README provides a **topic-by-topic index** of supporting resources, archite
 | [5. Disclaimer](#5-disclaimer) | Example-code and as-is notice |
 | [6. Folder Structure](#6-appendix-repository-folder-structure) | Actual repo layout |
 
+### Repository Structure by Platform
+
+This repository organizes CI/CD platforms and shared assets at the top level for clarity:
+
+| Folder | Purpose |
+|--------|---------|
+| **`.github/`** | GitHub Actions workflows and setup guides for GitHub-hosted repos |
+| **`azdo/`** | Azure DevOps YAML pipelines and configuration for Azure DevOps projects |
+| **`shared/`** | Shared, platform-agnostic CI/CD assets (rules, scripts, tests, PBIP artifacts) |
+
+Each CI platform folder contains entry-point pipeline definitions that reference shared assets in `shared/`.
+
 ### CI/CD Pipeline Options
-- Use [projects/azure-pipelines.yml](projects/azure-pipelines.yml) for the workshop's PBIP-specific Azure DevOps CI/CD walkthrough. It validates, tests, publishes `pbip-drop`, then deploys to Dev or feature workspaces with [projects/scripts/deploy-dynamic.ps1](projects/scripts/deploy-dynamic.ps1).
-- Use [projects/universal-pipeline/README.md](projects/universal-pipeline/README.md) when you want one shared Azure DevOps template repo that can be consumed by many Fabric project repos.
+- Use [azdo/azure-pipelines.yml](azdo/azure-pipelines.yml) for the workshop's PBIP-specific Azure DevOps CI/CD walkthrough. It validates, tests, publishes `pbip-drop`, then deploys to Dev or feature workspaces with [shared/scripts/deploy-dynamic.ps1](shared/scripts/deploy-dynamic.ps1).
+- Use [shared/universal-pipeline/README.md](shared/universal-pipeline/README.md) when you want one shared Azure DevOps template repo that can be consumed by many Fabric project repos.
 - Use [.github/workflows/powerbi-ci.yml](.github/workflows/powerbi-ci.yml) for GitHub Actions-based PBIP validation in GitHub-hosted repos.
 - Use [.github/README.md](.github/README.md) for a dedicated GitHub project setup guide.
 
@@ -41,7 +53,7 @@ repo-root/
 ├── .github/
 │   └── workflows/
 │       └── powerbi-ci.yml
-└── projects/
+└── shared/
     ├── pbip-local/                  # local PBIP artifacts used by CI checks
     ├── Rules-Dataset.json           # optional; fallback downloaded if missing
     ├── Rules-Report.json            # optional; fallback downloaded if missing
@@ -64,7 +76,7 @@ Set variable values to `true` or `false`.
 
 Branch policy behavior:
 - The workflow triggers on `main`, `feature/*`, and pull requests targeting `main`.
-- Branch-aware severity handling is applied by [projects/scripts/Prepare-QualityRules.ps1](projects/scripts/Prepare-QualityRules.ps1):
+- Branch-aware severity handling is applied by [shared/scripts/Prepare-QualityRules.ps1](shared/scripts/Prepare-QualityRules.ps1):
   - Dataset rules enforce severity >= 2 on protected target branches such as `main` and `develop`, and >= 3 on feature branches.
   - Report rules keep selected checks as warnings on feature branches, and promote those checks to errors on protected target branches.
 
@@ -104,6 +116,7 @@ These are generated from the Marp source using `python-pptx` and can be opened d
 
 ### Governance
 - [Governance Checklist](docs/governance/governance-checklist.md)
+- [OneLake Security Guidance](docs/governance/onelake-security.md)
 
 ---
 
@@ -382,7 +395,7 @@ Suggested contribution workflow:
 1. Create a short-lived branch such as `feature/<alias>-<change>` or `docs/<alias>-<topic>`.
 2. Keep changes focused on one topic, lab, script, or pipeline behavior.
 3. Update related documentation when changing YAML, PowerShell, tests, rules, or workshop flow.
-4. Run the relevant local checks before opening a pull request. For PBIP validation changes, start with [projects/tests/validate_pbip_structure.py](projects/tests/validate_pbip_structure.py) and the quality-rule preparation script.
+4. Run the relevant local checks before opening a pull request. For PBIP validation changes, start with [shared/tests/validate_pbip_structure.py](shared/tests/validate_pbip_structure.py) and the quality-rule preparation script.
 5. Open a pull request with a clear summary, testing notes, and any environment assumptions.
 
 Good contributions include documentation fixes, clearer lab steps, safer validation rules, reusable pipeline improvements, and examples that help teams adapt the workshop to their own Fabric tenant. Avoid committing tenant-specific IDs, client secrets, tokens, real customer data, exported PBIP files that should remain local, or environment-specific values that belong in variable groups or secure configuration.
@@ -441,3 +454,5 @@ The contents of this repository are provided "as is" without warranty of any kin
             ├── lab1-connect-git.md
             ├── lab2-ci-pipeline.md
             └── lab3-deployment-pipelines.md
+
+
