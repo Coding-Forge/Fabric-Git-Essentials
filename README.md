@@ -31,8 +31,7 @@ This repository organizes CI/CD platforms and shared assets at the top level for
 | Folder | Purpose |
 |--------|---------|
 | **`.github/`** | GitHub Actions workflows and setup guides for GitHub-hosted repos |
-| **`azdo/`** | Azure DevOps YAML pipelines and configuration for Azure DevOps projects |
-| **`shared/`** | Shared, platform-agnostic CI/CD assets (rules, scripts, tests, PBIP artifacts) |
+| **`azdo/`** | Azure DevOps YAML pipelines and configuration for Azure DevOps projects || **`gitlab/`** | GitLab CI/CD pipeline definitions for GitLab-hosted repos || **`shared/`** | Shared, platform-agnostic CI/CD assets (rules, scripts, tests, PBIP artifacts) |
 
 Each CI platform folder contains entry-point pipeline definitions that reference shared assets in `shared/`.
 
@@ -41,6 +40,7 @@ Each CI platform folder contains entry-point pipeline definitions that reference
 - Use [shared/universal-pipeline/README.md](shared/universal-pipeline/README.md) when you want one shared Azure DevOps template repo that can be consumed by many Fabric project repos.
 - Use [.github/workflows/powerbi-ci.yml](.github/workflows/powerbi-ci.yml) for GitHub Actions-based PBIP validation in GitHub-hosted repos.
 - Use [.github/README.md](.github/README.md) for a dedicated GitHub project setup guide.
+- Use [gitlab/gitlab-ci.yml](gitlab/gitlab-ci.yml) for GitLab CI/CD-based PBIP validation and deployment. Configure GitLab to use the file via **Settings → CI/CD → CI/CD configuration file** → `gitlab/gitlab-ci.yml`.
 
 ### Sparse Clone Presets
 
@@ -52,17 +52,21 @@ This repo includes ready-to-run PowerShell scripts that clone only the folders n
 Run either script from any PowerShell prompt:
 
 ```powershell
-# Azure DevOps profile (.github is omitted)
+# Azure DevOps profile (.github and gitlab omitted)
 ./shared/scripts/Clone-SparseAzDoProfile.ps1 -RepoUrl https://github.com/<org>/<repo>.git -Destination Fabric-AzDo
 
-# GitHub profile (azdo is omitted)
+# GitHub profile (azdo and gitlab omitted)
 ./shared/scripts/Clone-SparseGitHubProfile.ps1 -RepoUrl https://github.com/<org>/<repo>.git -Destination Fabric-GitHub
+
+# GitLab profile (.github and azdo omitted)
+./shared/scripts/Clone-SparseGitLabProfile.ps1 -RepoUrl https://gitlab.com/<group>/<repo>.git -Destination Fabric-GitLab
 ```
 
 Default included folders per profile:
 
 - Azure DevOps: `azdo`, `shared`, `docs`
 - GitHub: `.github`, `shared`, `docs`
+- GitLab: `gitlab`, `shared`, `docs`
 
 Use a different branch with `-Branch`:
 

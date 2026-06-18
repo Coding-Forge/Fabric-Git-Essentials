@@ -1,0 +1,357 @@
+# gitlab/gitlab-ci.yml
+# GitLab CI/CD pipeline for Microsoft Fabric PBIP artifacts.
+#
+# SETUP:
+#   GitLab looks for .gitlab-ci.yml at the repo root by default.
+#   To use this file from the gitlab/ folder:
+#     Settings → CI/CD → General pipelines → CI/CD configuration file
+#     Set to: gitlab/gitlab-ci.yml
+#
+# REQUIRED CI/CD VARIABLES (Settings → CI/CD → Variables, all Masked + Protected):
+#   TENANT_ID              - Azure AD tenant ID
+#   APP_ID                 - Service principal application (client) ID
+#   CLIENT_SECRET          - Service principal client secret
+#   DEV_WORKSPACE_NAME     - Display name of the target Dev Fabric workspace
+#                            (or use DEV_WORKSPACE_ID for a workspace GUID)
+#
+# OPTIONAL SKIP VARIABLES (set to "true" to skip that stage):
+#   SKIP_DATASET_RULES     - Skip Tabular Editor dataset quality rules
+#   SKIP_REPORT_RULES      - Skip Fab Inspector report quality rules
+#   SKIP_DAX_TESTS         - Skip DAX unit tests
+#   SKIP_PUBLISH           - Skip artifact publish + deployment
+#
+# RUNNER REQUIREMENTS:
+#   - validate, test, publish jobs: any Linux runner (Docker/shared runners work)
+#   - dataset_rules, report_rules, deploy jobs: Windows runner tagged 'windows'
+#     Register a Windows shell runner and add the 'windows' tag.
+#
+# FEATURE WORKSPACE VARIABLE (required for feature/* deployments):
+#   FEATURE_WORKSPACE_PREFIX - Prefix used to name auto-created feature workspaces
+#                              e.g. "Dev-Feature" → "Dev-Feature-my-branch-name"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Top-level variables
+# ─────────────────────────────────────────────────────────────────────────────
+variables:
+  PROJECT_ROOT: "shared"
+  PBIP_PATH: "shared/pbip-local"
+  PYTHON_VERSION: "3.11"
+  DEPLOY_SCRIPT_PATH: "shared/scripts/deploy-dynamic.ps1"
+
+# Run pipeline on pushes to main/develop/feature branches and on MRs targeting main/develop.
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\//'
+
+stages:
+  - validate
+  - quality
+  - test
+  - publish
+  - deploy
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 1 — Validate PBIP structure
+# ─────────────────────────────────────────────────────────────────────────────
+validate_pbip:
+  stage: validate
+  image: python:3.11-slim
+  script:
+    - python shared/tests/validate_pbip_structure.py --pbip-path "$PBIP_PATH"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 2 — Dataset quality rules (Tabular Editor, Windows runner required)
+# ─────────────────────────────────────────────────────────────────────────────
+dataset_rules:
+  stage: quality
+  tags:
+    - windows
+  needs: [validate_pbip]
+  rules:
+    - if: '$SKIP_DATASET_RULES == "true"'
+      when: never
+    - when: on_success
+  script:
+    - |
+      $tempPath = Join-Path $env:TEMP "pbip-quality"
+      $toolPath = Join-Path $tempPath "TE"
+      New-Item -ItemType Directory -Path $tempPath -Force | Out-Null
+      New-Item -ItemType Directory -Path $toolPath -Force | Out-Null
+
+      Write-Host "Downloading Tabular Editor"
+      $downloadUrl = "https://github.com/TabularEditor/TabularEditor/releases/latest/download/TabularEditor.Portable.zip"
+      $zipFile = Join-Path $tempPath "TabularEditor.zip"
+      Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFile
+      Expand-Archive -Path $zipFile -DestinationPath $toolPath -Force
+
+      Write-Host "Downloading dataset fallback rules"
+      $rulesUrl = "https://raw.githubusercontent.com/microsoft/Analysis-Services/master/BestPracticeRules/BPARules.json"
+      Invoke-WebRequest -Uri $rulesUrl -OutFile (Join-Path $tempPath "Rules-Dataset.fallback.json")
+    - |
+      $repoPath     = Join-Path $env:CI_PROJECT_DIR $env:PROJECT_ROOT
+      $tempPath     = Join-Path $env:TEMP "pbip-quality"
+      $sourceRulesPath = Join-Path $repoPath "Rules-Dataset.json"
+      if (!(Test-Path $sourceRulesPath)) {
+          $sourceRulesPath = Join-Path $tempPath "Rules-Dataset.fallback.json"
+      }
+      $effectiveRulesPath = Join-Path $tempPath "Rules-Dataset.effective.json"
+      $qualityBranch = "refs/heads/$env:CI_COMMIT_REF_NAME"
+      if (![string]::IsNullOrWhiteSpace($env:CI_MERGE_REQUEST_TARGET_BRANCH_NAME)) {
+          $qualityBranch = "refs/heads/$env:CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+      }
+      & (Join-Path $repoPath "scripts\Prepare-QualityRules.ps1") `
+        -Mode dataset `
+        -SourcePath $sourceRulesPath `
+        -OutputPath $effectiveRulesPath `
+        -SourceBranch $qualityBranch
+    - |
+      $repoPath  = Join-Path $env:CI_PROJECT_DIR $env:PROJECT_ROOT
+      $pbipPath  = Join-Path $env:CI_PROJECT_DIR $env:PBIP_PATH
+      $tempPath  = Join-Path $env:TEMP "pbip-quality"
+      $toolPath  = Join-Path $tempPath "TE\TabularEditor.exe"
+      $rulesPath = Join-Path $tempPath "Rules-Dataset.effective.json"
+
+      if (!(Test-Path $toolPath))  { throw "Tabular Editor not found: $toolPath" }
+      if (!(Test-Path $rulesPath)) { throw "Dataset rules not found: $rulesPath" }
+
+      $itemsFolders = Get-ChildItem -Path $pbipPath -Recurse -Include ("*.pbidataset","*.pbism") -ErrorAction SilentlyContinue
+      if (!$itemsFolders) { throw "No semantic model definitions found under $pbipPath" }
+
+      foreach ($itemFolder in $itemsFolders) {
+          $itemPath = Join-Path $itemFolder.Directory.FullName "definition"
+          if (!(Test-Path $itemPath)) {
+              $itemPath = Join-Path $itemFolder.Directory.FullName "model.bim"
+              if (!(Test-Path $itemPath)) { throw "Cannot find semantic model definition for $($itemFolder.FullName)" }
+          }
+          Write-Host "Running dataset rules for: $itemPath"
+          $process = Start-Process -FilePath $toolPath -ArgumentList """$itemPath"" -A ""$rulesPath"" -V" -NoNewWindow -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Tabular Editor rules failed for $itemPath with exit code $($process.ExitCode)" }
+      }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 2 — Report quality rules (Fab Inspector, Windows runner required)
+# ─────────────────────────────────────────────────────────────────────────────
+report_rules:
+  stage: quality
+  tags:
+    - windows
+  needs: [validate_pbip]
+  rules:
+    - if: '$SKIP_REPORT_RULES == "true"'
+      when: never
+    - when: on_success
+  script:
+    - |
+      $tempPath = Join-Path $env:TEMP "pbip-quality"
+      $toolPath = Join-Path $tempPath "PBIInspector"
+      New-Item -ItemType Directory -Path $tempPath -Force | Out-Null
+      New-Item -ItemType Directory -Path $toolPath -Force | Out-Null
+
+      Write-Host "Downloading Fab Inspector"
+      $downloadUrl = "https://github.com/NatVanG/PBI-InspectorV2/releases/latest/download/win-x64-CLI.zip"
+      $zipFile = Join-Path $tempPath "PBIRInspector.zip"
+      Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFile
+      Expand-Archive -Path $zipFile -DestinationPath $toolPath -Force
+
+      Write-Host "Downloading report fallback rules"
+      $rulesUrl = "https://raw.githubusercontent.com/NatVanG/PBI-InspectorV2/main/Rules/Base-rules.json"
+      Invoke-WebRequest -Uri $rulesUrl -OutFile (Join-Path $tempPath "Rules-Report.fallback.json")
+    - |
+      $repoPath = Join-Path $env:CI_PROJECT_DIR $env:PROJECT_ROOT
+      $tempPath = Join-Path $env:TEMP "pbip-quality"
+      $sourceRulesPath = Join-Path $repoPath "Rules-Report.json"
+      if (!(Test-Path $sourceRulesPath)) {
+          $sourceRulesPath = Join-Path $tempPath "Rules-Report.fallback.json"
+      }
+      $effectiveRulesPath = Join-Path $tempPath "Rules-Report.effective.json"
+      $qualityBranch = "refs/heads/$env:CI_COMMIT_REF_NAME"
+      if (![string]::IsNullOrWhiteSpace($env:CI_MERGE_REQUEST_TARGET_BRANCH_NAME)) {
+          $qualityBranch = "refs/heads/$env:CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+      }
+      & (Join-Path $repoPath "scripts\Prepare-QualityRules.ps1") `
+        -Mode report `
+        -SourcePath $sourceRulesPath `
+        -OutputPath $effectiveRulesPath `
+        -SourceBranch $qualityBranch
+    - |
+      $pbipPath  = Join-Path $env:CI_PROJECT_DIR $env:PBIP_PATH
+      $tempPath  = Join-Path $env:TEMP "pbip-quality"
+      $toolPath  = Join-Path $tempPath "PBIInspector\win-x64\CLI\PBIRInspectorCLI.exe"
+      $rulesPath = Join-Path $tempPath "Rules-Report.effective.json"
+
+      if (!(Test-Path $toolPath))  { throw "Fab Inspector not found: $toolPath" }
+      if (!(Test-Path $rulesPath)) { throw "Report rules not found: $rulesPath" }
+
+      $itemsFolders = Get-ChildItem -Path $pbipPath -Recurse -Include *.pbir -ErrorAction SilentlyContinue
+      if (!$itemsFolders) { throw "No report definitions found under $pbipPath" }
+
+      foreach ($itemFolder in $itemsFolders) {
+          $itemPath = $itemFolder.Directory.FullName
+          Write-Host "Running report rules for: $itemPath"
+          $process = Start-Process -FilePath $toolPath -ArgumentList "-fabricitem ""$itemPath"" -rules ""$rulesPath"" -formats ""ADO""" -NoNewWindow -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Fab Inspector rules failed for $itemPath with exit code $($process.ExitCode)" }
+      }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 3 — DAX unit tests
+# ─────────────────────────────────────────────────────────────────────────────
+dax_tests:
+  stage: test
+  image: python:3.11-slim
+  needs: [validate_pbip]
+  rules:
+    - if: '$SKIP_DAX_TESTS == "true"'
+      when: never
+    - when: on_success
+  script:
+    - pip install semantic-link-labs
+    - python shared/tests/run_dax_tests.py --model-path "$PBIP_PATH"
+  artifacts:
+    when: always
+    reports:
+      junit: test-results/*.xml
+    paths:
+      - test-results/
+    expire_in: 7 days
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 4 — Publish PBIP artifact (push to main/develop only, not MRs)
+# ─────────────────────────────────────────────────────────────────────────────
+publish_artifact:
+  stage: publish
+  image: alpine:latest
+  needs:
+    - job: validate_pbip
+      artifacts: false
+    - job: dataset_rules
+      optional: true
+      artifacts: false
+    - job: report_rules
+      optional: true
+      artifacts: false
+    - job: dax_tests
+      optional: true
+      artifacts: false
+  rules:
+    - if: '$SKIP_PUBLISH == "true"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - when: on_success
+  script:
+    - echo "Packaging PBIP artifact from $PBIP_PATH"
+    - mkdir -p pbip-drop
+    - cp -r "$PBIP_PATH/." pbip-drop/
+  artifacts:
+    name: "pbip-drop-${CI_COMMIT_SHORT_SHA}"
+    paths:
+      - pbip-drop/
+    expire_in: 7 days
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 5 — Deploy to Dev workspace (main / develop branches only)
+# ─────────────────────────────────────────────────────────────────────────────
+deploy_dev:
+  stage: deploy
+  tags:
+    - windows
+  needs: [publish_artifact]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "develop"'
+      when: on_success
+    - when: never
+  environment:
+    name: dev
+  script:
+    - |
+      $requiredVars = @{
+          TENANT_ID     = $env:TENANT_ID
+          APP_ID        = $env:APP_ID
+          CLIENT_SECRET = $env:CLIENT_SECRET
+      }
+      foreach ($k in $requiredVars.Keys) {
+          if ([string]::IsNullOrWhiteSpace($requiredVars[$k])) { throw "Missing required CI/CD variable: $k" }
+      }
+      if ([string]::IsNullOrWhiteSpace($env:DEV_WORKSPACE_ID) -and [string]::IsNullOrWhiteSpace($env:DEV_WORKSPACE_NAME)) {
+          throw "Set DEV_WORKSPACE_ID or DEV_WORKSPACE_NAME in CI/CD variables."
+      }
+      $deployScriptPath = Join-Path $env:CI_PROJECT_DIR $env:DEPLOY_SCRIPT_PATH
+      if (!(Test-Path $deployScriptPath)) { throw "Deployment script not found: $deployScriptPath" }
+
+      $pbipPathCandidates = @(
+          (Join-Path $env:CI_PROJECT_DIR "pbip-drop\shared\pbip-local"),
+          (Join-Path $env:CI_PROJECT_DIR "pbip-drop\pbip-local"),
+          (Join-Path $env:CI_PROJECT_DIR $env:PBIP_PATH),
+          (Join-Path $env:CI_PROJECT_DIR "pbip-drop")
+      ) | Select-Object -Unique
+      $resolvedPbipPath = $pbipPathCandidates | Where-Object { Test-Path $_ } |
+          Where-Object { Get-ChildItem -Path $_ -Filter '*.pbip' -File -ErrorAction SilentlyContinue | Select-Object -First 1 } |
+          Select-Object -First 1
+      if ([string]::IsNullOrWhiteSpace($resolvedPbipPath)) { throw "Could not resolve PBIP folder containing a .pbip file." }
+
+      Write-Host "Deploying from: $resolvedPbipPath"
+      & $deployScriptPath `
+        -Branch "refs/heads/$env:CI_COMMIT_BRANCH" `
+        -TenantId $env:TENANT_ID `
+        -AppId $env:APP_ID `
+        -ClientSecret $env:CLIENT_SECRET `
+        -DevWorkspaceId $env:DEV_WORKSPACE_ID `
+        -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
+        -PbipPath $resolvedPbipPath
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 5 — Deploy to feature workspace (feature/* branches only)
+# ─────────────────────────────────────────────────────────────────────────────
+deploy_feature:
+  stage: deploy
+  tags:
+    - windows
+  needs: [publish_artifact]
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_COMMIT_BRANCH =~ /^feature\//'
+      when: on_success
+    - when: never
+  environment:
+    name: feature/$CI_COMMIT_REF_SLUG
+  script:
+    - |
+      $requiredVars = @{
+          TENANT_ID                = $env:TENANT_ID
+          APP_ID                   = $env:APP_ID
+          CLIENT_SECRET            = $env:CLIENT_SECRET
+          FEATURE_WORKSPACE_PREFIX = $env:FEATURE_WORKSPACE_PREFIX
+      }
+      foreach ($k in $requiredVars.Keys) {
+          if ([string]::IsNullOrWhiteSpace($requiredVars[$k])) { throw "Missing required setting for feature deployment: $k" }
+      }
+      $deployScriptPath = Join-Path $env:CI_PROJECT_DIR $env:DEPLOY_SCRIPT_PATH
+      if (!(Test-Path $deployScriptPath)) { throw "Deployment script not found: $deployScriptPath" }
+
+      $pbipPathCandidates = @(
+          (Join-Path $env:CI_PROJECT_DIR "pbip-drop\shared\pbip-local"),
+          (Join-Path $env:CI_PROJECT_DIR "pbip-drop\pbip-local"),
+          (Join-Path $env:CI_PROJECT_DIR $env:PBIP_PATH),
+          (Join-Path $env:CI_PROJECT_DIR "pbip-drop")
+      ) | Select-Object -Unique
+      $resolvedPbipPath = $pbipPathCandidates | Where-Object { Test-Path $_ } |
+          Where-Object { Get-ChildItem -Path $_ -Filter '*.pbip' -File -ErrorAction SilentlyContinue | Select-Object -First 1 } |
+          Select-Object -First 1
+      if ([string]::IsNullOrWhiteSpace($resolvedPbipPath)) { throw "Could not resolve PBIP folder containing a .pbip file." }
+
+      Write-Host "Deploying from: $resolvedPbipPath"
+      & $deployScriptPath `
+        -Branch "refs/heads/$env:CI_COMMIT_BRANCH" `
+        -TenantId $env:TENANT_ID `
+        -AppId $env:APP_ID `
+        -ClientSecret $env:CLIENT_SECRET `
+        -DevWorkspaceId $env:DEV_WORKSPACE_ID `
+        -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
+        -FeatureWorkspacePrefix $env:FEATURE_WORKSPACE_PREFIX `
+        -PbipPath $resolvedPbipPath
