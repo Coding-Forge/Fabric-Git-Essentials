@@ -76,7 +76,7 @@
     .tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; border: 1px solid var(--cp-border); border-radius: 16px; background: var(--cp-surface-soft); margin-bottom: 16px; padding: 8px; }
     .tab { border-color: var(--cp-surface-soft); background: var(--cp-surface-soft); color: var(--cp-text-muted); font-weight: 850; }
     .tab.active { border-color: var(--cp-border); background: var(--cp-surface); color: var(--cp-text); }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
     .toast { position: fixed; right: 20px; bottom: 20px; max-width: 380px; border: 1px solid var(--cp-border); border-radius: 16px; background: var(--cp-panel-strong); color: var(--cp-text); box-shadow: var(--cp-shadow); padding: 12px 14px; display: none; z-index: 20; }
     .toast.visible { display: block; }
     @media (max-width: 980px) { .main, .two, .three, .tabs { grid-template-columns: 1fr; } }
@@ -98,6 +98,7 @@
         </label>
         <button id="seedExample" type="button">Use starter examples</button>
         <button id="downloadJson" type="button">Download JSON</button>
+        <button id="saveToRepo" type="button">Save to repo</button>
         <button id="downloadMarkdown" type="button">Download summary</button>
       </div>
     </div>
@@ -139,7 +140,12 @@
           <div class="grid three">
             <label>ID<input id="exceptionId" type="text" placeholder="EXC-001"></label>
             <label>Rule ID<input id="ruleId" type="text" placeholder="REDUCE_OBJECTS_WITHIN_VISUALS"></label>
-            <label>Status
+            <label style="align-self: flex-end;">
+              <button id="loadRulesBtn" type="button" style="width: 100%; margin-top: 2px;">Pick from rules</button>
+            </label>
+          </div>
+          <div class="grid three">
+            <label style="grid-column: span 2;">Status
               <select id="status">
                 <option value="requested">requested</option>
                 <option value="approved">approved</option>
@@ -159,6 +165,24 @@
           <label>Reason<textarea id="reason" placeholder="Why is this exception needed?"></textarea></label>
           <label>Mitigation / cleanup plan<textarea id="mitigation" placeholder="How will this be cleaned up or reviewed?"></textarea></label>
           <label>Tags<input id="tags" type="text" placeholder="migration, finops, dense-matrix"></label>
+          <hr style="border: none; border-top: 1px solid var(--cp-border); margin: 12px 0;">
+          <h3 style="margin: 8px 0;">Rule changes (optional)</h3>
+          <div class="muted" style="margin: 0 0 12px 0;">Override specific rule properties in the pipeline. Leave empty for no changes.</div>
+          <div class="grid three">
+            <label>Property
+              <select id="changeProperty">
+                <option value="">-- Select property --</option>
+                <option value="logType">logType (warning/error)</option>
+                <option value="threshold">threshold (number)</option>
+                <option value="disabled">disabled (true/false)</option>
+              </select>
+            </label>
+            <label id="changeValueLabel">Value<input id="changeValue" type="text" placeholder=""></label>
+            <label style="align-self: flex-end;">
+              <button id="addChange" type="button" style="width: 100%; margin-top: 2px;">Add change</button>
+            </label>
+          </div>
+          <div id="changesDisplay" class="chip-row" style="margin-top: 12px;"></div>
         </div>
       </div>
 
@@ -186,13 +210,29 @@
 
   <div id="toast" class="toast" role="status"></div>
 
+  <div id="rulePickerModal" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100;">
+    <div style="background: var(--cp-surface); border-radius: 16px; max-width: 500px; max-height: 80vh; overflow: auto; box-shadow: var(--cp-shadow); padding: 0;">
+      <div style="border-bottom: 1px solid var(--cp-border); padding: 16px; position: sticky; top: 0; background: var(--cp-surface);">
+        <h2 style="margin: 0 0 12px 0;">Select a rule to override</h2>
+        <input id="ruleSearchInput" type="search" placeholder="Search by ID or description..." style="width: 100%;">
+      </div>
+      <div id="rulePickerList" style="padding: 16px; display: grid; gap: 10px; max-height: 60vh; overflow-y: auto;">
+        <div style="color: var(--cp-text-muted); text-align: center; padding: 24px;">Loading rules...</div>
+      </div>
+      <div style="border-top: 1px solid var(--cp-border); padding: 16px; display: flex; gap: 10px; justify-content: flex-end;">
+        <button id="closeRulePickerBtn" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const state = {
       selectedId: "",
-      exceptions: []
+      exceptions: [],
+      currentChanges: {}
     };
 
-    const ids = ["newException", "saveException", "deleteException", "loadFile", "seedExample", "downloadJson", "downloadMarkdown", "search", "exceptionList", "totalCount", "approvedCount", "expiringCount", "expiredCount", "exceptionId", "ruleId", "status", "owner", "approver", "artifact", "expiresOn", "reason", "mitigation", "tags", "summaryOutput", "jsonOutput", "toast"];
+    const ids = ["newException", "saveException", "deleteException", "loadFile", "seedExample", "downloadJson", "saveToRepo", "downloadMarkdown", "loadRulesBtn", "search", "exceptionList", "totalCount", "approvedCount", "expiringCount", "expiredCount", "exceptionId", "ruleId", "status", "owner", "approver", "artifact", "expiresOn", "reason", "mitigation", "tags", "changeProperty", "changeValue", "addChange", "changesDisplay", "summaryOutput", "jsonOutput", "rulePickerModal", "ruleSearchInput", "rulePickerList", "closeRulePickerBtn", "toast"];
     const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 
     function todayDate() {
@@ -241,6 +281,7 @@
         mitigation: els.mitigation.value.trim(),
         expiresOn: els.expiresOn.value,
         tags: els.tags.value.split(",").map(tag => tag.trim()).filter(Boolean),
+        ...(Object.keys(state.currentChanges).length > 0 && { changes: state.currentChanges }),
         updatedAt: new Date().toISOString()
       };
     }
@@ -256,6 +297,68 @@
       els.mitigation.value = exception?.mitigation || "";
       els.expiresOn.value = exception?.expiresOn || "";
       els.tags.value = (exception?.tags || []).join(", ");
+      state.currentChanges = JSON.parse(JSON.stringify(exception?.changes || {}));
+      renderChangesDisplay();
+    }
+
+    function renderChangesDisplay() {
+      const changes = Object.entries(state.currentChanges).map(([key, value]) => {
+        const displayValue = key === "disabled" ? (value ? "true" : "false") : String(value);
+        return `<span class="chip" data-change-key="${escapeHtml(key)}"><strong>${escapeHtml(key)}:</strong> ${escapeHtml(displayValue)} <span style="cursor: pointer; margin-left: 4px; opacity: 0.7;" onclick="removeChange('${escapeHtml(key)}')">&times;</span></span>`;
+      });
+      els.changesDisplay.innerHTML = changes.length ? changes.join("") : `<span class="muted">No changes defined</span>`;
+    }
+
+    function removeChange(key) {
+      delete state.currentChanges[key];
+      renderChangesDisplay();
+      render();
+    }
+
+    function addChange() {
+      const property = els.changeProperty.value.trim();
+      const value = els.changeValue.value.trim();
+      
+      if (!property) {
+        toast("Select a property to override.");
+        return;
+      }
+      
+      if (!value) {
+        toast("Enter a value for the property.");
+        return;
+      }
+      
+      try {
+        if (property === "logType") {
+          if (!["warning", "error"].includes(value)) {
+            toast("logType must be 'warning' or 'error'.");
+            return;
+          }
+          state.currentChanges.logType = value;
+        } else if (property === "threshold") {
+          const num = Number(value);
+          if (isNaN(num) || num < 0) {
+            toast("threshold must be a non-negative number.");
+            return;
+          }
+          state.currentChanges.threshold = num;
+        } else if (property === "disabled") {
+          if (!["true", "false"].includes(value.toLowerCase())) {
+            toast("disabled must be 'true' or 'false'.");
+            return;
+          }
+          state.currentChanges.disabled = value.toLowerCase() === "true";
+        }
+        
+        els.changeProperty.value = "";
+        els.changeValue.value = "";
+        renderChangesDisplay();
+        render();
+        toast("Change added.");
+      } catch (error) {
+        toast(`Error adding change: ${error.message}`);
+      }
     }
 
     function saveException() {
@@ -351,6 +454,12 @@
         lines.push(`- Reason: ${item.reason || "not set"}`);
         lines.push(`- Mitigation: ${item.mitigation || "not set"}`);
         if (item.tags?.length) lines.push(`- Tags: ${item.tags.join(", ")}`);
+        if (item.changes && Object.keys(item.changes).length) {
+          lines.push(`- Changes:`);
+          for (const [key, value] of Object.entries(item.changes)) {
+            lines.push(`  - ${key}: ${value}`);
+          }
+        }
         lines.push("");
       }
       return lines.join("\n");
@@ -389,6 +498,7 @@
           mitigation: "Review visual design during next report simplification cycle.",
           expiresOn: later.toISOString().slice(0, 10),
           tags: ["finops", "matrix", "approved"],
+          changes: { threshold: 100 },
           updatedAt: new Date().toISOString()
         },
         {
@@ -402,6 +512,7 @@
           mitigation: "Replace hard-coded colors with theme tokens before expiration.",
           expiresOn: soon.toISOString().slice(0, 10),
           tags: ["migration", "theme"],
+          changes: { logType: "warning" },
           updatedAt: new Date().toISOString()
         }
       ];
@@ -419,6 +530,116 @@
       link.download = filename;
       link.click();
       URL.revokeObjectURL(url);
+    }
+
+    async function saveToRepo(filename, content) {
+      try {
+        const response = await fetch("/api/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            path: `shared/${filename}`,
+            content: content
+          })
+        });
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.statusText}`);
+        }
+        toast(`✓ Saved ${filename} to repo`);
+      } catch (error) {
+        toast(`Could not save to repo: ${error.message}. Use Download JSON instead.`);
+      }
+    }
+
+    async function loadAvailableRules() {
+      try {
+        const rules = [];
+        
+        // Try to load from shared folder
+        const sharedUrls = [
+          '/shared/Rules-Report.json',
+          '/shared/Rules-Dataset.json'
+        ];
+
+        for (const url of sharedUrls) {
+          try {
+            const response = await fetch(url);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.rules && Array.isArray(data.rules)) {
+                rules.push(...data.rules.map(r => ({
+                  id: r.id || r.ID,
+                  description: r.description || "",
+                  type: url.includes('Report') ? 'report' : 'dataset',
+                  rule: r
+                })));
+              }
+            }
+          } catch (e) {
+            // Continue to next file
+          }
+        }
+
+        // If no rules loaded, provide common defaults
+        if (!rules.length) {
+          rules.push(
+            { id: 'REDUCE_VISUALS_ON_PAGE', description: 'Limit visuals per page', type: 'report', rule: {} },
+            { id: 'REDUCE_OBJECTS_WITHIN_VISUALS', description: 'Limit fields in visuals', type: 'report', rule: {} },
+            { id: 'REDUCE_PAGES', description: 'Limit pages in report', type: 'report', rule: {} },
+            { id: 'ENSURE_THEME_COLOURS', description: 'Enforce theme colors', type: 'report', rule: {} },
+            { id: 'ACTIVE_PAGE', description: 'Check active page setting', type: 'report', rule: {} },
+            { id: 'SHOW_AXES_TITLES', description: 'Show axis titles', type: 'report', rule: {} }
+          );
+        }
+
+        return rules.sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      } catch (error) {
+        toast(`Error loading rules: ${error.message}`);
+        return [];
+      }
+    }
+
+    async function showRulePicker() {
+      els.rulePickerModal.classList.remove("hidden");
+      els.ruleSearchInput.value = "";
+      els.rulePickerList.innerHTML = '<div style="color: var(--cp-text-muted); text-align: center; padding: 24px;">Loading rules...</div>';
+
+      const rules = await loadAvailableRules();
+      if (!rules.length) {
+        els.rulePickerList.innerHTML = '<div style="color: var(--cp-text-muted); text-align: center; padding: 24px;">No rules found. Check that rules files are available.</div>';
+        return;
+      }
+
+      renderRuleList(rules, rules);
+    }
+
+    function renderRuleList(allRules, filteredRules) {
+      if (!filteredRules.length) {
+        els.rulePickerList.innerHTML = '<div style="color: var(--cp-text-muted); text-align: center; padding: 24px;">No matching rules.</div>';
+        return;
+      }
+
+      els.rulePickerList.innerHTML = filteredRules.map(item => {
+        const ruleId = escapeHtml(item.id || "unknown");
+        const description = item.rule?.description ? escapeHtml(item.rule.description) : "";
+        return `
+          <button class="item" type="button" data-rule-id="${ruleId}" style="border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-surface-soft); padding: 12px; text-align: left; cursor: pointer;">
+            <strong style="display: block; margin-bottom: 4px;">${ruleId}</strong>
+            ${description ? `<div style="font-size: 12px; color: var(--cp-text-muted);">${description}</div>` : ''}
+          </button>
+        `;
+      }).join("");
+
+      // Add click handlers
+      els.rulePickerList.querySelectorAll("[data-rule-id]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const ruleId = btn.dataset.ruleId;
+          els.ruleId.value = ruleId;
+          els.rulePickerModal.classList.add("hidden");
+          render();
+          toast(`Rule ID set to: ${ruleId}`);
+        });
+      });
     }
 
     async function loadFile(event) {
@@ -454,14 +675,48 @@
       document.getElementById(`${tab}Tab`).classList.remove("hidden");
     }
 
-    els.newException.addEventListener("click", () => { state.selectedId = ""; fillForm(null); });
+    els.newException.addEventListener("click", () => { state.selectedId = ""; state.currentChanges = {}; fillForm(null); });
     els.saveException.addEventListener("click", saveException);
     els.deleteException.addEventListener("click", deleteException);
     els.seedExample.addEventListener("click", seedExample);
     els.loadFile.addEventListener("change", event => loadFile(event).catch(error => toast(error.message)));
     els.search.addEventListener("input", renderList);
     els.downloadJson.addEventListener("click", () => download("policy-exceptions.json", JSON.stringify(register(), null, 2), "application/json"));
+    els.saveToRepo.addEventListener("click", () => saveToRepo("policy-exceptions.json", JSON.stringify(register(), null, 2)));
     els.downloadMarkdown.addEventListener("click", () => download("policy-exceptions-summary.md", summaryMarkdown(), "text/markdown"));
+    els.addChange.addEventListener("click", addChange);
+    els.changeProperty.addEventListener("change", () => {
+      const prop = els.changeProperty.value;
+      if (prop === "logType") {
+        els.changeValue.placeholder = "warning or error";
+        els.changeValue.type = "text";
+      } else if (prop === "threshold") {
+        els.changeValue.placeholder = "numeric value";
+        els.changeValue.type = "number";
+      } else if (prop === "disabled") {
+        els.changeValue.placeholder = "true or false";
+        els.changeValue.type = "text";
+      }
+    });
+    els.changeValue.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addChange();
+    });
+    els.loadRulesBtn.addEventListener("click", showRulePicker);
+    els.closeRulePickerBtn.addEventListener("click", () => els.rulePickerModal.classList.add("hidden"));
+    els.ruleSearchInput.addEventListener("input", async () => {
+      const query = els.ruleSearchInput.value.trim().toLowerCase();
+      const allRules = await loadAvailableRules();
+      const filtered = query ? allRules.filter(r => {
+        const text = `${r.id} ${r.rule?.description || ""}`.toLowerCase();
+        return text.includes(query);
+      }) : allRules;
+      renderRuleList(allRules, filtered);
+    });
+    els.rulePickerModal.addEventListener("click", (event) => {
+      if (event.target === els.rulePickerModal) {
+        els.rulePickerModal.classList.add("hidden");
+      }
+    });
     els.exceptionList.addEventListener("click", event => {
       const item = event.target.closest("[data-id]");
       if (!item) return;
