@@ -85,7 +85,7 @@ The Sales Performance Analytics team is changing the `Revenue` and `Gross Margin
    tools/pbip-diff-viewer/index.html
    ```
 
-2. Select the before folder and after folder.
+2. Select the **before folder** (baseline PBIP from develop branch) and **after folder** (modified PBIP from your feature branch).
 3. Filter by:
 
    - Semantic model

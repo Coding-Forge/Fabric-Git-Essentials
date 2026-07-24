@@ -17,7 +17,7 @@
     "Severity": 3,
     "Scope": "DataColumn",
     "Expression": "string.IsNullOrWhitespace(SourceColumn)",
-    "CompatibilityLevel": 1200
+    "CompatibilityLevel": 1205
   },
   {
     "ID": "EXPRESSION_RELIANT_OBJECTS_MUST_HAVE_AN_EXPRESSION",

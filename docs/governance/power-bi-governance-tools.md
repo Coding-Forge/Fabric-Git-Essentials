@@ -235,6 +235,17 @@ The PBIP Diff Viewer compares before and after PBIP snapshots and translates raw
 
 ![PBIP Diff Viewer](../../images/pbip-diff-viewer.png)
 
+### Understanding Before and After Snapshots
+
+The tool requires two PBIP folder snapshots representing different states:
+- **Before folder**: Original PBIP state (from parent branch like main or develop)
+- **After folder**: Modified PBIP state (from feature branch with your changes)
+
+Obtain these by:
+1. Checking out the parent branch and exporting the PBIP folder from your workspace
+2. Checking out your feature branch and exporting the PBIP folder again
+3. Loading both folders into the tool for comparison
+
 ### What It Helps Users Do
 
 - Compare two local PBIP or repository snapshots without uploading files.

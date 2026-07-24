@@ -6,6 +6,7 @@
       "description": "Keep reports concise enough for users to navigate quickly.",
       "logType": "warning",
       "itemType": "Report",
+      "part": "Pages",
       "disabled": false,
       "test": [
         {
@@ -17,7 +18,7 @@
                 }
               ]
             },
-            6
+            16
           ]
         },
         {},

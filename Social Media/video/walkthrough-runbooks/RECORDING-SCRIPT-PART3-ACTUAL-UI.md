@@ -62,31 +62,31 @@
 
 > This section says: 'For Azure DevOps, use this runner. For GitHub, use this runner. For GitLab, use this runner.' The same validation runs on all platforms because we're using standard Python and PowerShell scripts that work everywhere.
 
-### Demo Action 5: Click "Generate Azure DevOps YAML"
+### Demo Action 5: Select "Azure DevOps" from the Platform dropdown and click "Generate pipeline"
 
 **Narration:**
 
-> Now I click Generate Azure DevOps YAML. The tool creates an azure-pipelines.yml file ready to drop into an Azure DevOps repo.
+> Now I select Azure DevOps from the Platform dropdown and click Generate pipeline. The tool creates an azure-pipelines.yml file ready to drop into an Azure DevOps repo.
 
 **Show the generated YAML briefly.**
 
 > This is real pipeline code. You can commit it immediately.
 
-### Demo Action 6: Click "Generate GitHub Actions YAML"
+### Demo Action 6: Select "GitHub Actions" from the Platform dropdown and click "Generate pipeline"
 
 **Narration:**
 
-> Same config, GitHub platform. I click Generate GitHub Actions YAML, and it creates a .github/workflows/ci.yml file.
+> Same config, GitHub platform. I select GitHub Actions from the dropdown and click Generate pipeline again, and it creates a .github/workflows/ci.yml file.
 
 **Show the generated YAML briefly.**
 
 > Same validation stages, GitHub Actions syntax.
 
-### Demo Action 7: Click "Generate GitLab CI YAML"
+### Demo Action 7: Select "GitLab CI" from the Platform dropdown and click "Generate pipeline"
 
 **Narration:**
 
-> And GitLab. Same config, GitLab CI syntax.
+> And GitLab. I select GitLab CI from the dropdown and click Generate pipeline, and the tool generates GitLab CI syntax.
 
 **Show the generated YAML briefly.**
 

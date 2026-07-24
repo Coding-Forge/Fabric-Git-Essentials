@@ -523,8 +523,8 @@
           </label>
           <button id="downloadReport" class="primary" type="button">Download report rules</button>
           <button id="saveReportRepo" type="button">Save report rules to repo</button>
-          <button id="downloadDataset" type="button">Download dataset rules</button>
-          <button id="saveDatasetRepo" type="button">Save dataset rules to repo</button>
+          <button id="downloadDataset" class="hidden" type="button">Download dataset rules</button>
+          <button id="saveDatasetRepo" class="hidden" type="button">Save dataset rules to repo</button>
           <button id="seedExamples" class="ghost" type="button">Use starter examples</button>
         </div>
       </div>
@@ -1106,9 +1106,15 @@
       if (kind === "report") {
         state.reportRules = normalizeReportFile(parsed);
         state.originalReportText = pretty(state.reportRules);
+        // Clear dataset rules to avoid mixing rules from different files
+        state.datasetRules = [];
+        state.originalDatasetText = pretty([]);
       } else {
         state.datasetRules = normalizeDatasetFile(parsed);
         state.originalDatasetText = pretty(state.datasetRules);
+        // Clear report rules to avoid mixing rules from different files
+        state.reportRules = { rules: [] };
+        state.originalReportText = pretty({ rules: [] });
       }
       state.activeKind = kind;
       state.selectedId = "";
@@ -1196,6 +1202,10 @@
       els.reportFields.classList.toggle("hidden", state.activeKind !== "report");
       els.datasetFields.classList.toggle("hidden", state.activeKind !== "dataset");
       els.categoryLabel.classList.toggle("hidden", state.activeKind !== "dataset");
+      els.downloadReport.classList.toggle("hidden", state.activeKind !== "report");
+      els.downloadDataset.classList.toggle("hidden", state.activeKind !== "dataset");
+      els.saveReportRepo.classList.toggle("hidden", state.activeKind !== "report");
+      els.saveDatasetRepo.classList.toggle("hidden", state.activeKind !== "dataset");
     }
 
     function renderTemplates() {

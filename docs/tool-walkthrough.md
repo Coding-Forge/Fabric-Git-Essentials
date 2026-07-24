@@ -194,13 +194,32 @@ C:\Projects\Enterprise-Fabric\shared
 
 **What it does:** Compares two PBIP snapshots and translates raw JSON/TMDL changes into reviewer-friendly categories and guidance.
 
+**Understanding Before and After Folders**
+
+The tool requires two PBIP folder snapshots representing different points in time:
+
+- **Before folder**: The original PBIP project state (e.g., from `main` branch or previous commit)
+- **After folder**: The modified PBIP project state (e.g., from `feature/xyz` branch or after edits)
+
+To obtain these folders:
+
+1. **From Git branches** (recommended for review):
+   - Checkout parent branch (e.g., `git checkout develop`) → export PBIP folder
+   - Checkout feature branch (e.g., `git checkout feature/my-feature`) → export PBIP folder
+
+2. **From workspace exports**:
+   - Open Power BI Desktop → File → Export → save PBIP folder
+   - Make changes to your report/model
+   - Export again to create the "after" folder
+
 **How to use it:**
 
 1. Open `tools/pbip-diff-viewer/index.html`.
-2. Select the before folder and after folder for the PBIP project or repository snapshot.
-3. Review added, removed, and changed report, semantic model, rule, DAX test, exception, manifest, and pipeline files.
-4. Filter by artifact type or path and inspect the before/after excerpts.
-5. Export HTML, Markdown, or JSON diff reports for PR review.
+2. Click **Load before folder** and select the original PBIP snapshot.
+3. Click **Load after folder** and select the modified PBIP snapshot.
+4. Review added, removed, and changed report, semantic model, rule, DAX test, exception, manifest, and pipeline files.
+5. Filter by artifact type or path and inspect the before/after excerpts.
+6. Export HTML, Markdown, or JSON diff reports for PR review.
 
 **Questions it answers:**
 

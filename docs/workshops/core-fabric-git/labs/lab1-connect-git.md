@@ -195,15 +195,18 @@ Fabric re-syncs the workspace to your feature branch. The status bar at the top 
 
 If you have a local copy of the repo before and after your change, use the PBIP Diff Viewer to create a reviewer-friendly diff.
 
-1. Open:
+To do this:
+1. Checkout your **parent branch** (develop) and export the PBIP folder from your workspace
+2. Checkout your **feature branch** and export the PBIP folder again
+3. Open:
 
    ```text
    tools/pbip-diff-viewer/index.html
    ```
 
-2. Load the before snapshot and after snapshot.
-3. Confirm the changed report metadata appears as a report/page/visual change.
-4. Export:
+4. Load the **before folder** (from develop) and **after folder** (from your feature branch).
+5. Confirm the changed report metadata appears as a report/page/visual change.
+6. Export:
 
    ```text
    pbip-diff-report.md

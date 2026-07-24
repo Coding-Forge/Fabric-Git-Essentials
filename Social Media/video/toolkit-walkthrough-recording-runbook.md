@@ -415,11 +415,11 @@ Say:
 
 > Once the PR is open, reviewers need to understand what changed. But PBIP projects are expressed as hundreds of JSON and TMDL files. Asking reviewers to read raw JSON is not practical.
 
-> The PBIP Diff Viewer translates raw file changes into business terms. Instead of 'this JSON property changed', it says 'a measure was added to the Sales table' or 'this report page now has a new visual'.
+> To use the PBIP Diff Viewer, you need two PBIP folder snapshots: a **before** snapshot from your parent branch (like main or develop) and an **after** snapshot from your feature branch. The tool then translates raw file changes into business terms. Instead of 'this JSON property changed', it says 'a measure was added to the Sales table' or 'this report page now has a new visual'.
 
 Demo actions:
 
-1. Click **Use starter example**.
+1. Click **Use starter example** to show how it works (or load your own before/after folders from Git branches).
 2. Show the summary: how many files added, changed, removed.
 3. Select a changed semantic model file and show the review guidance (what changed, what to check, risks).
 4. Select a changed report page and show which visuals were affected.
@@ -542,9 +542,13 @@ Demo actions:
    - Enabled stages (lint, validate, publish, deploy)
    - Trigger settings (branch, PR filter)
    - Approval gates
-3. Switch between Azure DevOps, GitHub Actions, and GitLab CI tabs.
-4. Show the generated YAML for each platform.
-5. Show the setup notes Markdown.
+3. Select **Azure DevOps** from the Platform dropdown and click **Generate pipeline**.
+4. Show the generated YAML for Azure DevOps.
+5. Select **GitHub Actions** from the Platform dropdown and click **Generate pipeline** again.
+6. Show the generated YAML for GitHub Actions.
+7. Select **GitLab CI** from the Platform dropdown and click **Generate pipeline**.
+8. Show the generated YAML for GitLab CI.
+9. Click the **Setup notes** tab to show the setup notes Markdown.
 
 Say:
 

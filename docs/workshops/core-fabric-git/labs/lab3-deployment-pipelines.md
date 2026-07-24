@@ -287,13 +287,16 @@ Before promoting, always review what will change using the comparison view.
 
 Use the accelerator tools to supplement the Fabric Deployment Pipeline comparison.
 
-1. Open:
+To compare PBIP changes:
+1. Export the PBIP folder from the **current Dev state** (before your release feature branch)
+2. Export the PBIP folder from your **feature branch** (after your changes)
+3. Open:
 
    ```text
    tools/pbip-diff-viewer/index.html
    ```
 
-2. Compare the before/after PBIP snapshots if available and export:
+4. Load the before and after PBIP folders and export:
 
    ```text
    pbip-diff-report.md

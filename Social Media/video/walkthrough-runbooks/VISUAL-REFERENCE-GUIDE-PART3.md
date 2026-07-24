@@ -62,14 +62,14 @@
 
 ```
 [Back to launchpad]
-[Load pipeline-config.json]
-[Add validation stage]
-[Remove stage]
-[Generate Azure DevOps YAML] ← Most important for demo
-[Generate GitHub Actions YAML] ← Most important for demo
-[Generate GitLab CI YAML] ← Most important for demo
-[Use starter config]
-[Download JSON]
+[Platform dropdown: Azure DevOps]
+[Generate pipeline] ← Most important for demo
+[Platform dropdown: GitHub Actions]
+[Generate pipeline] ← Most important for demo
+[Platform dropdown: GitLab CI]
+[Generate pipeline] ← Most important for demo
+[Use starter example]
+[Download YAML]
 ```
 
 ### Tabs to Show
@@ -618,12 +618,12 @@ BEYOND (Q2 2025+):
 ```
 Pipeline Config Generator
   └─ Show Pipeline Structure section
-  └─ Click "Use starter config"
+  └─ Click "Use starter example"
   └─ Show Validation Stages (5 stages)
   └─ Show Platform-Specific Config
-  └─ Click "Generate Azure DevOps YAML" (show briefly)
-  └─ Click "Generate GitHub Actions YAML" (show briefly)
-  └─ Click "Generate GitLab CI YAML" (show briefly)
+  └─ Select "Azure DevOps" from Platform dropdown and click "Generate pipeline" (show briefly)
+  └─ Select "GitHub Actions" from Platform dropdown and click "Generate pipeline" (show briefly)
+  └─ Select "GitLab CI" from Platform dropdown and click "Generate pipeline" (show briefly)
   └─ Pause 2 seconds
   
 → Policy Exception Register

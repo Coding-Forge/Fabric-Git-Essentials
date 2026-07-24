@@ -110,6 +110,7 @@ Demo actions:
 1. Click **Use starter example** to load a pre-built profile.
 
 2. Show the profile configuration:
+   - **Platform selector** (dropdown to choose Azure DevOps, GitHub Actions, or GitLab CI)
    - **Solution name and description**
    - **Pipeline stages** (lint, validate, publish, deploy, etc.)
    - **Enabled checks** (run quality rules? run DAX tests? require approvals?)
@@ -117,11 +118,19 @@ Demo actions:
    - **Publish targets** (where do artifacts go?)
    - **Deployment settings** (Dev/Test/Prod stages, parameters, approvals)
 
-3. Switch between Azure DevOps, GitHub Actions, and GitLab CI tabs.
+3. Select **Azure DevOps** from the Platform dropdown and click **Generate pipeline**.
 
-4. Show the generated YAML for each platform. Pause on each for 2–3 seconds.
+4. Show the generated YAML for Azure DevOps. Pause for 2–3 seconds.
 
-5. Show the setup notes Markdown (pipeline-setup-notes.md).
+5. Switch to **GitHub Actions** in the Platform dropdown and click **Generate pipeline** again.
+
+6. Show the generated YAML for GitHub Actions. Pause for 2–3 seconds.
+
+7. Switch to **GitLab CI** in the Platform dropdown and click **Generate pipeline**.
+
+8. Show the generated YAML for GitLab CI. Pause for 2–3 seconds.
+
+9. Click the **Setup notes** tab to show the pipeline-setup-notes.md output.
 
 Say:
 
