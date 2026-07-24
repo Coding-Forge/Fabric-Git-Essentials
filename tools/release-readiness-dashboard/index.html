@@ -51,6 +51,14 @@
     <section class="panel">
       <div class="panel-header"><h2>Release inputs</h2><div class="muted">Load JSON/Markdown from toolkit outputs and pipeline logs, or paste directly.</div></div>
       <div class="panel-body grid">
+        <div style="background:var(--cp-accent-soft);padding:12px;border-radius:8px;border-left:4px solid var(--cp-accent)">
+          <div style="font-weight:600;margin-bottom:6px;color:var(--cp-accent)">ℹ️ How to use this tool:</div>
+          <div style="font-size:13px;line-height:1.5">
+            <p style="margin:0 0 8px 0"><strong>Provide evidence from your release:</strong> Load or paste outputs from your pipeline, PR review, readiness scanner, and governance tools.</p>
+            <p style="margin:0 0 8px 0"><strong>Scoring:</strong> Missing evidence lowers your score. Warnings reduce it further. Actual blockers (failed tests, governance issues) will recommend "Do not release."</p>
+            <p style="margin:0"><strong>Start here:</strong> Try <button onclick="document.getElementById('seedExample').click()" style="background:transparent;border:none;color:var(--cp-link);cursor:pointer;text-decoration:underline;padding:0;font:inherit">"Use starter example"</button> to see how it works.</p>
+          </div>
+        </div>
         <div class="grid three">
           <label>Release name<input id="releaseName" placeholder="Cost Management v1.2"></label>
           <label>Target environment<input id="targetEnvironment" placeholder="Test or Prod"></label>
@@ -87,14 +95,14 @@
         signal("Pipeline validation",has(pipeline),count(pipeline,/##\[error\]|\berror\b|failed for .* exit code/gi),count(pipeline,/##\[warning\]|\bwarning\b/gi),"CI and validation logs"),
         signal("PR quality summary",has(pr),(prJson?.errors||0),((prJson?.warnings||0)+(prJson?.risks?.length||0)),"Reviewer handoff"),
         signal("PBIP readiness",has(ready),count(ready,/\bblocker\b|missing|does not resolve/gi),count(ready,/\bwarning\b/gi),"Pre-PR scanner output"),
-        signal("Deployment manifest",has(manifest),has(manifest)?0:1,0,"Release ownership and target mapping"),
+        signal("Deployment manifest",has(manifest),0,has(manifest)?0:1,"Release ownership and target mapping"),
         signal("Policy exceptions",has(exceptions),(exJson?.exceptions||[]).filter(e=>e.status==="expired").length,count(exceptions,/expiring|requested/gi),"Exception ownership and expiry"),
-        signal("Effective rules",has(rules),has(rules)?0:1,0,"Branch-aware rules generated"),
+        signal("Effective rules",has(rules),0,has(rules)?0:1,"Branch-aware rules generated"),
         signal("DAX tests",has(dax),count(dax,/\bfailed\b|##\[error\]/gi),count(dax,/\bskipped\b|warning/gi),"Measure validation")
       ];
       const blockers=signals.reduce((s,x)=>s+x.blockers,0), warnings=signals.reduce((s,x)=>s+x.warnings,0), evidence=signals.filter(x=>x.provided).length;
       let score=Math.max(0,100-(blockers*20)-(warnings*5)-((signals.length-evidence)*8));
-      const decision=blockers>0?"Do not release":warnings>0||score<85?"Release with review":"Ready to release";
+      const decision=blockers>0?"⚠️ Do not release — blockers found":warnings>0?"Release with review — address warnings first":score<70?"Incomplete — gather more evidence":score<85?"Release with review — verify details":"✅ Ready to release";
       current={releaseName:els.releaseName.value||"Untitled release",targetEnvironment:els.targetEnvironment.value||"not provided",owner:els.owner.value||"not provided",generatedAt:new Date().toISOString(),score,decision,blockers,warnings,evidence,signals};
       render();
     }
