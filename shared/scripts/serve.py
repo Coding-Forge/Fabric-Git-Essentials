@@ -26,6 +26,7 @@ Security guardrails (local dev only — do NOT expose to a network):
 import json
 import os
 import sys
+import socket
 import mimetypes
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
@@ -181,13 +182,40 @@ class FabricDevServer(BaseHTTPRequestHandler):
         super().log_message(fmt, *args)
 
 
+def is_port_available(port: int) -> bool:
+    """Check if a port is available on localhost."""
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        result = sock.connect_ex(("127.0.0.1", port))
+        sock.close()
+        return result != 0  # 0 means connection succeeded (port in use)
+    except Exception:
+        return False
+
+
+def find_available_port(preferred: int = 8000, fallbacks: list = None) -> int:
+    """Find an available port, trying preferred first then fallbacks."""
+    if fallbacks is None:
+        fallbacks = [8001, 8080, 9000]
+    
+    ports_to_try = [preferred] + fallbacks
+    
+    for port in ports_to_try:
+        if is_port_available(port):
+            return port
+    
+    # If all are taken, return the first fallback anyway (will fail with clear error)
+    return ports_to_try[0]
+
+
 def run(port: int = 8000) -> None:
     os.chdir(ROOT)
     server = HTTPServer(("127.0.0.1", port), FabricDevServer)
     print()
-    print("  ╔═══════════════════════════════════════════════════════╗")
-    print("  ║      Fabric BI DevOps Accelerator — Dev Server        ║")
-    print("  ╚═══════════════════════════════════════════════════════╝")
+    print("  +=========================================================+")
+    print("  |      Fabric BI DevOps Accelerator — Dev Server        |")
+    print("  +=========================================================+")
     print()
     print(f"  Launchpad : http://localhost:{port}/tools/index.html")
     print(f"  Root      : {ROOT}")
@@ -205,5 +233,11 @@ def run(port: int = 8000) -> None:
 
 
 if __name__ == "__main__":
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
+    preferred_port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
+    port = find_available_port(preferred_port)
+    
+    if port != preferred_port:
+        print(f"  Note: Port {preferred_port} is in use. Using port {port} instead.")
+        print()
+    
     run(port)
