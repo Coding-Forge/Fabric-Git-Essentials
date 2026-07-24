@@ -737,9 +737,9 @@ The toolkit includes interactive web-based tools (Quality Rule Designer, Release
    ```
 4. You should see output like:
    ```
-   ╔═══════════════════════════════════════════════════════╗
-   ║      Fabric BI DevOps Accelerator — Dev Server        ║
-   ╚═══════════════════════════════════════════════════════╝
+   +=========================================================+
+   |      Fabric BI DevOps Accelerator — Dev Server        |
+   +=========================================================+
 
    Launchpad : http://localhost:8000/tools/index.html
    Root      : C:\Projects\Fabric\Fabric-BI-DevOps
@@ -750,7 +750,13 @@ The toolkit includes interactive web-based tools (Quality Rule Designer, Release
 
    Press Ctrl+C to stop.
    ```
-5. Open your browser to **http://localhost:8000/tools/index.html**
+   
+   **If port 8000 is already in use**, the script will automatically use the next available port (8001, 8080, or 9000) and display a note like:
+   ```
+   Note: Port 8000 is in use. Using port 8001 instead.
+   ```
+
+5. Open your browser to the displayed URL (e.g., **http://localhost:8000/tools/index.html** or **http://localhost:8001/tools/index.html**)
 
 The server will keep running until you press **Ctrl+C** in the terminal.
 
@@ -758,18 +764,41 @@ The server will keep running until you press **Ctrl+C** in the terminal.
 
 ### Q: Port 8000 is already in use. What should I do?
 
-**Port 8000 conflict** is the most common issue when running the local server. Port 8000 may be occupied by:
-- Another instance of the toolkit server (still running in the background)
-- Skype, Microsoft Teams, or other services
-- A different development server you started earlier
+**Automatic fallback (recommended):**
 
-**Solution 1: Find and stop the conflicting process (Windows)**
+As of July 2024, the startup script now automatically detects port 8000 conflicts and falls back to the next available port:
+
+```powershell
+python shared/scripts/serve.py
+```
+
+If port 8000 is in use, you'll see:
+```
+  Note: Port 8000 is in use. Using port 8001 instead.
+
+  +=========================================================+
+  |      Fabric BI DevOps Accelerator — Dev Server        |
+  +=========================================================+
+
+  Launchpad : http://localhost:8001/tools/index.html
+  ...
+```
+
+Just access the tools at the displayed URL (e.g., `http://localhost:8001/tools/index.html`). The script tries ports in this order: **8000 → 8001 → 8080 → 9000**.
+
+---
+
+**Manual solution (if needed):**
+
+If automatic fallback doesn't work, or if you prefer to explicitly manage ports, you can manually find and stop the conflicting process:
+
+**For Windows:**
 
 1. Open PowerShell and check what's using port 8000:
    ```powershell
    netstat -ano | findstr :8000
    ```
-2. This shows the **PID** (Process ID) in the right column. For example, if you see:
+2. This shows the **PID** (Process ID) in the right column. For example:
    ```
    TCP    127.0.0.1:8000         0.0.0.0:0              LISTENING       23004
    ```
@@ -784,20 +813,18 @@ The server will keep running until you press **Ctrl+C** in the terminal.
    ```powershell
    netstat -ano | findstr :8000
    ```
-   You should see no output.
 
-5. Now start the server again:
+5. Start the server again:
    ```powershell
    python shared/scripts/serve.py
    ```
 
-**Solution 2: Find and stop the conflicting process (macOS/Linux)**
+**For macOS/Linux:**
 
 1. Check what's using port 8000:
    ```bash
    lsof -i :8000
    ```
-   This shows the process name and PID.
 
 2. Kill the process:
    ```bash
@@ -813,17 +840,17 @@ The server will keep running until you press **Ctrl+C** in the terminal.
    python shared/scripts/serve.py
    ```
 
-**Solution 3: Use a different port**
+---
 
-If you cannot stop the other process, you can run the toolkit server on a different port:
+### Q: Can I specify a different port explicitly?
+
+Yes. If you want to use a specific port regardless of availability, you can pass it as an argument:
 
 ```bash
-python -m http.server 8001 --directory .
+python shared/scripts/serve.py 9000    # Explicitly request port 9000
 ```
 
-Then access the tools at **http://localhost:8001/tools/index.html** instead of **http://localhost:8000/tools/index.html**.
-
-> **Note:** The `Save to Repo` feature (which POST's JSON to `/api/save`) requires the custom server script at `shared/scripts/serve.py`. The standard `http.server` does NOT support the save functionality. Use a different port only as a temporary workaround for viewing tools.
+If the requested port is in use, the script will automatically fall back to the next available port in the sequence and display a note.
 
 ---
 
