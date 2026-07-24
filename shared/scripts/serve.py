@@ -26,9 +26,10 @@ Security guardrails (local dev only — do NOT expose to a network):
 import json
 import os
 import sys
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+import mimetypes
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 # Repo root — script lives at shared/scripts/serve.py so go two levels up
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -40,8 +41,53 @@ ALLOWED_WRITE_DIRS = {"shared"}
 ALLOWED_EXTENSIONS = {".json", ".yml", ".yaml", ".md"}
 
 
-class FabricDevServer(SimpleHTTPRequestHandler):
+class FabricDevServer(BaseHTTPRequestHandler):
     """Static file server + /api/save write endpoint."""
+
+    def do_GET(self):
+        """Serve static files without truncation."""
+        # Parse request path
+        parsed = urlparse(self.path)
+        path_component = unquote(parsed.path)
+        if path_component.startswith("/"):
+            path_component = path_component[1:]
+        
+        # Resolve file
+        target = (ROOT / path_component).resolve()
+        
+        # Security: stay within ROOT
+        try:
+            target.relative_to(ROOT)
+        except ValueError:
+            self.send_error(403, "Forbidden")
+            return
+        
+        # Handle directory by serving index.html
+        if target.is_dir():
+            target = target / "index.html"
+        
+        # Serve file if it exists
+        if target.exists() and target.is_file():
+            try:
+                with open(target, "rb") as f:
+                    content = f.read()
+                
+                # Determine MIME type
+                ctype, _ = mimetypes.guess_type(str(target))
+                if ctype is None:
+                    ctype = "application/octet-stream"
+                
+                # Send response
+                self.send_response(200)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Content-Length", str(len(content)))
+                self.send_header("Cache-Control", "max-age=0")
+                self.end_headers()
+                self.wfile.write(content)
+            except Exception as e:
+                self.send_error(500, f"Error: {e}")
+        else:
+            self.send_error(404, "File not found")
 
     def do_OPTIONS(self):
         """CORS preflight for fetch() calls from the browser."""
