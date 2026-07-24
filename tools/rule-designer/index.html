@@ -522,7 +522,9 @@
             <input id="pbipFiles" type="file" multiple webkitdirectory>
           </label>
           <button id="downloadReport" class="primary" type="button">Download report rules</button>
+          <button id="saveReportRepo" type="button">Save report rules to repo</button>
           <button id="downloadDataset" type="button">Download dataset rules</button>
+          <button id="saveDatasetRepo" type="button">Save dataset rules to repo</button>
           <button id="seedExamples" class="ghost" type="button">Use starter examples</button>
         </div>
       </div>
@@ -996,7 +998,9 @@
       datasetFile: document.getElementById("datasetFile"),
       pbipFiles: document.getElementById("pbipFiles"),
       downloadReport: document.getElementById("downloadReport"),
+      saveReportRepo: document.getElementById("saveReportRepo"),
       downloadDataset: document.getElementById("downloadDataset"),
+      saveDatasetRepo: document.getElementById("saveDatasetRepo"),
       seedExamples: document.getElementById("seedExamples"),
       reportCount: document.getElementById("reportCount"),
       datasetCount: document.getElementById("datasetCount"),
@@ -1599,6 +1603,24 @@
       URL.revokeObjectURL(url);
     }
 
+    async function saveToRepo(path, content) {
+      try {
+        const res = await fetch("/api/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path, content })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          toast("Saved to " + path);
+        } else {
+          toast("Save failed: " + data.error);
+        }
+      } catch {
+        toast("serve.py not running — use Download buttons and copy files to shared/");
+      }
+    }
+
     async function copyText(text) {
       await navigator.clipboard.writeText(text);
       toast("Copied to clipboard.");
@@ -1650,7 +1672,9 @@
     });
     els.pbipFiles.addEventListener("change", event => parsePbipFiles(event.target.files));
     els.downloadReport.addEventListener("click", () => downloadJson("Rules-Report.json", state.reportRules));
+    els.saveReportRepo.addEventListener("click", () => saveToRepo("shared/Rules-Report.json", pretty(state.reportRules)));
     els.downloadDataset.addEventListener("click", () => downloadJson("Rules-Dataset.json", state.datasetRules));
+    els.saveDatasetRepo.addEventListener("click", () => saveToRepo("shared/Rules-Dataset.json", pretty(state.datasetRules)));
     els.seedExamples.addEventListener("click", seedExamples);
     els.searchRules.addEventListener("input", renderRuleList);
     els.ruleKind.addEventListener("change", event => {

@@ -46,8 +46,8 @@ The `tools/` folder contains static browser tools that help teams manage BI DevO
 | Tool | Path | Purpose |
 |---|---|---|
 | Fabric BI DevOps Accelerator Launchpad | `tools/index.html` | Central entry point for all no-code tools |
-| Enterprise Standards Builder | `tools/enterprise-standards-builder/index.html` | Generate report and dataset rule files from policy profiles |
-| Quality Rule Designer | `tools/rule-designer/index.html` | Tune individual PBI Inspector/Fab Inspector and Tabular Editor BPA rules |
+| Enterprise Standards Builder | `tools/enterprise-standards-builder/index.html` | **Read & Update**: Select and configure policy profiles to generate rule files |
+| Quality Rule Designer | `tools/rule-designer/index.html` | **Create, Read, Update, Delete**: Author and maintain individual PBI Inspector/Fab Inspector and Tabular Editor BPA rules |
 | DAX Test Builder | `tools/dax-test-builder/index.html` | Create measure-level DAX test metadata |
 | Deployment Manifest Builder | `tools/deployment-manifest-builder/index.html` | Create readable deployment contracts for review and release |
 | PBIP Project Readiness Scanner | `tools/pbip-readiness-scanner/index.html` | Scan a project before opening a pull request |
@@ -63,7 +63,13 @@ The `tools/` folder contains static browser tools that help teams manage BI DevO
 | Rule Coverage Matrix | `tools/rule-coverage-matrix/index.html` | Map governance policies to automated rules and manual checks |
 | Competitive Differentiation Matrix | `tools/competitive-differentiation-matrix/index.html` | Score this solution against generic CI/CD samples, decks, accelerators, and public alternatives |
 
-Use the Enterprise Standards Builder first for governance policy setup, then use the Quality Rule Designer for advanced tuning.
+### Recommended Tool Workflow
+
+**Governance Rule Authorship**:
+1. Start with **Enterprise Standards Builder** to select policy profile and adjust parameters (read & update existing policies)
+2. Use **Quality Rule Designer** for advanced scenarios: creating custom rules, tuning individual rules, or authoring rules that don't fit preset templates (full CRUD capabilities)
+
+Both tools generate the same `Rules-Report.json` and `Rules-Dataset.json` files used by CI/CD pipelines. Enterprise Standards Builder is optimized for policy selection; Quality Rule Designer is optimized for rule authorship and maintenance.
 
 ## Repository layout
 

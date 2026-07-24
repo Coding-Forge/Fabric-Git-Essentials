@@ -33,8 +33,8 @@ tools/index.html
 | Tool | Primary Audience | Use Case | Output |
 |---|---|---|---|
 | **Fabric BI DevOps Accelerator Launchpad** | All users | Pick the right tool and follow the recommended workflow | Tool links, workflow guidance, artifact map |
-| **Enterprise Standards Builder** | BI leads, governance owners, report creators | Select enterprise policies and generate standard rule files | `Rules-Report.json`, `Rules-Dataset.json`, policy profile, summary |
-| **Quality Rule Designer** | Platform team, advanced BI developers | Tune individual rules or create custom report/dataset checks | Updated rule JSON files |
+| **Enterprise Standards Builder** | BI leads, governance owners, report creators | Select enterprise policies and **update** parameters to generate standard rule files | `Rules-Report.json`, `Rules-Dataset.json`, policy profile, summary |
+| **Quality Rule Designer** | Platform team, advanced BI developers | **Create, read, update, delete** individual rules or create custom report/dataset checks | Updated rule JSON files |
 | **DAX Test Builder** | BI developers, semantic model owners | Define measure-level DAX test metadata consumed by the pipeline runner | `dax-tests.json`, test catalog Markdown |
 | **Deployment Manifest Builder** | Release managers, BI leads, platform engineers | Scan existing PBIP folders or define solution deployment ownership, artifacts, environments, parameters, approvals, and rollback | `deployment-manifest.json`, summary Markdown |
 | **PBIP Project Readiness Scanner** | Report creators, platform team | Scan a local PBIP repo or project folder before PR | Readiness Markdown report, JSON report |
@@ -62,6 +62,16 @@ The Enterprise Standards Builder is the recommended starting point for most team
 
 ![Enterprise Standards Builder](../../images/Enterprise-standards-builder.png)
 
+### Capabilities: Read & Update Only
+
+The Enterprise Standards Builder provides **read and update operations** on pre-defined policies:
+
+- ✅ **Read**: Load and view existing governance policies
+- ✅ **Update**: Modify parameters of existing policies (e.g., adjust max visuals from 12 to 15)
+- ❌ **Create**: Cannot create new policies from scratch
+- ❌ **Delete**: Cannot remove policies
+- ❌ **Advanced editing**: No JSON editing capability
+
 ### What It Helps Users Do
 
 - Choose a policy profile: **Advisory adoption**, **Enterprise standard**, **Strict enterprise gate**, or **Custom**
@@ -88,9 +98,17 @@ Open:
 tools/rule-designer/index.html
 ```
 
-The Quality Rule Designer is the advanced companion tool. It is useful when a team needs to modify one rule, create a custom rule, or inspect the generated JSON before committing it.
+The Quality Rule Designer is the advanced companion tool for rule authorship and maintenance. It is useful when a team needs to create new rules, modify existing rules, or inspect and debug the generated JSON.
 
-![Guided Rule Builder](../../images/GuidedRuleBuilder.png)
+### Capabilities: Full CRUD Operations
+
+The Quality Rule Designer provides **complete rule management** with full Create, Read, Update, Delete capabilities:
+
+- ✅ **Create**: Build new rules from scratch using templates or custom JSON logic
+- ✅ **Read**: Load and inspect existing `Rules-Report.json` and `Rules-Dataset.json` files
+- ✅ **Update**: Modify rule parameters, logic, and settings
+- ✅ **Delete**: Remove rules from your rule set
+- ✅ **Advanced editing**: Edit raw JSON logic and customize rule templates
 
 ### What It Helps Users Do
 
@@ -110,6 +128,7 @@ Use this tool when the conversation starts with questions like:
 - "Can we add a custom report check?"
 - "Why is this rule failing?"
 - "Can we lower the severity while the team cleans up violations?"
+- "Can we build a rule that doesn't fit the preset templates?"
 
 ## DAX Test Builder
 

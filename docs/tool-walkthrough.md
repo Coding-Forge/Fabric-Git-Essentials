@@ -61,7 +61,14 @@ C:\Projects\Enterprise-Fabric\shared
 
 ![Enterprise Standards Builder](images/tool-walkthrough/enterprise-standards-builder.png)
 
-**What it does:** Generates baseline report and dataset quality rules from policy profiles.
+**What it does:** Generates baseline report and dataset quality rules from policy profiles by selecting and configuring pre-built policies.
+
+**Capabilities:** Read and update operations only
+- ✅ Select from pre-built policy profiles
+- ✅ Adjust policy parameters (max visuals, page limits, etc.)
+- ❌ Cannot create new policies
+- ❌ Cannot delete policies
+- ❌ No JSON editing
 
 **How to use it:**
 
@@ -76,19 +83,26 @@ C:\Projects\Enterprise-Fabric\shared
 - Which rules should be advisory or blocking?
 - How do we create standard rule files without hand-editing JSON?
 
-**Productivity and governance value:** Converts policy decisions into CI-ready rule files and makes governance repeatable.
+**Productivity and governance value:** Converts policy decisions into CI-ready rule files and makes governance repeatable. Designed for governance owners and report creators who prefer UI controls over JSON editing.
 
 ### Quality Rule Designer
 
 ![Quality Rule Designer](images/tool-walkthrough/quality-rule-designer.png)
 
-**What it does:** Edits or creates individual report and dataset quality rules.
+**What it does:** Authors and maintains individual report and dataset quality rules with full create, read, update, and delete capabilities.
+
+**Capabilities:** Full CRUD operations
+- ✅ Create new rules from templates or custom JSON
+- ✅ Read and inspect existing rules
+- ✅ Update rule parameters and logic
+- ✅ Delete rules
+- ✅ Edit raw JSON logic for advanced customization
 
 **How to use it:**
 
 1. Open `tools/rule-designer/index.html`.
 2. Load existing `Rules-Report.json` or `Rules-Dataset.json`.
-3. Select a rule or create a new one from a template.
+3. Select a rule to edit or create a new one from a template.
 4. Tune logic, severity, enabled state, or custom JSON logic.
 5. Download the updated rule file.
 
@@ -97,6 +111,9 @@ C:\Projects\Enterprise-Fabric\shared
 - Which rule is failing?
 - Can a specific threshold be adjusted?
 - Can we add a custom PBI Inspector or Tabular Editor BPA rule?
+- Can we create a rule that doesn't fit the preset templates?
+
+**Productivity and governance value:** Provides complete rule authorship and maintenance for platform teams and advanced BI developers who need full control over governance rules.
 
 **Productivity and governance value:** Lets advanced users tune rule behavior safely without rewriting full rule files.
 
