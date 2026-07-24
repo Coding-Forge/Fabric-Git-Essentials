@@ -273,7 +273,7 @@ Say:
 
 > One of the core value propositions of this accelerator is that it's platform-neutral—you can use it with Azure DevOps, GitHub Actions, or GitLab CI. But let's be honest: there are differences across platforms.
 
-> The Platform Parity Matrix documents exactly what works the same, what requires workarounds, what's in progress, and what's not available yet.
+> The CI/CD Platform Parity Matrix documents exactly what works the same, what requires workarounds, what's in progress, and what's not available yet.
 
 > This is critical information for platform teams making deployment decisions.
 
