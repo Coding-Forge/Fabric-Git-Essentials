@@ -461,6 +461,7 @@
         </label>
         <button id="downloadJson" class="primary" type="button">Download dax-tests.json</button>
         <button id="downloadMarkdown" type="button">Download test catalog</button>
+        <button id="saveToRepo" type="button" title="Requires serve.py — saves directly to shared/dax-tests.json">Save to repo</button>
         <button id="seedExamples" type="button">Use starter examples</button>
       </div>
     </div>
@@ -679,6 +680,7 @@
       loadFile: document.getElementById("loadFile"),
       downloadJson: document.getElementById("downloadJson"),
       downloadMarkdown: document.getElementById("downloadMarkdown"),
+      saveToRepo: document.getElementById("saveToRepo"),
       seedExamples: document.getElementById("seedExamples"),
       testCount: document.getElementById("testCount"),
       requiredCount: document.getElementById("requiredCount"),
@@ -1087,6 +1089,7 @@
     els.copyAllJson.addEventListener("click", () => copyText(pretty(state.suite)));
     els.downloadJson.addEventListener("click", () => downloadJson("dax-tests.json", state.suite));
     els.downloadMarkdown.addEventListener("click", () => downloadText("DAX-Test-Catalog.md", buildMarkdown()));
+    els.saveToRepo.addEventListener("click", () => saveToRepo("shared/dax-tests.json", pretty(state.suite)));
     els.seedExamples.addEventListener("click", seedExamples);
     els.importCsv.addEventListener("click", importCsv);
     els.loadFile.addEventListener("change", async event => {

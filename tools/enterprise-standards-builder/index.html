@@ -481,6 +481,7 @@
         <button id="downloadDataset" type="button">Download dataset rules</button>
         <button id="downloadProfile" type="button">Download policy profile</button>
         <button id="downloadSummary" type="button">Download summary</button>
+        <button id="saveToRepo" type="button" title="Requires serve.py — saves Rules-Report.json, Rules-Dataset.json, and policy profile to shared/">Save rules to repo</button>
       </div>
     </div>
   </header>
@@ -833,6 +834,7 @@
       downloadDataset: document.getElementById("downloadDataset"),
       downloadProfile: document.getElementById("downloadProfile"),
       downloadSummary: document.getElementById("downloadSummary"),
+      saveToRepo: document.getElementById("saveToRepo"),
       profileSelect: document.getElementById("profileSelect"),
       profileDescription: document.getElementById("profileDescription"),
       policyName: document.getElementById("policyName"),
@@ -1260,6 +1262,21 @@
       downloadBlob(filename, blob);
     }
 
+    async function saveToRepo(path, content) {
+      try {
+        const res = await fetch("/api/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path, content })
+        });
+        const data = await res.json();
+        if (data.ok) { toast("Saved to " + path); }
+        else { toast("Save failed: " + data.error); }
+      } catch {
+        toast("serve.py not running — use Download buttons and copy files to shared/");
+      }
+    }
+
     function downloadText(filename, value) {
       const blob = new Blob([value], { type: "text/markdown" });
       downloadBlob(filename, blob);
@@ -1356,6 +1373,11 @@
     els.downloadDataset.addEventListener("click", () => downloadJson("Rules-Dataset.json", state.generatedDatasetRules));
     els.downloadProfile.addEventListener("click", () => downloadJson("enterprise-policy-profile.json", buildPolicyProfile()));
     els.downloadSummary.addEventListener("click", () => downloadText("Enterprise-Policy-Summary.md", buildSummaryMarkdown(buildPolicyProfile())));
+    els.saveToRepo.addEventListener("click", async () => {
+      await saveToRepo("shared/Rules-Report.json", pretty(state.generatedReportRules));
+      await saveToRepo("shared/Rules-Dataset.json", pretty(state.generatedDatasetRules));
+      await saveToRepo("shared/enterprise-policy-profile.json", pretty(buildPolicyProfile()));
+    });
     els.copyReport.addEventListener("click", () => copyText(pretty(state.generatedReportRules)));
     els.copyDataset.addEventListener("click", () => copyText(pretty(state.generatedDatasetRules)));
     document.querySelectorAll(".tab").forEach(button => button.addEventListener("click", () => activateTab(button.dataset.tab)));
