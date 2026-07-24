@@ -92,13 +92,13 @@
       const pipeline=els.pipelineLog.value, pr=els.prSummary.value, ready=els.readinessReport.value, manifest=els.deploymentManifest.value, exceptions=els.exceptions.value, rules=els.effectiveRules.value, dax=els.daxSummary.value;
       const prJson=parseMaybeJson(pr), exJson=parseMaybeJson(exceptions);
       const signals=[
-        signal("Pipeline validation",has(pipeline),count(pipeline,/##\[error\]|\berror\b|failed for .* exit code/gi),count(pipeline,/##\[warning\]|\bwarning\b/gi),"CI and validation logs"),
+        signal("Pipeline validation",has(pipeline),has(pipeline)?count(pipeline,/##\[error\]|\berror\b|failed for .* exit code/gi):1,count(pipeline,/##\[warning\]|\bwarning\b/gi),"CI and validation logs"),
         signal("PR quality summary",has(pr),(prJson?.errors||0),((prJson?.warnings||0)+(prJson?.risks?.length||0)),"Reviewer handoff"),
-        signal("PBIP readiness",has(ready),count(ready,/\bblocker\b|missing|does not resolve/gi),count(ready,/\bwarning\b/gi),"Pre-PR scanner output"),
-        signal("Deployment manifest",has(manifest),0,has(manifest)?0:1,"Release ownership and target mapping"),
+        signal("PBIP readiness",has(ready),has(ready)?count(ready,/\bblocker\b|missing|does not resolve/gi):1,count(ready,/\bwarning\b/gi),"Pre-PR scanner output"),
+        signal("Deployment manifest",has(manifest),has(manifest)?0:1,0,"Release ownership and target mapping"),
         signal("Policy exceptions",has(exceptions),(exJson?.exceptions||[]).filter(e=>e.status==="expired").length,count(exceptions,/expiring|requested/gi),"Exception ownership and expiry"),
         signal("Effective rules",has(rules),0,has(rules)?0:1,"Branch-aware rules generated"),
-        signal("DAX tests",has(dax),count(dax,/\bfailed\b|##\[error\]/gi),count(dax,/\bskipped\b|warning/gi),"Measure validation")
+        signal("DAX tests",has(dax),has(dax)?count(dax,/\bfailed\b|##\[error\]/gi):1,count(dax,/\bskipped\b|warning/gi),"Measure validation")
       ];
       const blockers=signals.reduce((s,x)=>s+x.blockers,0), warnings=signals.reduce((s,x)=>s+x.warnings,0), evidence=signals.filter(x=>x.provided).length;
       let score=Math.max(0,100-(blockers*20)-(warnings*5)-((signals.length-evidence)*8));
