@@ -92,7 +92,8 @@ function Get-ProfilePaths {
             'docs/Rules-Authoring-Guide.md',
             'docs/sparse-clone-guide.md',
             'presentations/',
-            'powerpoint/'
+            'powerpoint/',
+            'Social Media/video/'
         )
     }
 
