@@ -303,21 +303,38 @@ To obtain these folders:
 
 ![Policy Exception Register](images/tool-walkthrough/policy-exception-register.png)
 
-**What it does:** Tracks approved, requested, expiring, and expired policy/rule exceptions.
+**What it does:** Tracks approved, requested, expiring, and expired policy/rule exceptions with **optional rule overrides** that modify rule properties at pipeline execution time.
 
 **How to use it:**
 
 1. Open `tools/policy-exception-register/index.html`.
 2. Load or create `policy-exceptions.json`.
-3. Capture rule ID, owner, approver, affected artifact, reason, mitigation, status, and expiration.
+3. For each exception, capture:
+   - Rule ID, owner, approver, affected artifact
+   - Reason, mitigation, status, and expiration
+   - **Rule changes (optional):**
+     - Override `logType` (change warning → error or vice versa)
+     - Override `threshold` (modify numeric limits in rule logic)
+     - Override `disabled` (temporarily disable a rule)
 4. Export JSON and Markdown summary.
+5. Save to repo or download for use in CI/CD pipeline.
+
+**How exceptions integrate with CI/CD:**
+
+- Exceptions do not modify source rule files (`Rules-Report.json`, `Rules-Dataset.json`)
+- Effective Rules Generator applies approved exceptions at pipeline runtime
+- Only exceptions with status="approved" and future expiration dates are applied
+- Rule changes take effect only during the exception window (until expiration)
+- Once expired, the exception is ignored and original rule enforcement resumes
 
 **Questions it answers:**
 
-- Which rules are waived?
+- Which rules are temporarily waived or modified?
+- What property changes are applied (logType, threshold, disabled)?
 - Who approved the exception?
 - Why does the exception exist?
 - When does it expire?
+- What artifacts are affected?
 
 **Productivity and governance value:** Prevents rule exceptions from becoming undocumented permanent bypasses.
 
@@ -373,9 +390,12 @@ To obtain these folders:
 **How to use it:**
 
 1. Open `tools/release-readiness-dashboard/index.html`.
-2. Paste pipeline logs, PR summary, readiness report, manifest, exceptions, effective rules, and DAX test summary.
+2. Load JSON files or paste pipeline logs, PR summary, readiness report, manifest, exceptions, effective rules, and DAX test summary:
+   - **Load files:** Click "Load file" next to each section to browse and select JSON, Markdown, or text files directly.
+   - **Or paste:** Manually paste content into any textarea.
 3. Review score, blockers, warnings, and evidence coverage.
-4. Export HTML, Markdown, or JSON.
+4. Use "Clear all" to reset the form when starting a new release assessment.
+5. Export HTML, Markdown, or JSON.
 
 **Questions it answers:**
 
@@ -384,7 +404,7 @@ To obtain these folders:
 - Are there blockers or warnings?
 - Should we release, release with review, or stop?
 
-**Productivity and governance value:** Gives release managers one consolidated decision view.
+**Productivity and governance value:** Gives release managers one consolidated decision view with flexible input options (file browse or copy-paste).
 
 ### Adoption Metrics Dashboard
 
