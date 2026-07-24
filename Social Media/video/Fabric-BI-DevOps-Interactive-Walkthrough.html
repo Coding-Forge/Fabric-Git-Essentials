@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fabric BI DevOps Accelerator Toolkit - Interactive Walkthrough</title>
+    <script>
+        (() => {
+            const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+            const theme = param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+            document.documentElement.setAttribute("data-theme", theme);
+        })();
+    </script>
+    <style>
+        :root {
+            color-scheme: light;
+            --cp-bg: #f7f4ef;
+            --cp-bg-elevated: #fcfbf8;
+            --cp-surface: #ffffff;
+            --cp-surface-soft: #f5f5f5;
+            --cp-border: #dedede;
+            --cp-border-strong: #919191;
+            --cp-text: #242424;
+            --cp-text-muted: #5c5c5c;
+            --cp-text-soft: #6f6f6f;
+            --cp-accent: #b11f4b;
+            --cp-accent-hover: #9a1a41;
+            --cp-accent-soft: rgba(177, 31, 75, 0.08);
+            --cp-accent-fg: #ffffff;
+            --cp-success: #16a34a;
+            --cp-danger: #dc2626;
+            --cp-warning: #f59e0b;
+            --cp-link: #0078d4;
+            --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+            --cp-overlay: rgba(255, 255, 255, 0.8);
+            --cp-panel: rgba(255, 255, 255, 0.86);
+            --cp-panel-strong: rgba(255, 255, 255, 0.96);
+            --cp-sheen: rgba(255, 255, 255, 0.55);
+            --cp-highlight: rgba(177, 31, 75, 0.12);
+        }
+        html[data-theme="dark"] {
+            color-scheme: dark;
+            --cp-bg: #3d3b3a;
+            --cp-bg-elevated: #343231;
+            --cp-surface: #292929;
+            --cp-surface-soft: #2e2e2e;
+            --cp-border: #474747;
+            --cp-border-strong: #5f5f5f;
+            --cp-text: #dedede;
+            --cp-text-muted: #919191;
+            --cp-text-soft: #b0b0b0;
+            --cp-accent: #fd8ea1;
+            --cp-accent-hover: #fb7b91;
+            --cp-accent-soft: rgba(253, 142, 161, 0.14);
+            --cp-accent-fg: #1a1a1a;
+            --cp-success: #4ade80;
+            --cp-danger: #f87171;
+            --cp-warning: #fbbf24;
+            --cp-link: #4da6ff;
+            --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+            --cp-overlay: rgba(41, 41, 41, 0.88);
+            --cp-panel: rgba(41, 41, 41, 0.72);
+            --cp-panel-strong: rgba(41, 41, 41, 0.96);
+            --cp-sheen: rgba(255, 255, 255, 0.04);
+            --cp-highlight: rgba(253, 142, 161, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--cp-bg);
+            color: var(--cp-text);
+            font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            padding: 0;
+        }
+
+        header {
+            background: var(--cp-surface);
+            border-bottom: 1px solid var(--cp-border);
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--cp-accent);
+        }
+
+        .theme-toggle {
+            background: var(--cp-surface-soft);
+            border: 1px solid var(--cp-border);
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            color: var(--cp-text);
+            font-size: 0.9rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--cp-border);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        section {
+            display: none;
+        }
+
+        section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.625rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--cp-accent);
+            color: var(--cp-accent-fg);
+        }
+
+        .btn-primary:hover {
+            background: var(--cp-accent-hover);
+        }
+
+        .btn-secondary {
+            background: var(--cp-surface-soft);
+            color: var(--cp-text);
+            border: 1px solid var(--cp-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cp-border);
+        }
+
+        .btn-disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        h1, h2, h3 {
+            margin: 1.5rem 0 1rem 0;
+            color: var(--cp-text);
+        }
+
+        h1 { font-size: 2.5rem; }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.5rem; }
+
+        .hero {
+            text-align: center;
+            padding: 3rem 1rem;
+            background: var(--cp-surface);
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--cp-border);
+        }
+
+        .hero h1 {
+            margin-top: 0;
+        }
+
+        .part-intro {
+            background: var(--cp-surface);
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--cp-accent);
+        }
+
+        .tool-card {
+            background: var(--cp-surface);
+            border: 1px solid var(--cp-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .tool-title {
+            flex: 1;
+        }
+
+        .timing {
+            background: var(--cp-accent-soft);
+            color: var(--cp-accent);
+            padding: 0.3rem 0.8rem;
+            border-radius: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .narration {
+            background: var(--cp-surface-soft);
+            border-left: 3px solid var(--cp-accent);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0.5rem;
+            font-style: italic;
+            line-height: 1.8;
+        }
+
+        .narration-label {
+            font-size: 0.85rem;
+            color: var(--cp-text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            font-style: normal;
+        }
+
+        .demo-steps {
+            background: var(--cp-accent-soft);
+            padding: 1.5rem;
+            border-radius: 0.625rem;
+            margin: 1.5rem 0;
+        }
+
+        .demo-steps h4 {
+            color: var(--cp-accent);
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        .demo-steps ol {
+            margin-left: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .demo-steps li {
+            margin-bottom: 0.8rem;
+        }
+
+        .ui-elements {
+            background: var(--cp-surface-soft);
+            padding: 1rem;
+            border-radius: 0.625rem;
+            margin: 1rem 0;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .progress-bar {
+            background: var(--cp-border);
+            height: 8px;
+            border-radius: 4px;
+            margin: 2rem 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--cp-success);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .quick-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 2rem 0;
+            justify-content: center;
+        }
+
+        .quick-links button {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--cp-surface);
+            border: 1px solid var(--cp-border);
+            padding: 1.5rem;
+            border-radius: 0.625rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            color: var(--cp-accent);
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: var(--cp-text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .keyboard-hint {
+            background: var(--cp-highlight);
+            padding: 1rem;
+            border-radius: 0.625rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            color: var(--cp-text-soft);
+        }
+
+        .accessibility-notice {
+            background: var(--cp-warning);
+            color: #000;
+            padding: 1rem;
+            border-radius: 0.625rem;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        footer {
+            background: var(--cp-surface);
+            border-top: 1px solid var(--cp-border);
+            padding: 2rem;
+            margin-top: 4rem;
+            text-align: center;
+            color: var(--cp-text-muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">🎬 Fabric BI DevOps Toolkit Walkthrough</div>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- HOME PAGE -->
+        <section id="home" class="active">
+            <div class="hero">
+                <h1>Fabric BI DevOps Accelerator</h1>
+                <p style="font-size: 1.2rem; color: var(--cp-text-muted); margin: 1rem 0;">
+                    Interactive Practice Guide — 16 Tools, 3 Parts, 45+ Minutes of Learning
+                </p>
+                <p style="color: var(--cp-text-soft);">
+                    Use this presentation to practice narration with accessibility tools before recording professionally.
+                </p>
+            </div>
+
+            <div class="accessibility-notice">
+                💡 <strong>Tip:</strong> Enable your screen reader (NVDA, JAWS, or built-in accessibility) to hear the narration text. Try Settings > Accessibility > Text-to-speech on Windows, or VoiceOver on Mac.
+            </div>
+
+            <div class="summary-stats">
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Parts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">16</div>
+                    <div class="stat-label">Tools</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">45+</div>
+                    <div class="stat-label">Minutes</div>
+                </div>
+            </div>
+
+            <div style="background: var(--cp-surface); padding: 2rem; border-radius: 1rem; margin: 2rem 0;">
+                <h2>Choose Your Starting Point</h2>
+                <div class="nav-buttons" style="justify-content: center;">
+                    <button class="btn-primary" onclick="goToSection('part1-intro')">Start Part 1: Standards</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-intro')">Start Part 2: Review</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-intro')">Start Part 3: Governance</button>
+                </div>
+            </div>
+
+            <div style="background: var(--cp-surface); padding: 2rem; border-radius: 1rem;">
+                <h3>Quick Navigation</h3>
+                <div class="quick-links">
+                    <button class="btn-secondary" onclick="goToSection('part1-intro')">Part 1 Intro</button>
+                    <button class="btn-secondary" onclick="goToSection('part1-tool1')">Tool 1-1</button>
+                    <button class="btn-secondary" onclick="goToSection('part1-tool2')">Tool 1-2</button>
+                    <button class="btn-secondary" onclick="goToSection('part1-tool3')">Tool 1-3</button>
+                    <button class="btn-secondary" onclick="goToSection('part1-tool4')">Tool 1-4</button>
+                </div>
+                <div class="quick-links">
+                    <button class="btn-secondary" onclick="goToSection('part2-intro')">Part 2 Intro</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-tool1')">Tool 2-1</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-tool2')">Tool 2-2</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-tool3')">Tool 2-3</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-tool4')">Tool 2-4</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-tool5')">Tool 2-5</button>
+                </div>
+                <div class="quick-links">
+                    <button class="btn-secondary" onclick="goToSection('part3-intro')">Part 3 Intro</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool1')">Tool 3-1</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool2')">Tool 3-2</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool3')">Tool 3-3</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool4')">Tool 3-4</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool5')">Tool 3-5</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool6')">Tool 3-6</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool7')">Tool 3-7</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool8')">Tool 3-8</button>
+                </div>
+            </div>
+
+            <div class="keyboard-hint">
+                ⌨️ <strong>Keyboard shortcut:</strong> Use arrow keys or Tab to navigate through buttons. Press Enter to activate.
+            </div>
+        </section>
+
+        <!-- ==================== PART 1: STANDARDS FOUNDATION ==================== -->
+        
+        <section id="part1-intro">
+            <div class="part-intro">
+                <h1>Part 1: Standards Foundation</h1>
+                <p style="font-size: 1.1rem; margin: 1rem 0;">
+                    Learn how to define governance standards and quality rules that your entire organization will follow.
+                </p>
+                <p><strong>Duration:</strong> 8-12 minutes | <strong>Tools:</strong> 4 | <strong>Theme:</strong> Defining What "Good" Means</p>
+            </div>
+
+            <div class="tool-card">
+                <div class="narration">
+                    <div class="narration-label">📢 Opening Narration</div>
+                    Welcome to the Fabric BI DevOps Accelerator Toolkit. This is Part 1, where we learn how to build governance standards. <br><br>
+                    Every organization has different rules about how reports should look, how measures should be documented, and what makes something production-ready. Part 1 is about capturing those rules and making them automated. <br><br>
+                    By the end of this part, you'll have defined standards that your entire organization can use, and you'll have tools that enforce them automatically in your CI/CD pipeline.
+                </div>
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part1-tool1')">Start with Tool 1 →</button>
+                    <button class="btn-secondary" onclick="goToSection('home')">← Back to Home</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part1-tool1">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 1.1: Launchpad Overview</h2>
+                        <p style="color: var(--cp-text-muted);">The starting point for exploring all 16 toolkit tools</p>
+                    </div>
+                    <div class="timing">⏱️ 1 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 What is the Launchpad?</div>
+                    The Launchpad is your entry point to all 16 tools in this accelerator. When you open it at localhost 8000 tools index.html, you'll see four main workflow categories. Each category groups related tools that work together to solve a business problem. <br><br>
+                    The 16 tools work together in a recommended sequence: Part 1 tools define your standards, Part 2 tools help reviewers assess changes, and Part 3 tools make governance scale across your organization.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice speaking as you do this):</h4>
+                    <ol>
+                        <li>Navigate to localhost:8000/tools/index.html</li>
+                        <li>Point out the four workflow sections</li>
+                        <li>Count the 16 tools visible</li>
+                        <li>Say: "Here are all 16 tools we're going to explore"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • "Fabric BI DevOps Accelerator" title<br>
+                    • 16 tool cards in a grid layout<br>
+                    • Each tool has: Name, Description, Link<br>
+                    • Grouped into workflow categories
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part1-tool2')">Next: Tool 1.2 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part1-intro')">← Back to Intro</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part1-tool2">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 1.2: Enterprise Standards Builder</h2>
+                        <p style="color: var(--cp-text-muted);">Define quality policies and governance standards</p>
+                    </div>
+                    <div class="timing">⏱️ 3-4 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 What Does It Do?</div>
+                    The Enterprise Standards Builder is where your organization captures 'what good looks like' in one place. You define policies for your reports, your datasets, and your entire BI platform. <br><br>
+                    Instead of those rules living in PowerPoints and emails that nobody reads, you capture them here, and the system enforces them automatically. The builder lets you choose which policies to enable, customize them for your needs, and generate policy files that your CI/CD pipeline will check against.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter policy" to load a pre-built example</li>
+                        <li>Show the Profile dropdown (select "Standard" profile)</li>
+                        <li>Point out the policy controls (checkboxes for each policy)</li>
+                        <li>Say: "This profile has 12 policies enabled for reports and 8 for datasets"</li>
+                        <li>Click "Download policy profile" button</li>
+                        <li>Say: "This downloads to a JSON file your pipeline will use"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Profile dropdown (Minimal, Standard, Advanced, Custom)<br>
+                    • Policy controls (checkboxes)<br>
+                    • Report policies section<br>
+                    • Dataset policies section<br>
+                    • "Download policy profile" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part1-tool3')">Next: Tool 1.3 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part1-tool1')">← Back to Tool 1.1</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part1-tool3">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 1.3: Rule Designer</h2>
+                        <p style="color: var(--cp-text-muted);">Create custom DAX and governance rules</p>
+                    </div>
+                    <div class="timing">⏱️ 3-4 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Customizing Rules</div>
+                    The Rule Designer lets you create custom rules beyond the built-in policies. Maybe you want to enforce a specific naming convention for measures, or require that every visual has a title, or check that no report uses deprecated DAX functions. <br><br>
+                    You define these rules once in the Rule Designer, then they're checked automatically on every PR. No manual review needed.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter rules" to load examples</li>
+                        <li>Show the rule list with multiple rules visible</li>
+                        <li>Click on one rule to show details (Rule name, category, description, implementation)</li>
+                        <li>Say: "Here are 15 custom rules already defined for this organization"</li>
+                        <li>Click "Download rules JSON" button</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Rule name field<br>
+                    • Category dropdown (Report, Dataset, Governance)<br>
+                    • Rule definition/description<br>
+                    • Implementation details<br>
+                    • "Download rules JSON" button<br>
+                    • Rule list view
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part1-tool4')">Next: Tool 1.4 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part1-tool2')">← Back to Tool 1.2</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part1-tool4">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 1.4: DAX Test Builder</h2>
+                        <p style="color: var(--cp-text-muted);">Define automated tests for DAX logic</p>
+                    </div>
+                    <div class="timing">⏱️ 3-4 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Testing Data Logic</div>
+                    The DAX Test Builder is where you define automated tests for your measures and calculations. You describe: Given this scenario with these values, what should the measure return? <br><br>
+                    These tests run automatically on every PR. If someone changes a measure and the test fails, the PR gets blocked. This catches logic errors before they reach production.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use sample tests" to load examples</li>
+                        <li>Show the test list (multiple tests for different measures)</li>
+                        <li>Click on a test to show: Measure name, Input values, Expected result, Actual result</li>
+                        <li>Show the test health summary (passed/failed counts)</li>
+                        <li>Click "Download test suite"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Test health panel (Passed/Failed/Total)<br>
+                    • Measure name field<br>
+                    • Test input values<br>
+                    • Expected result field<br>
+                    • "Download test suite" button<br>
+                    • Test list view
+                </div>
+
+                <div style="background: var(--cp-success); color: white; padding: 1rem; border-radius: 0.625rem; margin: 1rem 0;">
+                    ✅ <strong>You've completed Part 1!</strong> You now have standards defined, custom rules created, and tests in place. These are the foundation for everything else.
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part2-intro')">Continue to Part 2 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part1-tool3')">← Back to Tool 1.3</button>
+                    <button class="btn-secondary" onclick="goToSection('home')">← Home</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PART 2: PBIP REVIEW ==================== -->
+        
+        <section id="part2-intro">
+            <div class="part-intro">
+                <h1>Part 2: PBIP Review & Pull Requests</h1>
+                <p style="font-size: 1.1rem; margin: 1rem 0;">
+                    Learn how report authors prepare changes and reviewers assess them efficiently.
+                </p>
+                <p><strong>Duration:</strong> 13-18 minutes | <strong>Tools:</strong> 5 | <strong>Theme:</strong> Context-Aware Code Review</p>
+            </div>
+
+            <div class="tool-card">
+                <div class="narration">
+                    <div class="narration-label">📢 Opening Narration</div>
+                    Welcome to Part 2. You now know how standards are defined. The question is: How do you enforce them when a team wants to deploy changes? <br><br>
+                    Part 2 shows how report authors prepare pull requests for review and how reviewers understand what changed without reading raw JSON. We're moving from 'code review is tedious' to 'code review is actually fast because I have the context I need.'
+                </div>
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part2-tool1')">Start with Tool 2.1 →</button>
+                    <button class="btn-secondary" onclick="goToSection('home')">← Back to Home</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2-tool1">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 2.1: Deployment Manifest Builder</h2>
+                        <p style="color: var(--cp-text-muted);">Create the release contract for your deployment</p>
+                    </div>
+                    <div class="timing">⏱️ 3-4 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 What is a Deployment Manifest?</div>
+                    Before any change is deployed, you need a release contract that answers: What is being deployed? Who owns it? Where does it go? What governance checks must pass? <br><br>
+                    The Deployment Manifest Builder creates this contract in one place. It becomes part of your PR description so reviewers understand the deployment context from the start.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter manifest"</li>
+                        <li>Show Solution Identity (name, domain, criticality, owners)</li>
+                        <li>Scroll to Ownership section</li>
+                        <li>Scroll to Artifacts section (what's being deployed)</li>
+                        <li>Show Validation Gates (what checks must pass)</li>
+                        <li>Click "Download manifest summary"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Solution name field<br>
+                    • Domain dropdown<br>
+                    • Criticality (low/medium/high)<br>
+                    • Business owner / Technical owner<br>
+                    • Artifacts list<br>
+                    • Validation Gates<br>
+                    • "Download manifest summary" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part2-tool2')">Next: Tool 2.2 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-intro')">← Back to Intro</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2-tool2">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 2.2: PBIP Project Readiness Scanner</h2>
+                        <p style="color: var(--cp-text-muted);">Pre-PR quality checkpoint for report authors</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Catching Issues Early</div>
+                    The readiness scanner runs on a report author's local PBIP folder and catches missing structure or governance assets BEFORE opening the PR. <br><br>
+                    If something is wrong—missing test files, incomplete metadata, configuration issues—the scanner tells you. No surprises at review time. This prevents PR delays and frustration.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use sample scan"</li>
+                        <li>Show Readiness Score (XX%, Blockers, Warnings, Passed)</li>
+                        <li>Say: "Zero blockers means we're ready for review"</li>
+                        <li>Click "Findings" tab</li>
+                        <li>Show findings by category</li>
+                        <li>Click "Download Markdown report"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Readiness Score panel<br>
+                    • Blockers count<br>
+                    • Warnings count<br>
+                    • Passed checks count<br>
+                    • Findings tab<br>
+                    • "Download Markdown report" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part2-tool3')">Next: Tool 2.3 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-tool2')">← Back to Tool 2.2</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2-tool3">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 2.3: PBIP Diff Viewer</h2>
+                        <p style="color: var(--cp-text-muted);">Translate JSON changes into business language</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Understanding Changes</div>
+                    Raw PBIP diffs are unreadable JSON. The PBIP Diff Viewer translates them into business language. Instead of looking at raw files, reviewers see: What reports were added? What measures changed? What governance assets were updated? <br><br>
+                    This is where PR review becomes efficient.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter example"</li>
+                        <li>Show Diff Health (Changed, Added, Removed counts)</li>
+                        <li>Show artifact filter dropdown</li>
+                        <li>Click on a changed artifact to show before/after</li>
+                        <li>Show different artifact types</li>
+                        <li>Click "Download Markdown"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Diff Health panel<br>
+                    • Changed/Added/Removed counts<br>
+                    • Artifact type filter<br>
+                    • Search for file paths<br>
+                    • Changed artifacts list<br>
+                    • "Download Markdown" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part2-tool4')">Next: Tool 2.4 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-tool3')">← Back to Tool 2.3</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2-tool4">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 2.4: Dependency Impact Analyzer</h2>
+                        <p style="color: var(--cp-text-muted);">Show what tests are needed for changes</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Predicting Downstream Impact</div>
+                    If I change a measure, which reports and visuals are affected? Which ones need re-testing? <br><br>
+                    The Dependency Impact Analyzer answers these questions. It prevents the nightmare scenario: You deploy a measure change that looks safe, but it breaks five reports in production.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter example"</li>
+                        <li>Show Model Object Inventory (Objects, Measures, Visual refs)</li>
+                        <li>Type a changed object (e.g., "Revenue")</li>
+                        <li>Show impact calculation</li>
+                        <li>Show Impact Type filter</li>
+                        <li>Click "Download Markdown"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Model Object Inventory<br>
+                    • Changed objects input<br>
+                    • Impact type filter<br>
+                    • Impacted visuals list<br>
+                    • Affected reports list<br>
+                    • "Download Markdown" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part2-tool5')">Next: Tool 2.5 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-tool4')">← Back to Tool 2.4</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2-tool5">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 2.5: PR Quality Summary Generator</h2>
+                        <p style="color: var(--cp-text-muted);">One concise summary for reviewers</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Executive Handoff</div>
+                    This is the final handoff. It takes all the signals—readiness score, impact analysis, quality rule results, deployment manifest—and creates one concise summary for reviewers. <br><br>
+                    Instead of hunting through five different tools and files, everything reviewers need is in one page.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter example"</li>
+                        <li>Show Summary Health (Changed files, Errors, Warnings, Risks)</li>
+                        <li>Scroll through Generated Markdown</li>
+                        <li>Show Recommendation (Ready/Caution/Do not merge)</li>
+                        <li>Show Reviewer Checklist</li>
+                        <li>Click "Download Markdown"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Summary Health panel<br>
+                    • Changed files count<br>
+                    • Errors/Warnings/Risks<br>
+                    • PR inputs (title, branch, author)<br>
+                    • Generated Markdown tab<br>
+                    • Recommendation<br>
+                    • Reviewer Checklist
+                </div>
+
+                <div style="background: var(--cp-success); color: white; padding: 1rem; border-radius: 0.625rem; margin: 1rem 0;">
+                    ✅ <strong>You've completed Part 2!</strong> Now reviewers have all the context they need to assess changes quickly and confidently.
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part3-intro')">Continue to Part 3 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part2-tool4')">← Back to Tool 2.4</button>
+                    <button class="btn-secondary" onclick="goToSection('home')">← Home</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== PART 3: PLATFORM & GOVERNANCE ==================== -->
+        
+        <section id="part3-intro">
+            <div class="part-intro">
+                <h1>Part 3: Platform & Governance at Scale</h1>
+                <p style="font-size: 1.1rem; margin: 1rem 0;">
+                    Learn how to make governance work for your entire organization across all CI/CD platforms.
+                </p>
+                <p><strong>Duration:</strong> 22-28 minutes | <strong>Tools:</strong> 8 | <strong>Theme:</strong> Making Governance Invisible</p>
+            </div>
+
+            <div class="tool-card">
+                <div class="narration">
+                    <div class="narration-label">📢 Opening Narration</div>
+                    Welcome to Part 3. You've learned how individuals and teams handle governance and code review. Now the platform team's job begins. <br><br>
+                    How do we automate this at scale? How do we generate CI/CD pipelines that work on Azure DevOps, GitHub, and GitLab simultaneously? How do we track exceptions and measure program success? <br><br>
+                    This is where governance moves from 'check you did the right thing' to 'the system does the right thing automatically.'
+                </div>
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part3-tool1')">Start with Tool 3.1 →</button>
+                    <button class="btn-secondary" onclick="goToSection('home')">← Back to Home</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3-tool1">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 3.1: Pipeline Config Generator</h2>
+                        <p style="color: var(--cp-text-muted);">Generate CI/CD pipelines for all three platforms</p>
+                    </div>
+                    <div class="timing">⏱️ 3-4 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Multi-Platform Governance</div>
+                    Instead of maintaining separate Azure DevOps, GitHub Actions, and GitLab CI configurations, you define the workflow once and generate all three platform versions automatically. <br><br>
+                    One workflow definition, three platform implementations. No drift, no inconsistency.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter config"</li>
+                        <li>Show Pipeline Structure section</li>
+                        <li>Show Validation Stages (5 stages)</li>
+                        <li>Show Platform-Specific Config</li>
+                        <li>Click "Generate Azure DevOps YAML" (show briefly)</li>
+                        <li>Click "Generate GitHub Actions YAML" (show briefly)</li>
+                        <li>Click "Generate GitLab CI YAML" (show briefly)</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Pipeline name field<br>
+                    • Trigger events<br>
+                    • Validation Stages section<br>
+                    • Platform-Specific Config<br>
+                    • "Generate Azure DevOps YAML" button<br>
+                    • "Generate GitHub Actions YAML" button<br>
+                    • "Generate GitLab CI YAML" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part3-tool2')">Next: Tool 3.2 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-intro')">← Back to Intro</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3-tool2">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 3.2: Policy Exception Register</h2>
+                        <p style="color: var(--cp-text-muted);">Track governance waivers and exceptions</p>
+                    </div>
+                    <div class="timing">⏱️ 3-4 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Managing Exceptions</div>
+                    Teams will ask for exceptions to rules. Maybe they say 'Our situation is special—we need a waiver on this quality check to ship today.' <br><br>
+                    Instead of hiding those exceptions, you track them. What rule? Why? Who approved? When does it expire? <br><br>
+                    This creates visibility. If 80% of exceptions are for the same rule, that tells you the rule might be wrong.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter register"</li>
+                        <li>Show Register Health (Active, Expiring, Expired)</li>
+                        <li>Click on an exception to show details</li>
+                        <li>Show expiration tracking</li>
+                        <li>Filter by status (Active, Expiring, Expired)</li>
+                        <li>Click "Download register report"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Register Health panel<br>
+                    • Active exceptions count<br>
+                    • Expiring soon count<br>
+                    • Expired count<br>
+                    • Exception list<br>
+                    • Status filter<br>
+                    • "Download register report" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part3-tool3')">Next: Tool 3.3 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool2')">← Back to Tool 3.2</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3-tool3">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 3.3: Effective Rules Generator</h2>
+                        <p style="color: var(--cp-text-muted);">Calculate actual rules in effect</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Rules After Exceptions</div>
+                    Teams customize rules. They layer overrides. The Effective Rules Generator tells you what rules are actually in effect after all the customizations. <br><br>
+                    What rules is a specific team actually following? This generator merges: your base rules, their exceptions, their overrides. It answers: Here's exactly what this team must follow.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter rules"</li>
+                        <li>Show Effective Rule Health</li>
+                        <li>Click "Merge profiles"</li>
+                        <li>Show merged ruleset with overrides highlighted</li>
+                        <li>Say: "After merging, we have the actual rules for this team"</li>
+                        <li>Click "Download effective rules"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Effective Rule Health panel<br>
+                    • Rules count<br>
+                    • Overrides count<br>
+                    • Exception count<br>
+                    • "Merge profiles" button<br>
+                    • Merged ruleset output<br>
+                    • "Download effective rules" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part3-tool4')">Next: Tool 3.4 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool3')">← Back to Tool 3.3</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3-tool4">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 3.4: CI/CD Platform Parity Matrix</h2>
+                        <p style="color: var(--cp-text-muted);">Prove governance works on all platforms</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Multi-Platform Proof</div>
+                    This matrix proves that your governance works the same way across all three CI/CD platforms: Azure DevOps, GitHub, and GitLab. <br><br>
+                    It tracks: Do all platforms support validation? Deployment? Quality checking? Governance enforcement? This is your proof that you're not creating a single-platform solution.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter matrix"</li>
+                        <li>Show Parity Health (5 capabilities, 4 full parity, 1 partial)</li>
+                        <li>Click on a capability to show platform status</li>
+                        <li>Say: "All platforms support artifact publishing and validation"</li>
+                        <li>Show capabilities grouped by category</li>
+                        <li>Click "Download parity report"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Parity Health panel<br>
+                    • Capabilities count<br>
+                    • Full parity count<br>
+                    • Partial/planned count<br>
+                    • Capability list<br>
+                    • Status badges (Supported/Partial/Planned/Gap)<br>
+                    • "Download parity report" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part3-tool5')">Next: Tool 3.5 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool4')">← Back to Tool 3.4</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3-tool5">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 3.5: Release Readiness Dashboard</h2>
+                        <p style="color: var(--cp-text-muted);">Objective release gate</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Go / No-Go Decisions</div>
+                    Before you deploy to production, is the solution actually ready? The Release Readiness Dashboard tracks four gates: Quality rules passed? Readiness score above threshold? No blocking exceptions? All approvals signed off? <br><br>
+                    When all four are green, you release. When one is red, you stop. This removes guessing from release decisions.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use sample dashboard"</li>
+                        <li>Show Readiness Score section</li>
+                        <li>Show all 4 Release Gates (all green)</li>
+                        <li>Show Solution Timeline</li>
+                        <li>Click "Approve for release"</li>
+                        <li>Click "Download release summary"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Readiness Score panel<br>
+                    • Current score percentage<br>
+                    • Days to release<br>
+                    • 4 Release Gates (Quality / Readiness / Exceptions / Approvals)<br>
+                    • Solution Timeline<br>
+                    • "Approve for release" button<br>
+                    • "Download release summary" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part3-tool6')">Next: Tool 3.6 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool5')">← Back to Tool 3.5</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3-tool6">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 3.6: Adoption Metrics Dashboard</h2>
+                        <p style="color: var(--cp-text-muted);">Measure program health and success</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Proving Value</div>
+                    Is your toolkit being adopted? Are teams successful? Are you reducing time-to-production? The Adoption Metrics Dashboard shows: How many projects are using the toolkit? What's their readiness? How long does onboarding take? <br><br>
+                    This is your program health dashboard. It answers executive questions about whether governance is actually working.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter metrics" or "New project"</li>
+                        <li>Show Adoption Health (projects, active, avg readiness)</li>
+                        <li>Fill in sample project metrics</li>
+                        <li>Show calculated metrics for that project</li>
+                        <li>Show Platform breakdown (AzDO / GitHub / GitLab)</li>
+                        <li>Click "Download adoption report"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Adoption Health panel<br>
+                    • Total projects<br>
+                    • Active/pilot/scaled count<br>
+                    • Avg readiness score<br>
+                    • Avg onboarding days<br>
+                    • Project metrics form<br>
+                    • "Download adoption report" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part3-tool7')">Next: Tool 3.7 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool6')">← Back to Tool 3.6</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3-tool7">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 3.7: Rule Coverage Matrix</h2>
+                        <p style="color: var(--cp-text-muted);">Track automation maturity</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Automation Progress</div>
+                    The Rule Coverage Matrix shows which rules are actually being enforced. It tracks: How many data governance rules? How many quality rules? How many deployment rules? Which are automated versus manual? <br><br>
+                    This is a maturity assessment. Rules that exist in documentation but aren't enforced don't matter.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter coverage"</li>
+                        <li>Show Rule Coverage Health (total, automated, manual, coverage %)</li>
+                        <li>Say: "87% automated coverage—that's enterprise-grade"</li>
+                        <li>Show rule categories (Data Governance, Quality, Deployment)</li>
+                        <li>Click on a category to expand</li>
+                        <li>Click "Download coverage report"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Coverage Health panel<br>
+                    • Total rules<br>
+                    • Automated count<br>
+                    • Manual count<br>
+                    • Coverage percentage<br>
+                    • Rule categories<br>
+                    • "Download coverage report" button
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('part3-tool8')">Next: Tool 3.8 →</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool7')">← Back to Tool 3.7</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3-tool8">
+            <div class="tool-card">
+                <div class="tool-header">
+                    <div class="tool-title">
+                        <h2>Tool 3.8: Competitive Differentiation Matrix</h2>
+                        <p style="color: var(--cp-text-muted);">Strategic positioning and roadmap</p>
+                    </div>
+                    <div class="timing">⏱️ 2-3 min</div>
+                </div>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Strategic Clarity</div>
+                    This matrix positions your Fabric BI DevOps toolkit against other platforms and solutions. What capabilities do you have that competitors don't? What's coming soon? What are gaps? <br><br>
+                    This keeps you honest and helps prioritize your roadmap. You can't hide gaps. You have a clear-eyed view of where you stand.
+                </div>
+
+                <div class="demo-steps">
+                    <h4>Demo Actions (Practice narration):</h4>
+                    <ol>
+                        <li>Click "Use starter matrix"</li>
+                        <li>Show Feature categories and competitor comparison</li>
+                        <li>Click on capability where you lead</li>
+                        <li>Click on capability where you're behind</li>
+                        <li>Show Roadmap section (Q4, Q1, Q2)</li>
+                        <li>Click "Download competitive summary"</li>
+                    </ol>
+                </div>
+
+                <div class="ui-elements">
+                    <strong>Key UI Elements:</strong><br>
+                    • Feature category rows<br>
+                    • Your platform column<br>
+                    • Competitor columns<br>
+                    • Status badges (Supported/Partial/Planned/Gap)<br>
+                    • Roadmap section<br>
+                    • "Download competitive summary" button
+                </div>
+
+                <div style="background: var(--cp-success); color: white; padding: 1.5rem; border-radius: 0.625rem; margin: 1.5rem 0;">
+                    ✅ <strong>You've completed all three parts!</strong><br>
+                    You now understand the complete Fabric BI DevOps Accelerator Toolkit workflow across all 16 tools.
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('conclusion')">View Closing Remarks →</button>
+                    <button class="btn-secondary" onclick="goToSection('part3-tool7')">← Back to Tool 3.7</button>
+                    <button class="btn-secondary" onclick="goToSection('home')">← Home</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONCLUSION -->
+        
+        <section id="conclusion">
+            <div class="tool-card">
+                <h1>🎉 Closing Remarks</h1>
+
+                <div class="narration">
+                    <div class="narration-label">📢 Closing Narration (Practice this at the end)</div>
+                    You've now seen the complete Fabric BI DevOps Accelerator toolkit. 16 tools across three workflows. <br><br>
+                    Part 1 was standards. Part 2 was review. Part 3 was scale. <br><br>
+                    But here's the real insight: None of these tools enforce anything by themselves. The enforcement happens in your CI/CD pipeline, in your code review process, in your release gates. The tools just make the process visible and fast. <br><br>
+                    That visibility and speed compound. After six months, you realize: We're releasing 40% faster. We're catching issues earlier. We're onboarding teams in 10 days instead of 30. We're moving teams from 'we can't deploy safely' to 'we deploy every day.' <br><br>
+                    That's the promise of integrated governance automation. Thank you for walking through the toolkit with us.
+                </div>
+
+                <div style="background: var(--cp-accent-soft); padding: 1.5rem; border-radius: 0.625rem; margin: 2rem 0;">
+                    <h3>Next Steps for Professional Recording:</h3>
+                    <ol style="margin-left: 1.5rem; line-height: 2;">
+                        <li>Practice the narration using this guide and your accessibility tool</li>
+                        <li>Record your practice version and evaluate the pacing</li>
+                        <li>Adjust narration timing as needed</li>
+                        <li>Use the detailed recording scripts in the repository for the professional version</li>
+                        <li>Follow the visual reference guides for exact UI element names</li>
+                    </ol>
+                </div>
+
+                <div class="summary-stats">
+                    <div class="stat-card">
+                        <div class="stat-number">45+</div>
+                        <div class="stat-label">Minutes Covered</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">16</div>
+                        <div class="stat-label">Tools Explained</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">3</div>
+                        <div class="stat-label">Workflows Demonstrated</div>
+                    </div>
+                </div>
+
+                <div class="keyboard-hint">
+                    📌 <strong>Pro Tip:</strong> You can also use this interactive guide as supplementary documentation on GitHub Pages or as part of your workshop materials. It serves both as a practice tool and as reference documentation.
+                </div>
+
+                <div class="nav-buttons">
+                    <button class="btn-primary" onclick="goToSection('home')">← Back to Home</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Fabric BI DevOps Accelerator Toolkit — Interactive Walkthrough Guide</p>
+        <p style="margin-top: 1rem; font-size: 0.85rem;">
+            This is a practice and reference guide. For professional video production, refer to the detailed recording scripts and visual guides in the repository.
+        </p>
+    </footer>
+
+    <script>
+        function goToSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('section');
+            sections.forEach(section => section.classList.remove('active'));
+
+            // Show target section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            
+            // Update button text
+            const button = document.querySelector('.theme-toggle');
+            button.textContent = newTheme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                const nextButton = document.querySelector('.btn-primary');
+                if (nextButton) nextButton.click();
+            }
+            if (e.key === 'ArrowLeft') {
+                const prevButton = document.querySelectorAll('.btn-secondary')[0];
+                if (prevButton) prevButton.click();
+            }
+        });
+    </script>
+</body>
+</html>
