@@ -63,9 +63,22 @@ $modeBox = New-ComboBox 170 18 @('Toolkit', 'Azure DevOps', 'GitHub', 'GitLab')
 $form.Controls.Add($modeBox)
 
 $form.Controls.Add((New-Label 'Repository URL' 20 60))
-$repoUrlBox = New-TextBox 170 58
+$repoUrlBox = New-TextBox 170 58 460
 $repoUrlBox.Text = 'https://github.com/Coding-Forge/Fabric-BI-DevOps.git'
 $form.Controls.Add($repoUrlBox)
+$browsRepoButton = New-Object System.Windows.Forms.Button
+$browsRepoButton.Text = 'Browse...'
+$browsRepoButton.Location = New-Object System.Drawing.Point(640, 56)
+$browsRepoButton.Size = New-Object System.Drawing.Size(90, 28)
+$form.Controls.Add($browsRepoButton)
+
+$repoHintLabel = New-Object System.Windows.Forms.Label
+$repoHintLabel.Text = 'Enter a remote URL or click Browse to select a local repository folder'
+$repoHintLabel.Location = New-Object System.Drawing.Point(170, 72)
+$repoHintLabel.Size = New-Object System.Drawing.Size(460, 18)
+$repoHintLabel.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.FontStyle]::Italic)
+$repoHintLabel.ForeColor = [System.Drawing.Color]::Gray
+$form.Controls.Add($repoHintLabel)
 
 $form.Controls.Add((New-Label 'Destination folder' 20 100))
 $parentFolderBox = New-TextBox 170 98 460
@@ -193,6 +206,15 @@ $browseButton.Add_Click({
     $dialog.Description = 'Select the parent folder where the new sparse-cloned repo folder will be created.'
     if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
         $parentFolderBox.Text = $dialog.SelectedPath
+        Update-UiState
+    }
+})
+
+$browsRepoButton.Add_Click({
+    $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
+    $dialog.Description = 'Select a local Fabric-BI-DevOps repository to clone from.'
+    if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
+        $repoUrlBox.Text = $dialog.SelectedPath
         Update-UiState
     }
 })
