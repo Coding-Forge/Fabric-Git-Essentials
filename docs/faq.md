@@ -21,6 +21,7 @@ This document covers the most common questions and issues encountered across the
 8. [Permissions & Governance](#8-permissions--governance)
 9. [Semantic Model & PBIP Artifacts](#9-semantic-model--pbip-artifacts)
 10. [Refresh Failures](#10-refresh-failures)
+11. [Running the Local Developer Server](#11-running-the-local-developer-server)
 
 ---
 
@@ -709,6 +710,268 @@ Scheduled refresh settings are **not promoted** by the Fabric Deployment Pipelin
 Consider scripting this via the Power BI REST API if you manage many models.
 
 > See also: [Governance Checklist](governance/governance-checklist.md), Section 4.4 — Operational Readiness.
+
+---
+
+## 11. Running the Local Developer Server
+
+### Q: How do I start the local server to run the tools?
+
+The toolkit includes interactive web-based tools (Quality Rule Designer, Release Readiness Dashboard, etc.) that require a local Python HTTP server.
+
+**Prerequisites:**
+- **Python 3.7+** installed and available in your PATH
+- You can verify this by opening a terminal/command prompt and typing `python --version`
+
+**To start the server:**
+
+1. Open a terminal/command prompt.
+2. Navigate to the toolkit folder:
+   ```powershell
+   cd C:\Projects\Fabric\Fabric-BI-DevOps    # Windows
+   cd ~/Projects/Fabric/Fabric-BI-DevOps     # macOS/Linux
+   ```
+3. Run the development server:
+   ```bash
+   python shared/scripts/serve.py
+   ```
+4. You should see output like:
+   ```
+   ╔═══════════════════════════════════════════════════════╗
+   ║      Fabric BI DevOps Accelerator — Dev Server        ║
+   ╚═══════════════════════════════════════════════════════╝
+
+   Launchpad : http://localhost:8000/tools/index.html
+   Root      : C:\Projects\Fabric\Fabric-BI-DevOps
+   Save API  : POST http://localhost:8000/api/save
+
+   Tools can now save JSON directly to shared/ folder.
+   Use the 'Save to repo' button in any tool toolbar.
+
+   Press Ctrl+C to stop.
+   ```
+5. Open your browser to **http://localhost:8000/tools/index.html**
+
+The server will keep running until you press **Ctrl+C** in the terminal.
+
+---
+
+### Q: Port 8000 is already in use. What should I do?
+
+**Port 8000 conflict** is the most common issue when running the local server. Port 8000 may be occupied by:
+- Another instance of the toolkit server (still running in the background)
+- Skype, Microsoft Teams, or other services
+- A different development server you started earlier
+
+**Solution 1: Find and stop the conflicting process (Windows)**
+
+1. Open PowerShell and check what's using port 8000:
+   ```powershell
+   netstat -ano | findstr :8000
+   ```
+2. This shows the **PID** (Process ID) in the right column. For example, if you see:
+   ```
+   TCP    127.0.0.1:8000         0.0.0.0:0              LISTENING       23004
+   ```
+   Then **23004** is the PID.
+
+3. Kill that process:
+   ```powershell
+   taskkill /F /PID 23004
+   ```
+
+4. Verify the port is now free:
+   ```powershell
+   netstat -ano | findstr :8000
+   ```
+   You should see no output.
+
+5. Now start the server again:
+   ```powershell
+   python shared/scripts/serve.py
+   ```
+
+**Solution 2: Find and stop the conflicting process (macOS/Linux)**
+
+1. Check what's using port 8000:
+   ```bash
+   lsof -i :8000
+   ```
+   This shows the process name and PID.
+
+2. Kill the process:
+   ```bash
+   kill -9 <PID>
+   ```
+   or
+   ```bash
+   pkill -f "python shared/scripts/serve.py"
+   ```
+
+3. Start the server again:
+   ```bash
+   python shared/scripts/serve.py
+   ```
+
+**Solution 3: Use a different port**
+
+If you cannot stop the other process, you can run the toolkit server on a different port:
+
+```bash
+python -m http.server 8001 --directory .
+```
+
+Then access the tools at **http://localhost:8001/tools/index.html** instead of **http://localhost:8000/tools/index.html**.
+
+> **Note:** The `Save to Repo` feature (which POST's JSON to `/api/save`) requires the custom server script at `shared/scripts/serve.py`. The standard `http.server` does NOT support the save functionality. Use a different port only as a temporary workaround for viewing tools.
+
+---
+
+### Q: How do I stop the server?
+
+The server runs in the terminal in a continuous loop. To stop it:
+
+1. Look for the terminal window running the server.
+2. Press **Ctrl+C** (hold Ctrl and press C).
+3. You should see:
+   ```
+   ^C
+   Keyboard interrupt received, exiting.
+   ```
+4. The terminal prompt should return (e.g., `PS C:\Projects\...>`).
+
+If you close the terminal window without pressing Ctrl+C, the server will continue running in the background. In that case, use the "Port 8000 is already in use" solution above to kill the process.
+
+---
+
+### Q: The server starts but the browser shows a blank page or "Cannot connect."
+
+**Possible causes:**
+
+1. **Wrong URL** — Make sure you're using `http://localhost:8000/tools/index.html` (not `https`). Port 8000 is **HTTP only**, not HTTPS.
+
+2. **Firewall blocking** — Some corporate firewalls block localhost connections. Try:
+   - Adding Python to your firewall exceptions.
+   - Contacting your IT department.
+
+3. **Browser cache** — Try clearing your browser cache and doing a hard refresh (**Ctrl+Shift+R** or **Cmd+Shift+R**).
+
+4. **Server crashed** — Check the terminal where you started the server. If you see an error message, the server may have crashed. Stop it (**Ctrl+C**) and restart:
+   ```bash
+   python shared/scripts/serve.py
+   ```
+
+5. **Port 8000 not actually listening** — Verify the server is running:
+   ```powershell
+   netstat -ano | findstr :8000    # Windows
+   lsof -i :8000                   # macOS/Linux
+   ```
+   If nothing is listening, the server failed to start. Check for Python installation issues.
+
+---
+
+### Q: The "Save to Repo" button doesn't work. I click it but nothing happens.
+
+The `Save to Repo` feature requires:
+
+1. **The custom Python server** (`shared/scripts/serve.py`), not the generic `http.server`.
+2. **A correct file path** — Files are saved to `shared/` folder, which must exist and be writable.
+3. **Files must be in the toolkit directory** — The server serves from the root of the toolkit (where `shared/` lives).
+
+If the button doesn't work:
+
+1. Check the **Browser Console** for errors (**F12** or **Right-click → Inspect → Console**).
+2. Verify the server output in the terminal — you should see logs like:
+   ```
+   SAVED  shared/Rules-Report.json
+   127.0.0.1 - - [24/Jul/2026 16:55:40] "POST /api/save HTTP/1.1" 200 -
+   ```
+3. If you see a **404** or **500** error, check the terminal logs for details.
+4. Try restarting the server and refreshing the browser.
+
+---
+
+### Q: I'm on macOS or Linux. Do I need to do anything different?
+
+The toolkit server is **cross-platform** and works identically on Windows, macOS, and Linux. The main differences are:
+
+| Task | Windows | macOS/Linux |
+|------|---------|------------|
+| **Navigate folder** | `cd C:\Projects\...` | `cd ~/Projects/...` |
+| **Start server** | `python shared/scripts/serve.py` | `python3 shared/scripts/serve.py` * |
+| **Stop server** | **Ctrl+C** | **Ctrl+C** |
+| **Check port usage** | `netstat -ano \| findstr :8000` | `lsof -i :8000` |
+| **Kill process** | `taskkill /F /PID <PID>` | `kill -9 <PID>` |
+
+\* On Linux and macOS, `python3` is often the correct command (Python 2 is deprecated). If `python shared/scripts/serve.py` doesn't work, try `python3 shared/scripts/serve.py`.
+
+---
+
+### Q: The server is running but saves are failing with permission errors.
+
+The server must have **write access** to the `shared/` folder in the toolkit directory.
+
+**Solution:**
+
+1. Verify the folder is writable:
+   ```powershell
+   # Windows
+   icacls C:\Projects\Fabric\Fabric-BI-DevOps\shared /grant:r "%USERNAME%:F"
+   
+   # macOS/Linux
+   chmod 755 ~/Projects/Fabric/Fabric-BI-DevOps/shared
+   ```
+
+2. Restart the server:
+   ```bash
+   python shared/scripts/serve.py
+   ```
+
+3. Try saving again from a tool.
+
+---
+
+### Q: Multiple copies of the server are running. How do I clean them all up?
+
+If you've started the server multiple times and lost track of the terminals, use this command to find and stop all instances:
+
+**Windows:**
+```powershell
+Get-Process | Where-Object { $_.Name -like "*python*" } | Stop-Process -Force
+```
+
+**macOS/Linux:**
+```bash
+pkill -f "python.*serve.py"
+```
+
+Then start a single fresh instance:
+```bash
+python shared/scripts/serve.py
+```
+
+---
+
+### Q: I want to run the server permanently (not close the terminal). Can I do that?
+
+Yes, you can run the server in the background:
+
+**Windows (PowerShell):**
+```powershell
+Start-Process python -ArgumentList "shared/scripts/serve.py" -WindowStyle Hidden
+```
+
+**Windows (Command Prompt):**
+```cmd
+start /B python shared/scripts/serve.py
+```
+
+**macOS/Linux:**
+```bash
+nohup python3 shared/scripts/serve.py > /tmp/fabric-server.log 2>&1 &
+```
+
+To stop a background server, use the "Port 8000 is already in use" solution above to kill the process by PID.
 
 ---
 
