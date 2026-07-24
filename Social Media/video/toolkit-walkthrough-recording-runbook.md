@@ -148,7 +148,7 @@ Say:
 
 > This is the Fabric BI DevOps Accelerator toolkit. These are browser-based tools that help teams solve these problems. They let you define quality standards, review changes, validate deployment readiness, track governance exceptions, and measure adoption—all without hand-editing JSON files.
 
-> The toolkit includes 15 tools that work together. We start with governance and quality standards, then show how to review pull requests and prepare releases, and finish with governance and adoption tracking.
+> The toolkit includes 16 tools that work together. We start with governance and quality standards, then show how to review pull requests and prepare releases, and finish with governance and adoption tracking.
 
 Then say:
 
@@ -179,7 +179,7 @@ Say:
 
 > The launchpad is the front door to the entire toolkit. Instead of diving into individual tools, start here. It shows what each tool does, what artifacts it produces, who should use it, and how tools work together.
 
-> You'll see three workflow sequences: standards and quality, PBIP review and readiness, and governance and adoption. The launchpad connects to all 15 tools and helps different roles understand which tool to use first.
+> You'll see the Launchpad workflow with all 16 tools sequenced in a recommended 16-step flow: standards → tuning → testing → deployment → readiness → review → impact analysis → pipeline generation → exceptions management → rules generation → platform comparison → release readiness → adoption metrics → coverage mapping → differentiation → competitive positioning.
 
 Demo actions:
 
@@ -839,7 +839,7 @@ competitive-differentiation-matrix.md
 
 Say:
 
-> We've just walked through 15 tools that cover the entire BI DevOps operating model. Here's the through-line:
+> We've just walked through 16 tools that cover the entire BI DevOps operating model. Here's the through-line:
 >
 > - **First**, you define quality standards using the Enterprise Standards Builder. This is the policy layer.
 >
@@ -912,7 +912,7 @@ When uploading to YouTube, LinkedIn, or other platforms:
 - **Title:** Examples:
   - "Fabric BI DevOps Accelerator Toolkit Walkthrough (Full Demo)"
   - "How to Use Power BI Governance Tools: Complete Toolkit Demo"
-  - "BI DevOps Toolkit for Power BI & Fabric – 15 Tools in 30 Minutes"
+  - "BI DevOps Toolkit for Power BI & Fabric – 16 Tools in 30 Minutes"
 
 - **Description:** Start with the problem, mention the toolkit value, and include:
   ```

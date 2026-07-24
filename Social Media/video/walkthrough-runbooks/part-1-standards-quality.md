@@ -83,8 +83,8 @@ http://localhost:8000/tools/index.html
 
 Show:
 
-- **Tool Catalog tab** — List of all 15 tools
-- **Workflow tab** — Three sequences: standards → review → release
+- **Tool Catalog tab** — List of all 16 tools
+- **Workflow tab** — 16-step recommended workflow sequence
 - **Artifacts tab** — What each tool generates
 - **Audience paths tab** — Role-based navigation
 
@@ -92,7 +92,7 @@ Say:
 
 > The launchpad is the front door to the entire toolkit. Instead of guessing which tool to use first, start here. You'll see how the tools fit together and which roles use which tools.
 
-> Notice there are three workflows: standards and quality foundation, PBIP review and pull request readiness, and governance and adoption. We're starting with standards because everything else depends on clear quality expectations.
+> Notice the Workflow tab shows the complete 16-step recommended sequence. Part 1 covers steps 1–3 (define standards, tune rules, and add DAX tests). Part 2 covers steps 4–6 (deployment, readiness scanning, and change analysis). Part 3 covers steps 7–16 (pipeline generation through adoption metrics). We're starting with standards because everything else depends on clear quality expectations.
 
 Demo actions:
 
@@ -103,7 +103,7 @@ Demo actions:
 
 Say:
 
-> The launchpad prevents overwhelm. You don't need to understand all 15 tools. You need to understand which tools matter for your role, and which ones can wait.
+> The launchpad prevents overwhelm. You don't need to understand all 16 tools. You need to understand which tools matter for your role, and which ones can wait.
 
 Transition:
 
@@ -125,35 +125,41 @@ Say:
 
 > Why is this important? Because if you hand people a JSON file and ask them to edit it, adoption stops. But if you guide them through a UI, they understand the choices and feel ownership.
 
-> The builder comes with three pre-configured profiles that represent different governance maturity levels.
+> The builder comes with pre-configured profiles that represent different governance maturity levels. You can also create a custom profile for your specific needs.
 
 Demo actions:
 
-1. Point out the three profile buttons:
-   - **Advisory Adoption** (permissive, designed for onboarding teams that are new to governance)
-   - **Enterprise Standard** (balanced, the most common choice)
-   - **Strict Enterprise Gate** (high control, for regulated environments)
+1. Point out the profile dropdown combobox (at the top of the left sidebar):
+   - **Advisory adoption** (permissive, designed for onboarding teams that are new to governance)
+   - **Enterprise standard** (balanced, the most common choice)
+   - **Strict enterprise gate** (high control, for regulated environments)
+   - **Custom** (for organizations with unique requirements)
 
-2. Click **Enterprise Standard** (best middle-ground for demonstration).
+2. Click to select **Enterprise standard** from the dropdown (best middle-ground for demonstration).
 
-3. Scroll through the report usability settings and explain 2–3 controls:
-   - "Restrict old visual types": Why you'd want this (custom visuals can be harder to manage and maintain)
-   - "Require naming convention for measures": Why it matters (makes them easier to find and understand)
-   - "Restrict deprecated functions": Why it's important (DAX evolves, and some functions are less efficient)
+3. Scroll through the policy controls (shown as checkboxes) and explain 2–3 key ones:
+   - "Keep reports concise and navigable": Why you'd want this (limits page count so users can find content quickly; helps with page load time)
+   - "Limit visible visuals per page": Why it matters (keeps report pages readable and responsive on various screen sizes)
+   - "Prevent vertical page scrolling": Why it's important (enforces a consistent scrollable canvas height and avoids hiding content)
+   - "Require chart axis titles": Why it matters (makes charts self-documenting and easier to interpret)
 
-4. Scroll through semantic model and DAX settings and point out key ones:
-   - Measure and column naming standards
-   - Relationship validation
-   - Aggregate function restrictions
-   - DAX complexity thresholds
+4. Scroll down to see more semantic model and report authoring settings:
+   - "Require meaningful page names"
+   - "Use enterprise theme colors" (enforces brand consistency)
+   - "Remove auto-date tables" (prevents duplicate date hierarchies in DAX)
+   - "Discourage report-level local measures" (pushes developers toward shared semantic model measures)
 
-5. Click **Generate Rules** or **Summary** and show the output.
+5. Click the **Download summary** button to generate the policy summary Markdown.
 
-6. Pause on the generated JSON/Markdown for 2–3 seconds so viewers can see what's being created.
+6. Pause on the summary Markdown for 2–3 seconds so viewers can see the output.
+
+7. Click **Download report rules** to show the report rules JSON that will be generated.
+
+8. Click **Download dataset rules** to show the semantic model rules JSON.
 
 Say:
 
-> Notice what happened. You didn't write any rules yourself. You made policy decisions through a UI, and the tool generated the JSON rules that the CI/CD system will enforce.
+> Notice what happened. You didn't write any rules yourself. You made policy decisions through a UI, and the tool automatically generated the JSON rules that the CI/CD system will enforce. You'll see three downloads: report rules, dataset rules, and a policy profile that documents your choices.
 
 Artifacts to mention and pause on:
 
