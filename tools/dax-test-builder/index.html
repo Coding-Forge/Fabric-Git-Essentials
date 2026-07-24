@@ -1042,6 +1042,21 @@
       toast("Copied to clipboard.");
     }
 
+    async function saveToRepo(path, content) {
+      try {
+        const res = await fetch("/api/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ path, content })
+        });
+        const data = await res.json();
+        if (data.ok) { toast("Saved to " + path); }
+        else { toast("Save failed: " + data.error); }
+      } catch {
+        toast("serve.py not running — use Download buttons and copy files to shared/");
+      }
+    }
+
     function escapeHtml(value) {
       return String(value ?? "")
         .replaceAll("&", "&amp;")
