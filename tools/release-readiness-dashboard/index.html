@@ -28,6 +28,7 @@
         <button type="button" onclick="window.location.href='../index.html'">Back to launchpad</button>
         <button id="calculate" class="primary" type="button">Calculate readiness</button>
         <button id="seedExample" type="button">Use starter example</button>
+        <button id="clearForm" type="button">Clear all</button>
         <button id="downloadHtml" type="button">Download dashboard HTML</button>
         <button id="downloadMarkdown" type="button">Download Markdown</button>
         <button id="downloadJson" type="button">Download JSON</button>
@@ -48,7 +49,7 @@
       </div>
     </aside>
     <section class="panel">
-      <div class="panel-header"><h2>Release inputs</h2><div class="muted">Paste JSON or Markdown from existing toolkit outputs and pipeline logs.</div></div>
+      <div class="panel-header"><h2>Release inputs</h2><div class="muted">Load JSON/Markdown from toolkit outputs and pipeline logs, or paste directly.</div></div>
       <div class="panel-body grid">
         <div class="grid three">
           <label>Release name<input id="releaseName" placeholder="Cost Management v1.2"></label>
@@ -56,12 +57,12 @@
           <label>Release owner<input id="owner" placeholder="BI Lead"></label>
         </div>
         <label>Pipeline / validation log<textarea id="pipelineLog" placeholder="Paste CI log or validation summary"></textarea></label>
-        <label>PR quality summary JSON or Markdown<textarea id="prSummary" placeholder="Paste pr-quality-summary.json or Markdown"></textarea></label>
-        <label>PBIP readiness report JSON or Markdown<textarea id="readinessReport" placeholder="Paste readiness scanner output"></textarea></label>
-        <label>Deployment manifest JSON or summary<textarea id="deploymentManifest" placeholder="Paste deployment-manifest.json or summary"></textarea></label>
-        <label>Policy exceptions JSON or summary<textarea id="exceptions" placeholder="Paste policy-exceptions.json or summary"></textarea></label>
-        <label>Effective rules summary<textarea id="effectiveRules" placeholder="Paste effective-rules-summary.md or JSON"></textarea></label>
-        <label>DAX test summary<textarea id="daxSummary" placeholder="Paste DAX test output or catalog summary"></textarea></label>
+        <div><label style="display:flex;gap:8px;align-items:center">PR quality summary JSON or Markdown<label class="file-button"><span>Load file</span><input type="file" id="loadPrSummary" accept=".json,.md,.txt" onchange="loadFile(event,'prSummary')"></label></label><textarea id="prSummary" placeholder="Paste pr-quality-summary.json or Markdown"></textarea></div>
+        <div><label style="display:flex;gap:8px;align-items:center">PBIP readiness report JSON or Markdown<label class="file-button"><span>Load file</span><input type="file" id="loadReadinessReport" accept=".json,.md,.txt" onchange="loadFile(event,'readinessReport')"></label></label><textarea id="readinessReport" placeholder="Paste readiness scanner output"></textarea></div>
+        <div><label style="display:flex;gap:8px;align-items:center">Deployment manifest JSON or summary<label class="file-button"><span>Load file</span><input type="file" id="loadDeploymentManifest" accept=".json,.md,.txt" onchange="loadFile(event,'deploymentManifest')"></label></label><textarea id="deploymentManifest" placeholder="Paste deployment-manifest.json or summary"></textarea></div>
+        <div><label style="display:flex;gap:8px;align-items:center">Policy exceptions JSON or summary<label class="file-button"><span>Load file</span><input type="file" id="loadExceptions" accept=".json,.md,.txt" onchange="loadFile(event,'exceptions')"></label></label><textarea id="exceptions" placeholder="Paste policy-exceptions.json or summary"></textarea></div>
+        <div><label style="display:flex;gap:8px;align-items:center">Effective rules summary<label class="file-button"><span>Load file</span><input type="file" id="loadEffectiveRules" accept=".json,.md,.txt" onchange="loadFile(event,'effectiveRules')"></label></label><textarea id="effectiveRules" placeholder="Paste effective-rules-summary.md or JSON"></textarea></div>
+        <div><label style="display:flex;gap:8px;align-items:center">DAX test summary<label class="file-button"><span>Load file</span><input type="file" id="loadDaxSummary" accept=".json,.md,.txt" onchange="loadFile(event,'daxSummary')"></label></label><textarea id="daxSummary" placeholder="Paste DAX test output or catalog summary"></textarea></div>
         <div class="cards" id="cards"></div>
         <div class="grid two">
           <div><h3>Release Markdown</h3><pre id="markdownOutput" class="output"></pre></div>
@@ -108,9 +109,11 @@
     function htmlDoc(){return`<!doctype html><html><head><meta charset="utf-8"><title>${esc(current.releaseName)} readiness</title><style>body{font-family:Segoe UI,Arial,sans-serif;max-width:960px;margin:40px auto;line-height:1.5}pre{background:#f5f5f5;padding:16px;border-radius:12px;white-space:pre-wrap}</style></head><body><pre>${esc(markdown())}</pre></body></html>`}
     function download(name,content,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
     function seed(){els.releaseName.value="Cost Management release";els.targetEnvironment.value="Test";els.owner.value="FinOps BI Team";els.pipelineLog.value="PBIP validation passed\nReport quality rules succeeded\nDAX test metadata validation passed";els.prSummary.value=JSON.stringify({errors:0,warnings:1,risks:["Active page warning requires review"]},null,2);els.readinessReport.value="Readiness score: 92/100\nWarnings: active page";els.deploymentManifest.value="Solution: Cost Management\nTarget: Test workspace\nApprover: BI Lead";els.exceptions.value=JSON.stringify({exceptions:[{id:"EXC-001",status:"approved",expiresOn:"2099-01-01"}]},null,2);els.effectiveRules.value="Strict branch: true\nDataset minimum severity: 2";els.daxSummary.value="10 enabled tests; metadata validation passed";evaluate();toast("Starter release loaded.")}
+    function loadFile(event,fieldId){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{els[fieldId].value=e.target.result;evaluate();toast(`Loaded ${file.name}`)};reader.readAsText(file)}
+    function clearForm(){els.releaseName.value="";els.targetEnvironment.value="";els.owner.value="";els.pipelineLog.value="";els.prSummary.value="";els.readinessReport.value="";els.deploymentManifest.value="";els.exceptions.value="";els.effectiveRules.value="";els.daxSummary.value="";evaluate();toast("Form cleared.")}
     function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
     function toast(m){els.toast.textContent=m;els.toast.classList.add("visible");clearTimeout(toast.timer);toast.timer=setTimeout(()=>els.toast.classList.remove("visible"),2800)}
-    document.querySelectorAll("input,textarea").forEach(x=>x.addEventListener("input",evaluate));document.getElementById("calculate").addEventListener("click",evaluate);document.getElementById("seedExample").addEventListener("click",seed);document.getElementById("downloadHtml").addEventListener("click",()=>download("release-readiness-dashboard.html",htmlDoc(),"text/html"));document.getElementById("downloadMarkdown").addEventListener("click",()=>download("release-readiness-dashboard.md",markdown(),"text/markdown"));document.getElementById("downloadJson").addEventListener("click",()=>download("release-readiness-dashboard.json",JSON.stringify(current,null,2),"application/json"));evaluate();
+    document.querySelectorAll("input,textarea").forEach(x=>x.addEventListener("input",evaluate));document.getElementById("calculate").addEventListener("click",evaluate);document.getElementById("seedExample").addEventListener("click",seed);document.getElementById("clearForm").addEventListener("click",clearForm);document.getElementById("downloadHtml").addEventListener("click",()=>download("release-readiness-dashboard.html",htmlDoc(),"text/html"));document.getElementById("downloadMarkdown").addEventListener("click",()=>download("release-readiness-dashboard.md",markdown(),"text/markdown"));document.getElementById("downloadJson").addEventListener("click",()=>download("release-readiness-dashboard.json",JSON.stringify(current,null,2),"application/json"));evaluate();
   </script>
 </body>
 </html>
