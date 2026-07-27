@@ -303,7 +303,7 @@ To obtain these folders:
 
 ![Policy Exception Register](images/tool-walkthrough/policy-exception-register.png)
 
-**What it does:** Tracks approved, requested, expiring, and expired policy/rule exceptions with **optional rule overrides** that modify rule properties at pipeline execution time.
+**What it does:** Documents approved, requested, expiring, and expired policy/rule exceptions with audit-friendly metadata for compliance tracking.
 
 **How to use it:**
 
@@ -311,54 +311,48 @@ To obtain these folders:
 2. Load or create `policy-exceptions.json`.
 3. For each exception, capture:
    - Rule ID, owner, approver, affected artifact
-   - Reason, mitigation, status, and expiration
-   - **Rule changes (optional):**
-     - Override `logType` (change warning → error or vice versa)
-     - Override `threshold` (modify numeric limits in rule logic)
-     - Override `disabled` (temporarily disable a rule)
+   - Reason, mitigation, status, and expiration date
+   - Tags for categorization (migration, finops, etc.)
 4. Export JSON and Markdown summary.
-5. Save to repo or download for use in CI/CD pipeline.
-
-**How exceptions integrate with CI/CD:**
-
-- Exceptions do not modify source rule files (`Rules-Report.json`, `Rules-Dataset.json`)
-- Effective Rules Generator applies approved exceptions at pipeline runtime
-- Only exceptions with status="approved" and future expiration dates are applied
-- Rule changes take effect only during the exception window (until expiration)
-- Once expired, the exception is ignored and original rule enforcement resumes
+5. Save to repo or download for use in governance reviews.
 
 **Questions it answers:**
 
-- Which rules are temporarily waived or modified?
-- What property changes are applied (logType, threshold, disabled)?
-- Who approved the exception?
+- Which rules have approved, temporary exceptions?
+- Who owns the exception and when does it expire?
 - Why does the exception exist?
-- When does it expire?
-- What artifacts are affected?
+- What is the mitigation or cleanup plan?
+- How long until the exception expires?
 
-**Productivity and governance value:** Prevents rule exceptions from becoming undocumented permanent bypasses.
+**Productivity and governance value:** Creates a compliance-friendly audit trail of all approved exceptions. Works with the Effective Rules Generator at CI pipeline runtime.
 
 ### Effective Rules Generator
 
 ![Effective Rules Generator](images/tool-walkthrough/effective-rules-generator.png)
 
-**What it does:** Combines baseline rules, branch policy, overrides, and approved exceptions into effective CI rule files.
+**What it does:** Merges baseline rules, branch policy, rule overrides, and approved exceptions into effective CI rule files that the pipeline will enforce. Includes a **searchable rule picker** to define rule property changes (logType, threshold, disabled).
 
 **How to use it:**
 
 1. Open `tools/effective-rules-generator/index.html`.
-2. Load `Rules-Report.json` and `Rules-Dataset.json`.
-3. Paste optional override and exception JSON.
-4. Choose source and target branches.
-5. Generate effective rule files and summary.
+2. Load `Rules-Report.json` and `Rules-Dataset.json` (baseline rules created by Enterprise Standards Builder).
+3. Use the **rule picker** to select specific rules and define changes:
+   - Override `logType` (change warning ↔ error)
+   - Override `threshold` (modify numeric limits in rule logic)
+   - Override `disabled` (temporarily disable a rule during release)
+4. Optionally paste exception register JSON from Policy Exception Register.
+5. Choose source and target branches to apply branch-aware logic.
+6. Generate effective rule files and summary.
 
 **Questions it answers:**
 
-- What rules will CI actually enforce?
-- How do branch policy, overrides, and exceptions change the output?
+- What rules will CI actually enforce on this branch?
+- How do rule overrides, branch policy, and approved exceptions change the output?
+- Which rules are disabled or have modified thresholds?
 - Which dataset severities are included?
+- What exceptions are active (not expired)?
 
-**Productivity and governance value:** Makes effective enforcement transparent before CI runs.
+**Productivity and governance value:** Makes effective enforcement transparent before CI runs and lets teams define release-specific rule adjustments without editing baseline files.
 
 ### CI/CD Platform Parity Matrix
 

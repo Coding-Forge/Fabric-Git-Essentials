@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "name": "Power BI DAX Test Suite",
+  "description": "Measure-level DAX test metadata for PBIP CI/CD validation.",
+  "evaluator": "semantic-link-labs-or-tabular-editor",
+  "tests": [
+    {
+      "id": "TOTAL_SALES_CURRENT_YEAR",
+      "name": "Total Sales current-year baseline",
+      "enabled": true,
+      "severity": "error",
+      "owner": "Finance BI",
+      "measure": {
+        "table": "Sales Measures",
+        "name": "[Total Sales]"
+      },
+      "scenario": "Protects executive revenue reporting by validating the current-year sales baseline.",
+      "filterContext": [
+        "Calendar[Year]=2026"
+      ],
+      "assertion": {
+        "type": "greaterThanOrEqual",
+        "expected": 1000000,
+        "tolerance": {
+          "value": 0,
+          "type": "absolute"
+        }
+      },
+      "tags": [
+        "finance",
+        "executive",
+        "baseline"
+      ],
+      "query": "EVALUATE ROW(\"Actual\", CALCULATE([Total Sales], Calendar[Year] = 2026))"
+    },
+    {
+      "id": "MARGIN_PERCENT_VALID_RANGE",
+      "name": "Margin percent stays in valid range",
+      "enabled": true,
+      "severity": "warning",
+      "owner": "Sales Analytics",
+      "measure": {
+        "table": "Sales Measures",
+        "name": "[Margin %]"
+      },
+      "scenario": "Ensures a ratio measure remains within a valid percentage range.",
+      "filterContext": [
+        "Calendar[Year]=2026"
+      ],
+      "assertion": {
+        "type": "between",
+        "expected": 0,
+        "expectedMax": 1,
+        "tolerance": {
+          "value": 0,
+          "type": "absolute"
+        }
+      },
+      "tags": [
+        "sales",
+        "quality",
+        "ratio"
+      ],
+      "query": "EVALUATE ROW(\"Actual\", CALCULATE([Margin %], Calendar[Year] = 2026))"
+    }
+  ]
+}
