@@ -23,7 +23,7 @@
     <div class="hero-inner">
       <div class="eyebrow">Fabric BI DevOps Accelerator</div>
       <h1>Effective Rules Generator</h1>
-      <p class="lede">Merge baseline report/dataset rules with branch policy, project-specific overrides, and approved exceptions to produce effective CI rule files. Define rule changes (logType, threshold, disabled) that will be applied at pipeline runtime.</p>
+      <p class="lede">Merge baseline report/dataset rules with branch policy and define rule modifications (logType, threshold, disabled) that will be applied at pipeline runtime.</p>
       <div class="toolbar">
         <button type="button" onclick="window.location.href='../index.html'">Back to launchpad</button>
         <button id="generate" class="primary" type="button">Generate effective rules</button>
@@ -49,7 +49,7 @@
       </div>
     </aside>
     <section class="panel">
-      <div class="panel-header"><h2>Inputs</h2><div class="muted">Load baseline rules and optional override/exception metadata.</div></div>
+      <div class="panel-header"><h2>Inputs</h2><div class="muted">Load baseline rules, define modifications, and generate effective rules.</div></div>
       <div class="panel-body grid">
         <div class="grid three">
           <label>Source branch<input id="sourceBranch" value="refs/heads/feature/example"></label>
@@ -86,8 +86,6 @@
         </div>
         <button id="addDatasetChange" type="button">Add dataset change</button>
         <div id="datasetChangesDisplay" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;"><span class="muted">No changes defined</span></div>
-        <label>Override JSON<textarea id="overrideJson" placeholder='{"reportRuleOverrides":[{"id":"REDUCE_OBJECTS_WITHIN_VISUALS","changes":{"threshold":100}}]}'></textarea></label>
-        <label>Policy exceptions JSON<textarea id="exceptionsJson" placeholder='{"exceptions":[{"id":"EXC-001","ruleId":"ENSURE_THEME_COLOURS","status":"approved","expiresOn":"2099-01-01","changes":{"disabled":true}}]}'></textarea></label>
         <div class="grid two">
           <div><h3>Summary</h3><pre id="summaryOutput" class="output"></pre></div>
           <div><h3>Effective rules JSON</h3><pre id="jsonOutput" class="output"></pre></div>
@@ -117,14 +115,68 @@
   </div>
   <div id="toast" class="toast"></div>
   <script>
-    const ids=["sourceBranch","targetBranch","profile","reportRules","datasetRules","changeRuleId","changeProperty","changeValue","changesDisplay","changeDatasetRuleId","changeDatasetProperty","changeDatasetValue","datasetChangesDisplay","overrideJson","exceptionsJson","reportCount","datasetCount","overrideCount","exceptionCount","statusChips","summaryOutput","jsonOutput","toast","rulePickerModal","ruleSearchInput","rulePickerList","closeRulePickerBtn","loadRulesBtn","addChange","datasetRulePickerModal","datasetRuleSearchInput","datasetRulePickerList","closeDatasetRulePickerBtn","loadDatasetRulesBtn","addDatasetChange"];
+    const ids=["sourceBranch","targetBranch","profile","reportRules","datasetRules","changeRuleId","changeProperty","changeValue","changesDisplay","changeDatasetRuleId","changeDatasetProperty","changeDatasetValue","datasetChangesDisplay","reportCount","datasetCount","overrideCount","exceptionCount","statusChips","summaryOutput","jsonOutput","toast","rulePickerModal","ruleSearchInput","rulePickerList","closeRulePickerBtn","loadRulesBtn","addChange","datasetRulePickerModal","datasetRuleSearchInput","datasetRulePickerList","closeDatasetRulePickerBtn","loadDatasetRulesBtn","addDatasetChange"];
     const els=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)]));
     let current={report:null,dataset:null,summary:null};
     let state={changes:{},datasetChanges:{}};
     const strictIds=["REDUCE_VISUALS_ON_PAGE","REDUCE_OBJECTS_WITHIN_VISUALS","REDUCE_PAGES","SHOW_AXES_TITLES","GIVE_VISIBLE_PAGES_MEANINGFUL_NAMES"];
     function escapeHtml(value){return String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
-    async function loadAvailableRules(){try{const rules=[];const sharedUrls=['/shared/Rules-Report.json','/shared/Rules-Dataset.json'];for(const url of sharedUrls){try{const response=await fetch(url);if(response.ok){const data=await response.json();if(data.rules&&Array.isArray(data.rules)){rules.push(...data.rules.map(r=>({id:r.id||r.ID,description:r.description||"",type:url.includes('Report')?'report':'dataset',rule:r})))}}catch(e){}}}if(!rules.length){try{if(els.reportRules.value.trim()){const reportData=JSON.parse(els.reportRules.value);if(reportData.rules&&Array.isArray(reportData.rules)){rules.push(...reportData.rules.map(r=>({id:r.id||r.ID,description:r.description||"",type:'report',rule:r})))}}}catch(e){}try{if(els.datasetRules.value.trim()){const datasetData=JSON.parse(els.datasetRules.value);if(Array.isArray(datasetData)){rules.push(...datasetData.map(r=>({id:r.ID||r.id,description:r.Name||r.description||"",type:'dataset',rule:r})))}}}catch(e){}}if(!rules.length){rules.push({id:'REDUCE_VISUALS_ON_PAGE',description:'Limit visuals per page',type:'report',rule:{}},{id:'REDUCE_OBJECTS_WITHIN_VISUALS',description:'Limit fields in visuals',type:'report',rule:{}},{id:'REDUCE_PAGES',description:'Limit pages in report',type:'report',rule:{}},{id:'ENSURE_THEME_COLOURS',description:'Enforce theme colors',type:'report',rule:{}},{id:'ACTIVE_PAGE',description:'Check active page setting',type:'report',rule:{}},{id:'SHOW_AXES_TITLES',description:'Show axis titles',type:'report',rule:{}})}}return rules.sort((a,b)=>String(a.id).localeCompare(String(b.id)))}catch(error){toast(`Error loading rules: ${error.message}`);return[]}}
-    async function showRulePicker(){els.rulePickerModal.classList.remove("hidden");els.ruleSearchInput.value="";els.rulePickerList.innerHTML='<div style="color: var(--cp-text-muted); text-align: center; padding: 24px;">Loading rules...</div>';const rules=await loadAvailableRules();if(!rules.length){els.rulePickerList.innerHTML='<div style="color: var(--cp-text-muted); text-align: center; padding: 24px;">No rules found. Check that rules files are available.</div>';return}renderRuleList(rules,rules)}
+    async function loadAvailableRules(){
+      const rules=[];
+      const sharedUrls=['/shared/examples/Rules-Report.json','/shared/examples/Rules-Dataset.json'];
+      for(const url of sharedUrls){
+        try{
+          const response=await fetch(url);
+          if(response.ok){
+            const data=await response.json();
+            let rulesArray=[];
+            if(Array.isArray(data)){
+              rulesArray=data;
+            }else if(data.rules&&Array.isArray(data.rules)){
+              rulesArray=data.rules;
+            }
+            if(rulesArray.length>0){
+              rules.push(...rulesArray.map(r=>({id:r.id||r.ID,description:r.description||r.Name||"",type:url.includes('Report')?'report':'dataset',rule:r})))
+            }
+          }
+        }catch(e){}
+      }
+      if(!rules.length){
+        try{
+          if(els.reportRules.value.trim()){
+            const reportData=JSON.parse(els.reportRules.value);
+            let reportArray=[];
+            if(Array.isArray(reportData)){
+              reportArray=reportData;
+            }else if(reportData.rules&&Array.isArray(reportData.rules)){
+              reportArray=reportData.rules;
+            }
+            if(reportArray.length>0){
+              rules.push(...reportArray.map(r=>({id:r.id||r.ID,description:r.description||"",type:'report',rule:r})))
+            }
+          }
+        }catch(e){}
+        try{
+          if(els.datasetRules.value.trim()){
+            const datasetData=JSON.parse(els.datasetRules.value);
+            let datasetArray=[];
+            if(Array.isArray(datasetData)){
+              datasetArray=datasetData;
+            }else if(datasetData.rules&&Array.isArray(datasetData.rules)){
+              datasetArray=datasetData.rules;
+            }
+            if(datasetArray.length>0){
+              rules.push(...datasetArray.map(r=>({id:r.ID||r.id,description:r.Name||r.description||"",type:'dataset',rule:r})))
+            }
+          }
+        }catch(e){}
+      }
+      if(!rules.length){
+        rules.push({id:'REDUCE_VISUALS_ON_PAGE',description:'Limit visuals per page',type:'report',rule:{}},{id:'REDUCE_OBJECTS_WITHIN_VISUALS',description:'Limit fields in visuals',type:'report',rule:{}},{id:'REDUCE_PAGES',description:'Limit pages in report',type:'report',rule:{}},{id:'ENSURE_THEME_COLOURS',description:'Enforce theme colors',type:'report',rule:{}},{id:'ACTIVE_PAGE',description:'Check active page setting',type:'report',rule:{}},{id:'SHOW_AXES_TITLES',description:'Show axis titles',type:'report',rule:{}})
+      }
+      return rules.sort((a,b)=>String(a.id).localeCompare(String(b.id)))
+    }
+    async function showRulePicker(){els.rulePickerModal.classList.remove("hidden");els.ruleSearchInput.value="";els.rulePickerList.innerHTML='<div style="color: var(--cp-text-muted); text-align: center; padding: 24px;">Loading rules...</div>';const rules=await loadAvailableRules();const reportRules=rules.filter(r=>r.type==='report');if(!reportRules.length){els.rulePickerList.innerHTML='<div style="color: var(--cp-text-muted); text-align: center; padding: 24px;">No report rules found. Load Rules-Report.json first.</div>';return}renderRuleList(reportRules,reportRules)}
     function renderRuleList(allRules,filteredRules){if(!filteredRules.length){els.rulePickerList.innerHTML='<div style="color: var(--cp-text-muted); text-align: center; padding: 24px;">No matching rules.</div>';return}els.rulePickerList.innerHTML=filteredRules.map(item=>{const ruleId=escapeHtml(item.id||"unknown");const description=item.rule?.description?escapeHtml(item.rule.description):"";return`<button class="item" type="button" data-rule-id="${ruleId}" style="border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-surface-soft); padding: 12px; text-align: left; cursor: pointer;"><strong style="display: block; margin-bottom: 4px;">${ruleId}</strong>${description?`<div style="font-size: 12px; color: var(--cp-text-muted);">${description}</div>`:''}</button>`}).join("");els.rulePickerList.querySelectorAll("[data-rule-id]").forEach(btn=>{btn.addEventListener("click",()=>{const ruleId=btn.dataset.ruleId;els.changeRuleId.value=ruleId;els.rulePickerModal.classList.add("hidden");renderChangesDisplay();toast(`Rule ID set to: ${ruleId}`)})})}
     function renderChangesDisplay(){const changes=Object.entries(state.changes).map(([key,value])=>{const displayValue=key==="disabled"?(value?"true":"false"):String(value);return`<span class="chip" style="background: var(--cp-accent); color: var(--cp-accent-fg); padding: 6px 10px; border-radius: 4px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;"><strong>${escapeHtml(key)}:</strong> ${escapeHtml(displayValue)} <span style="cursor: pointer; margin-left: 4px; opacity: 0.7;" onclick="removeChange('${escapeHtml(key)}')">&times;</span></span>`});els.changesDisplay.innerHTML=changes.length?changes.join(""):' <span class="muted">No changes defined</span>'}
     function removeChange(key){delete state.changes[key];renderChangesDisplay()}
@@ -138,36 +190,34 @@
 
     function parseJson(value,fallback){if(!value.trim())return fallback;return JSON.parse(value)}
     function isStrictBranch(){const target=els.targetBranch.value.trim()||els.sourceBranch.value.trim();return ["refs/heads/main","refs/heads/develop","main","develop"].includes(target)}
-    function activeException(e){if(!e||e.status!=="approved"||!e.expiresOn)return false;return new Date(`${e.expiresOn}T00:00:00`)>=new Date(new Date().toDateString())}
     function setThreshold(node,threshold){if(!node)return false;if(Array.isArray(node)){for(const item of node){if(setThreshold(item,threshold))return true}return false}if(typeof node==="object"){for(const op of [">",">=","<","<="]){if(Array.isArray(node[op])&&node[op].length>=2){node[op][1]=Number(threshold);return true}}for(const key of Object.keys(node)){if(setThreshold(node[key],threshold))return true}}return false}
     function applyChanges(rule,changes){const applied=[];if(!changes)return applied;for(const [key,value]of Object.entries(changes)){if(key==="threshold"){if(setThreshold(rule.test||rule.Expression,value))applied.push(key)}else{rule[key]=value;applied.push(key)}}return applied}
     function generate(){
       const report=parseJson(els.reportRules.value,{rules:[]});const dataset=parseJson(els.datasetRules.value,[]);
-      const override=parseJson(els.overrideJson.value,{});const exceptionRegister=parseJson(els.exceptionsJson.value,{exceptions:[]});
-      const strict=isStrictBranch();const summary={generatedAt:new Date().toISOString(),strictBranch:strict,profile:els.profile.value,reportActions:[],datasetActions:[],exceptionsApplied:[],exceptionsIgnored:[]};
-      for(const rule of report.rules||[]){if(!rule.logType)rule.logType="warning";if(strictIds.includes(rule.id)){rule.logType=strict?"error":"warning";summary.reportActions.push({id:rule.id,action:"branch-promotion",value:rule.logType})}}
-      for(const item of override.reportRuleOverrides||[]){const rule=(report.rules||[]).find(r=>r.id===item.id);if(rule)summary.reportActions.push({id:item.id,action:"override",changes:applyChanges(rule,item.changes)})}
-      for(const item of override.disabledRules||[]){const rule=(report.rules||[]).find(r=>r.id===item.id);if(rule){rule.disabled=true;summary.reportActions.push({id:item.id,action:"disabled"})}}
-      for(const item of override.datasetRuleOverrides||[]){const rule=dataset.find(r=>r.ID===(item.id||item.ID));if(rule)summary.datasetActions.push({id:rule.ID,action:"override",changes:applyChanges(rule,item.changes)})}
-      for(const ex of exceptionRegister.exceptions||[]){if(!activeException(ex)){summary.exceptionsIgnored.push({id:ex.id,ruleId:ex.ruleId,status:ex.status,expiresOn:ex.expiresOn});continue}const rule=(report.rules||[]).find(r=>r.id===ex.ruleId)||dataset.find(r=>r.ID===ex.ruleId);const changes=rule&&ex.changes?applyChanges(rule,ex.changes):[];summary.exceptionsApplied.push({id:ex.id,ruleId:ex.ruleId,changes,note:changes.length?"Applied changes":"Tracked approved exception; no rule changes defined"})}
-      const minSeverity=strict?2:3;const effectiveDataset=dataset.filter(r=>Number(r.Severity)>=minSeverity);summary.datasetMinimumSeverity=minSeverity;
-      current={report,dataset:effectiveDataset,summary};render();
+      const strict=isStrictBranch();const summary={generatedAt:new Date().toISOString(),strictBranch:strict,profile:els.profile.value,reportActions:[],datasetActions:[]};
+      const allRules=report.rules||[];const modifiedReportRules=[];
+      for(const rule of allRules){if(!rule.logType)rule.logType="warning";if(strictIds.includes(rule.id)){rule.logType=strict?"error":"warning";summary.reportActions.push({id:rule.id,action:"branch-promotion",value:rule.logType});modifiedReportRules.push(rule)}}
+      if(els.changeRuleId.value){const rule=allRules.find(r=>r.id===els.changeRuleId.value);if(rule){applyChanges(rule,state.changes);summary.reportActions.push({id:els.changeRuleId.value,action:"override",changes:state.changes});modifiedReportRules.push(rule)}}
+      const minSeverity=strict?2:3;const allDataset=dataset;const modifiedDatasetRules=[];
+      if(els.changeDatasetRuleId.value){const rule=allDataset.find(r=>r.ID===els.changeDatasetRuleId.value);if(rule){const filtered=rule.Severity>=minSeverity;if(filtered){applyChanges(rule,state.datasetChanges);summary.datasetActions.push({id:els.changeDatasetRuleId.value,action:"override",changes:state.datasetChanges});modifiedDatasetRules.push(rule)}}}
+      summary.datasetMinimumSeverity=minSeverity;
+      current={report:{rules:modifiedReportRules},dataset:modifiedDatasetRules,summary};render();
     }
     function render(){
       const report=current.report||{rules:[]};const dataset=current.dataset||[];const summary=current.summary||{};
       els.reportCount.textContent=String((report.rules||[]).length);els.datasetCount.textContent=String(dataset.length);
       els.overrideCount.textContent=String((summary.reportActions||[]).filter(a=>a.action==="override").length+(summary.datasetActions||[]).filter(a=>a.action==="override").length);
-      els.exceptionCount.textContent=String((summary.exceptionsApplied||[]).length);
+      els.exceptionCount.textContent=String(0);
       els.statusChips.innerHTML=[summary.strictBranch?'<span class="chip warning">Strict branch</span>':'<span class="chip success">Feature branch</span>',`<span class="chip success">Dataset severity >= ${summary.datasetMinimumSeverity||"n/a"}</span>`].join("");
       els.summaryOutput.textContent=summaryMarkdown(summary);els.jsonOutput.textContent=JSON.stringify({report,dataset,summary},null,2)
     }
-    function summaryMarkdown(s){if(!s.generatedAt)return "# Effective Quality Rules Summary\n\nNo output generated yet.";const lines=["# Effective Quality Rules Summary","",`Generated: ${s.generatedAt}`,"",`- Profile: ${s.profile}` ,`- Strict branch: ${s.strictBranch}` ,`- Dataset minimum severity: ${s.datasetMinimumSeverity}`,"","## Report actions"];for(const a of s.reportActions||[])lines.push(`- ${a.id}: ${a.action}${a.value?` -> ${a.value}`:""}`);if(!(s.reportActions||[]).length)lines.push("- No report actions.");lines.push("","## Dataset actions");for(const a of s.datasetActions||[])lines.push(`- ${a.id}: ${a.action}`);if(!(s.datasetActions||[]).length)lines.push("- No dataset actions.");lines.push("","## Active exceptions");for(const e of s.exceptionsApplied||[])lines.push(`- ${e.id} / ${e.ruleId}: ${e.note}`);if(!(s.exceptionsApplied||[]).length)lines.push("- No active exceptions.");return lines.join("\n")}
+    function summaryMarkdown(s){if(!s.generatedAt)return "# Effective Quality Rules Summary\n\nNo output generated yet.";const lines=["# Effective Quality Rules Summary","",`Generated: ${s.generatedAt}`,"",`- Profile: ${s.profile}` ,`- Strict branch: ${s.strictBranch}` ,`- Dataset minimum severity: ${s.datasetMinimumSeverity}`,"","## Report actions"];for(const a of s.reportActions||[])lines.push(`- ${a.id}: ${a.action}${a.value?` -> ${a.value}`:""}`);if(!(s.reportActions||[]).length)lines.push("- No report actions.");lines.push("","## Dataset actions");for(const a of s.datasetActions||[])lines.push(`- ${a.id}: ${a.action}`);if(!(s.datasetActions||[]).length)lines.push("- No dataset actions.");return lines.join("\n")}
     function download(name,content,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
-    function seed(){els.reportRules.value=JSON.stringify({rules:[{id:"REDUCE_OBJECTS_WITHIN_VISUALS",name:"Reduce objects",logType:"warning",disabled:false,test:[{map:[{filter:[{part:"Visuals"},{">":[{count:[{path:"$..projections[*]"}]},5]}]},{var:"name"}]}, {}, []]},{id:"ENSURE_THEME_COLOURS",name:"Ensure theme colours",logType:"warning",disabled:false,test:[{}, {}, []]}]},null,2);els.datasetRules.value=JSON.stringify([{ID:"MARK_PRIMARY_KEYS",Name:"Mark primary keys",Severity:1},{ID:"DATA_COLUMNS_MUST_HAVE_A_SOURCE_COLUMN",Name:"Source columns",Severity:3}],null,2);els.overrideJson.value=JSON.stringify({reportRuleOverrides:[{id:"REDUCE_OBJECTS_WITHIN_VISUALS",changes:{threshold:100}}],datasetRuleOverrides:[{id:"MARK_PRIMARY_KEYS",changes:{Severity:2}}]},null,2);els.exceptionsJson.value=JSON.stringify({exceptions:[{id:"EXC-001",ruleId:"ENSURE_THEME_COLOURS",status:"approved",expiresOn:"2099-01-01",changes:{disabled:true}}]},null,2);generate();toast("Starter example loaded.")}
+    function seed(){els.reportRules.value=JSON.stringify({rules:[{id:"REDUCE_OBJECTS_WITHIN_VISUALS",name:"Reduce objects",logType:"warning",disabled:false,test:[{map:[{filter:[{part:"Visuals"},{">": [{count:[{path:"$..projections[*]"}]},5]}]},{var:"name"}]}, {}, []]},{id:"ENSURE_THEME_COLOURS",name:"Ensure theme colours",logType:"warning",disabled:false,test:[{}, {}, []]}]},null,2);els.datasetRules.value=JSON.stringify([{ID:"MARK_PRIMARY_KEYS",Name:"Mark primary keys",Severity:1},{ID:"DATA_COLUMNS_MUST_HAVE_A_SOURCE_COLUMN",Name:"Source columns",Severity:3}],null,2);generate();toast("Starter example loaded.")}
     function toast(message){els.toast.textContent=message;els.toast.classList.add("visible");clearTimeout(toast.timer);toast.timer=setTimeout(()=>els.toast.classList.remove("visible"),2800)}
     async function loadFile(event){const file=event.target.files[0];if(!file)return;document.getElementById(event.target.dataset.target).value=await file.text();generate()}
     document.querySelectorAll("[data-target]").forEach(input=>input.addEventListener("change",e=>loadFile(e).catch(err=>toast(err.message))));
-    document.getElementById("generate").addEventListener("click",()=>{try{generate()}catch(e){toast(e.message)}});
+    document.getElementById("generate").addEventListener("click",()=>{try{const btn=document.getElementById("generate");btn.disabled=true;btn.textContent="Generating...";toast("Generating effective rules...");generate();setTimeout(()=>{btn.disabled=false;btn.textContent="Generate";toast("✓ Effective rules generated successfully");document.getElementById("summaryOutput")?.scrollIntoView({behavior:"smooth",block:"center"})},100)}catch(e){document.getElementById("generate").disabled=false;document.getElementById("generate").textContent="Generate";toast(`Error: ${e.message}`)}});
     document.getElementById("seedExample").addEventListener("click",seed);
     document.getElementById("downloadReport").addEventListener("click",()=>download("Rules-Report.effective.json",JSON.stringify(current.report||{rules:[]},null,2),"application/json"));
     document.getElementById("downloadDataset").addEventListener("click",()=>download("Rules-Dataset.effective.json",JSON.stringify(current.dataset||[],null,2),"application/json"));
