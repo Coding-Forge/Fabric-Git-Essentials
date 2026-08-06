@@ -11,6 +11,7 @@
 # - AuthorityHost
 # - FabricApiBaseUri
 # - FabricApiScope
+# GCC High deployments use a checked-in PBIX artifact and the Power BI REST imports API.
 #
 # The service principal must be allowed by tenant settings and added to the target Fabric workspace.
 
@@ -42,12 +43,6 @@ variables:
     value: 'scripts/deploy-dynamic.ps1'
   - name: DEV_WORKSPACE_NAME
     value: 'Git-Essentials'
-  - name: AuthorityHost
-    value: 'https://login.microsoftonline.com'
-  - name: FabricApiBaseUri
-    value: 'https://api.fabric.microsoft.com/v1'
-  - name: FabricApiScope
-    value: 'https://api.fabric.microsoft.com/.default'
 
 stages:
 # -----------------------------------------------------------------------------------------------------
@@ -306,14 +301,150 @@ stages:
           displayName: 'Publish PBIP artifact'
 
 # -----------------------------------------------------------------------------------------------------
-# Stage 4 - Deploy to Dev workspace
+# Stage 4 - Determine target cloud
+# -----------------------------------------------------------------------------------------------------
+- stage: Determine_Target_Cloud
+  displayName: 'Determine Target Cloud'
+  dependsOn: Publish
+  condition: succeeded()
+  jobs:
+    - job: DetectCloud
+      displayName: 'Detect Fabric cloud endpoint'
+      steps:
+        - task: PowerShell@2
+          name: SetCloudFlags
+          displayName: 'Detect GCC High deployment'
+          env:
+            AUTHORITY_HOST: $(AuthorityHost)
+            FABRIC_API_BASE_URI: $(FabricApiBaseUri)
+          inputs:
+            targetType: 'inline'
+            script: |
+              $authorityHost = $env:AUTHORITY_HOST
+              if ([string]::IsNullOrWhiteSpace($authorityHost) -or $authorityHost -like '$(*') {
+                  $authorityHost = 'https://login.microsoftonline.com'
+              }
+
+              $fabricApiBaseUri = $env:FABRIC_API_BASE_URI
+              if ([string]::IsNullOrWhiteSpace($fabricApiBaseUri) -or $fabricApiBaseUri -like '$(*') {
+                  $fabricApiBaseUri = 'https://api.fabric.microsoft.com/v1'
+              }
+
+              $isGccHigh = (
+                  $authorityHost -like 'https://login.microsoftonline.us*' -and
+                  $fabricApiBaseUri -like 'https://api.high.powerbigov.us*'
+              )
+
+              Write-Host "Authority host: $authorityHost"
+              Write-Host "Fabric API base URI: $fabricApiBaseUri"
+              Write-Host "GCC High deployment: $isGccHigh"
+              Write-Host "##vso[task.setvariable variable=IsGccHigh;isOutput=true]$($isGccHigh.ToString().ToLowerInvariant())"
+
+# -----------------------------------------------------------------------------------------------------
+# Stage 5 - Resolve existing GCC High item IDs for PBIP-definition deployments
+# -----------------------------------------------------------------------------------------------------
+- stage: Discover_Gov_Items
+  displayName: 'Discover GCC High Artifact IDs'
+  dependsOn:
+    - Publish
+    - Determine_Target_Cloud
+  condition: |
+    eq('PBIX import deployment is enabled for GCC High', 'PBIP definition discovery')
+  jobs:
+    - job: ResolveGovItemIds
+      displayName: 'Resolve existing semantic model and report IDs'
+      steps:
+        - download: current
+          artifact: pbip-drop
+
+        - task: PowerShell@2
+          name: DiscoverGovItems
+          displayName: 'Discover existing GCC High items'
+          env:
+            TENANT_ID: $(TenantId)
+            APP_ID: $(AppId)
+            CLIENT_SECRET: $(ClientSecret)
+            DEV_WORKSPACE_ID: $(DevWorkspaceId)
+            DEV_WORKSPACE_NAME: $(DEV_WORKSPACE_NAME)
+            FEATURE_WORKSPACE_PREFIX: $(FeatureWorkspacePrefix)
+            AUTHORITY_HOST: $(AuthorityHost)
+            FABRIC_API_BASE_URI: $(FabricApiBaseUri)
+            FABRIC_API_SCOPE: $(FabricApiScope)
+          inputs:
+            targetType: 'inline'
+            script: |
+              $artifactPath = Join-Path "$(Pipeline.Workspace)" "pbip-drop"
+              $deployScriptPath = Join-Path $artifactPath "$(DEPLOY_SCRIPT_PATH)"
+              $pbipPath = Join-Path $artifactPath "pbip-local"
+              $requiredVariables = @{
+                  TenantId = $env:TENANT_ID
+                  AppId = $env:APP_ID
+                  ClientSecret = $env:CLIENT_SECRET
+              }
+
+              foreach ($variableName in $requiredVariables.Keys) {
+                  $value = $requiredVariables[$variableName]
+                  if ([string]::IsNullOrWhiteSpace($value) -or $value -like '$(*') {
+                      throw "Missing required deployment variable: $variableName"
+                  }
+              }
+
+              if (!(Test-Path $deployScriptPath)) {
+                  throw "Deployment script not found: $deployScriptPath. Add scripts/deploy-dynamic.ps1 or update DEPLOY_SCRIPT_PATH."
+              }
+
+              if (!(Test-Path $pbipPath)) {
+                  throw "PBIP path not found in artifact: $pbipPath"
+              }
+
+              $authorityHost = $env:AUTHORITY_HOST
+              if ([string]::IsNullOrWhiteSpace($authorityHost) -or $authorityHost -like '$(*') {
+                  $authorityHost = 'https://login.microsoftonline.com'
+              }
+
+              $fabricApiBaseUri = $env:FABRIC_API_BASE_URI
+              if ([string]::IsNullOrWhiteSpace($fabricApiBaseUri) -or $fabricApiBaseUri -like '$(*') {
+                  $fabricApiBaseUri = 'https://api.fabric.microsoft.com/v1'
+              }
+
+              $fabricApiScope = $env:FABRIC_API_SCOPE
+              if ([string]::IsNullOrWhiteSpace($fabricApiScope) -or $fabricApiScope -like '$(*') {
+                  $fabricApiScope = 'https://api.fabric.microsoft.com/.default'
+              }
+
+              & $deployScriptPath `
+                -Branch "$(Build.SourceBranch)" `
+                -TenantId $env:TENANT_ID `
+                -AppId $env:APP_ID `
+                -ClientSecret $env:CLIENT_SECRET `
+                -DevWorkspaceId $env:DEV_WORKSPACE_ID `
+                -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
+                -FeatureWorkspacePrefix $env:FEATURE_WORKSPACE_PREFIX `
+                -AuthorityHost $authorityHost `
+                -FabricApiBaseUri $fabricApiBaseUri `
+                -FabricApiScope $fabricApiScope `
+                -PbipPath $pbipPath `
+                -RequireExistingItems `
+                -ResolveOnly
+
+# -----------------------------------------------------------------------------------------------------
+# Stage 6 - Deploy to Dev workspace
 # -----------------------------------------------------------------------------------------------------
 - stage: Deploy_Dev
   displayName: 'Deploy to Dev Workspace'
-  dependsOn: Publish
+  dependsOn:
+    - Publish
+    - Determine_Target_Cloud
+    - Discover_Gov_Items
+  variables:
+    IS_GCC_HIGH: $[ stageDependencies.Determine_Target_Cloud.DetectCloud.outputs['SetCloudFlags.IsGccHigh'] ]
+    GOV_SEMANTIC_MODEL_ID: $[ stageDependencies.Discover_Gov_Items.ResolveGovItemIds.outputs['DiscoverGovItems.SemanticModelId'] ]
+    GOV_REPORT_ID: $[ stageDependencies.Discover_Gov_Items.ResolveGovItemIds.outputs['DiscoverGovItems.ReportId'] ]
   condition: |
     and(
-      succeeded(),
+      in(dependencies.Publish.result, 'Succeeded'),
+      in(dependencies.Determine_Target_Cloud.result, 'Succeeded'),
+      in(dependencies.Discover_Gov_Items.result, 'Succeeded', 'Skipped'),
       or(
         eq(variables['Build.SourceBranch'], 'refs/heads/main'),
         eq(variables['Build.SourceBranch'], 'refs/heads/develop')
@@ -337,6 +468,9 @@ stages:
             AUTHORITY_HOST: $(AuthorityHost)
             FABRIC_API_BASE_URI: $(FabricApiBaseUri)
             FABRIC_API_SCOPE: $(FabricApiScope)
+            IS_GCC_HIGH: $(IS_GCC_HIGH)
+            GOV_SEMANTIC_MODEL_ID: $(GOV_SEMANTIC_MODEL_ID)
+            GOV_REPORT_ID: $(GOV_REPORT_ID)
           inputs:
             targetType: 'inline'
             script: |
@@ -368,27 +502,59 @@ stages:
                   throw "Missing Dev workspace target. Set DevWorkspaceId in the variable group or DEV_WORKSPACE_NAME in azure-pipelines.yml."
               }
 
-              & $deployScriptPath `
-                -Branch "$(Build.SourceBranch)" `
-                -TenantId $env:TENANT_ID `
-                -AppId $env:APP_ID `
-                -ClientSecret $env:CLIENT_SECRET `
-                -DevWorkspaceId $env:DEV_WORKSPACE_ID `
-                -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
-                -AuthorityHost $env:AUTHORITY_HOST `
-                -FabricApiBaseUri $env:FABRIC_API_BASE_URI `
-                -FabricApiScope $env:FABRIC_API_SCOPE `
-                -PbipPath $pbipPath
+              $authorityHost = $env:AUTHORITY_HOST
+              if ([string]::IsNullOrWhiteSpace($authorityHost) -or $authorityHost -like '$(*') {
+                  $authorityHost = 'https://login.microsoftonline.com'
+              }
+
+              $fabricApiBaseUri = $env:FABRIC_API_BASE_URI
+              if ([string]::IsNullOrWhiteSpace($fabricApiBaseUri) -or $fabricApiBaseUri -like '$(*') {
+                  $fabricApiBaseUri = 'https://api.fabric.microsoft.com/v1'
+              }
+
+              $fabricApiScope = $env:FABRIC_API_SCOPE
+              if ([string]::IsNullOrWhiteSpace($fabricApiScope) -or $fabricApiScope -like '$(*') {
+                  $fabricApiScope = 'https://api.fabric.microsoft.com/.default'
+              }
+
+              $deployParameters = @{
+                  Branch = "$(Build.SourceBranch)"
+                  TenantId = $env:TENANT_ID
+                  AppId = $env:APP_ID
+                  ClientSecret = $env:CLIENT_SECRET
+                  DevWorkspaceId = $env:DEV_WORKSPACE_ID
+                  DevWorkspaceName = $env:DEV_WORKSPACE_NAME
+                  AuthorityHost = $authorityHost
+                  FabricApiBaseUri = $fabricApiBaseUri
+                  FabricApiScope = $fabricApiScope
+                  PbipPath = $pbipPath
+              }
+
+              if ($env:IS_GCC_HIGH -eq 'true') {
+                  $deployParameters.UsePowerBiImport = $true
+                  $deployParameters.PbixPath = $pbipPath
+              }
+
+              & $deployScriptPath @deployParameters
 
 # -----------------------------------------------------------------------------------------------------
-# Stage 5 - Deploy to feature workspace
+# Stage 7 - Deploy to feature workspace
 # -----------------------------------------------------------------------------------------------------
 - stage: Deploy_Feature
   displayName: 'Deploy to Feature Workspace'
-  dependsOn: Publish
+  dependsOn:
+    - Publish
+    - Determine_Target_Cloud
+    - Discover_Gov_Items
+  variables:
+    IS_GCC_HIGH: $[ stageDependencies.Determine_Target_Cloud.DetectCloud.outputs['SetCloudFlags.IsGccHigh'] ]
+    GOV_SEMANTIC_MODEL_ID: $[ stageDependencies.Discover_Gov_Items.ResolveGovItemIds.outputs['DiscoverGovItems.SemanticModelId'] ]
+    GOV_REPORT_ID: $[ stageDependencies.Discover_Gov_Items.ResolveGovItemIds.outputs['DiscoverGovItems.ReportId'] ]
   condition: |
     and(
-      succeeded(),
+      in(dependencies.Publish.result, 'Succeeded'),
+      in(dependencies.Determine_Target_Cloud.result, 'Succeeded'),
+      in(dependencies.Discover_Gov_Items.result, 'Succeeded', 'Skipped'),
       startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')
     )
   jobs:
@@ -410,6 +576,9 @@ stages:
             AUTHORITY_HOST: $(AuthorityHost)
             FABRIC_API_BASE_URI: $(FabricApiBaseUri)
             FABRIC_API_SCOPE: $(FabricApiScope)
+            IS_GCC_HIGH: $(IS_GCC_HIGH)
+            GOV_SEMANTIC_MODEL_ID: $(GOV_SEMANTIC_MODEL_ID)
+            GOV_REPORT_ID: $(GOV_REPORT_ID)
           inputs:
             targetType: 'inline'
             script: |
@@ -438,16 +607,38 @@ stages:
                   throw "PBIP path not found in artifact: $pbipPath"
               }
 
-              & $deployScriptPath `
-                -Branch "$(Build.SourceBranch)" `
-                -TenantId $env:TENANT_ID `
-                -AppId $env:APP_ID `
-                -ClientSecret $env:CLIENT_SECRET `
-                -DevWorkspaceId $env:DEV_WORKSPACE_ID `
-                -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
-                -FeatureWorkspacePrefix $env:FEATURE_WORKSPACE_PREFIX `
-                -AuthorityHost $env:AUTHORITY_HOST `
-                -FabricApiBaseUri $env:FABRIC_API_BASE_URI `
-                -FabricApiScope $env:FABRIC_API_SCOPE `
-                -PbipPath $pbipPath
+              $authorityHost = $env:AUTHORITY_HOST
+              if ([string]::IsNullOrWhiteSpace($authorityHost) -or $authorityHost -like '$(*') {
+                  $authorityHost = 'https://login.microsoftonline.com'
+              }
 
+              $fabricApiBaseUri = $env:FABRIC_API_BASE_URI
+              if ([string]::IsNullOrWhiteSpace($fabricApiBaseUri) -or $fabricApiBaseUri -like '$(*') {
+                  $fabricApiBaseUri = 'https://api.fabric.microsoft.com/v1'
+              }
+
+              $fabricApiScope = $env:FABRIC_API_SCOPE
+              if ([string]::IsNullOrWhiteSpace($fabricApiScope) -or $fabricApiScope -like '$(*') {
+                  $fabricApiScope = 'https://api.fabric.microsoft.com/.default'
+              }
+
+              $deployParameters = @{
+                  Branch = "$(Build.SourceBranch)"
+                  TenantId = $env:TENANT_ID
+                  AppId = $env:APP_ID
+                  ClientSecret = $env:CLIENT_SECRET
+                  DevWorkspaceId = $env:DEV_WORKSPACE_ID
+                  DevWorkspaceName = $env:DEV_WORKSPACE_NAME
+                  FeatureWorkspacePrefix = $env:FEATURE_WORKSPACE_PREFIX
+                  AuthorityHost = $authorityHost
+                  FabricApiBaseUri = $fabricApiBaseUri
+                  FabricApiScope = $fabricApiScope
+                  PbipPath = $pbipPath
+              }
+
+              if ($env:IS_GCC_HIGH -eq 'true') {
+                  $deployParameters.UsePowerBiImport = $true
+                  $deployParameters.PbixPath = $pbipPath
+              }
+
+              & $deployScriptPath @deployParameters

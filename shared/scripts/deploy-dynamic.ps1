@@ -24,6 +24,18 @@ param(
 
     [string]$FabricApiScope = 'https://api.fabric.microsoft.com/.default',
 
+    [string]$SemanticModelId,
+
+    [string]$ReportId,
+
+    [switch]$RequireExistingItems,
+
+    [switch]$ResolveOnly,
+
+    [switch]$UsePowerBiImport,
+
+    [string]$PbixPath,
+
     [Parameter(Mandatory = $true)]
     [string]$PbipPath
 )
@@ -47,6 +59,22 @@ $script:AuthorityHost = $AuthorityHost.TrimEnd('/')
 $script:FabricBaseUri = $FabricApiBaseUri.TrimEnd('/')
 $script:FabricScope = $FabricApiScope
 $script:FabricHeaders = $null
+
+function Get-PowerBiRestBaseUri {
+    $fabricUri = [System.Uri]::new($script:FabricBaseUri)
+
+    switch -Regex ($fabricUri.Host) {
+        '^api\.fabric\.microsoft\.com$' { return 'https://api.powerbi.com/v1.0/myorg' }
+        '^api\.high\.powerbigov\.us$' { return 'https://api.high.powerbigov.us/v1.0/myorg' }
+        '^api\.powerbigov\.us$' { return 'https://api.powerbigov.us/v1.0/myorg' }
+        default { return $null }
+    }
+}
+
+function Test-UsePowerBiRestOnlyForDiscovery {
+    $fabricUri = [System.Uri]::new($script:FabricBaseUri)
+    return $fabricUri.Host -like '*.powerbigov.us'
+}
 
 function ConvertTo-SafeDisplayName {
     param(
@@ -155,6 +183,25 @@ function Invoke-FabricApi {
     }
 }
 
+function Invoke-FabricApiListIfSupported {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    try {
+        return Invoke-FabricApi -Method Get -Path $Path
+    }
+    catch {
+        if ($_.Exception.Message -like '*PrincipalTypeNotSupported*') {
+            Write-Host "Skipping unsupported Fabric list API for service principal: $Path"
+            return $null
+        }
+
+        throw
+    }
+}
+
 function Wait-FabricOperation {
     param(
         [string]$OperationUri
@@ -200,6 +247,126 @@ function Wait-FabricResponseOperation {
     Wait-FabricOperation -OperationUri $operationUri
 }
 
+function Resolve-PbixFile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    $resolvedPath = (Resolve-Path -Path $Path).Path
+    if (Test-Path -Path $resolvedPath -PathType Leaf) {
+        if ([System.IO.Path]::GetExtension($resolvedPath) -ne '.pbix') {
+            throw "Expected a .pbix file, got: $resolvedPath"
+        }
+
+        return $resolvedPath
+    }
+
+    $pbixFiles = @(Get-ChildItem -Path $resolvedPath -Filter '*.pbix' -File)
+    if ($pbixFiles.Count -eq 0) {
+        throw "No .pbix file found under $resolvedPath. Add a PBIX deployable artifact next to the PBIP project for Power BI REST import deployment."
+    }
+
+    if ($pbixFiles.Count -gt 1) {
+        $fileList = ($pbixFiles | ForEach-Object { $_.FullName }) -join ', '
+        throw "Multiple .pbix files found under $resolvedPath. Provide PbixPath explicitly. Matches: $fileList"
+    }
+
+    return $pbixFiles[0].FullName
+}
+
+function Wait-PowerBiImport {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$WorkspaceId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ImportId
+    )
+
+    $powerBiRestBaseUri = Get-PowerBiRestBaseUri
+    if ([string]::IsNullOrWhiteSpace($powerBiRestBaseUri)) {
+        throw "Cannot derive Power BI REST API base URI from FabricApiBaseUri '$script:FabricBaseUri'."
+    }
+
+    $importUri = "$powerBiRestBaseUri/groups/$WorkspaceId/imports/$ImportId"
+
+    while ($true) {
+        $import = Invoke-FabricApi -Method Get -Path $importUri
+        $state = $import.importState
+
+        if ($state -eq 'Succeeded') {
+            return
+        }
+
+        if ($state -eq 'Failed') {
+            throw "Power BI PBIX import failed: $($import | ConvertTo-Json -Depth 20)"
+        }
+
+        Write-Host "Waiting for Power BI PBIX import '$ImportId'. Current state: $state"
+        Start-Sleep -Seconds 5
+    }
+}
+
+function Publish-PowerBiPbixImport {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$WorkspaceId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath
+    )
+
+    $powerBiRestBaseUri = Get-PowerBiRestBaseUri
+    if ([string]::IsNullOrWhiteSpace($powerBiRestBaseUri)) {
+        throw "Cannot derive Power BI REST API base URI from FabricApiBaseUri '$script:FabricBaseUri'."
+    }
+
+    $fileName = [System.IO.Path]::GetFileName($FilePath)
+    $encodedFileName = [System.Uri]::EscapeDataString($fileName)
+    $importUri = "$powerBiRestBaseUri/groups/$WorkspaceId/imports?datasetDisplayName=$encodedFileName&nameConflict=CreateOrOverwrite"
+
+    Write-Host "Importing PBIX '$fileName' into workspace $WorkspaceId by using Power BI REST API."
+
+    Add-Type -AssemblyName System.Net.Http
+    $client = [System.Net.Http.HttpClient]::new()
+    $fileStream = $null
+    $multipartContent = $null
+    $fileContent = $null
+
+    try {
+        $client.DefaultRequestHeaders.Authorization = [System.Net.Http.Headers.AuthenticationHeaderValue]::new('Bearer', ($script:FabricHeaders.Authorization -replace '^Bearer\s+', ''))
+        $multipartContent = [System.Net.Http.MultipartFormDataContent]::new()
+        $fileStream = [System.IO.File]::OpenRead($FilePath)
+        $fileContent = [System.Net.Http.StreamContent]::new($fileStream)
+        $fileContent.Headers.ContentType = [System.Net.Http.Headers.MediaTypeHeaderValue]::Parse('application/octet-stream')
+        $multipartContent.Add($fileContent, 'file', $fileName)
+
+        $response = $client.PostAsync($importUri, $multipartContent).GetAwaiter().GetResult()
+        $responseBody = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+
+        if (!$response.IsSuccessStatusCode) {
+            throw "Power BI PBIX import request failed: POST $importUri`n$responseBody"
+        }
+
+        if ([string]::IsNullOrWhiteSpace($responseBody)) {
+            Write-Host 'Power BI PBIX import request completed without a response body.'
+            return
+        }
+
+        $import = $responseBody | ConvertFrom-Json
+        if ($import.id) {
+            Wait-PowerBiImport -WorkspaceId $WorkspaceId -ImportId $import.id
+        }
+    }
+    finally {
+        if ($fileContent) { $fileContent.Dispose() }
+        if ($multipartContent) { $multipartContent.Dispose() }
+        if ($fileStream) { $fileStream.Dispose() }
+        $client.Dispose()
+    }
+}
+
 function Get-FabricWorkspaceByName {
     param(
         [Parameter(Mandatory = $true)]
@@ -235,9 +402,18 @@ function Resolve-TargetWorkspaceId {
             return $workspace.id
         }
 
+        if ($RequireExistingItems) {
+            throw "Feature workspace '$workspaceName' was not found or is not visible to the service principal. Initial publish is required before update-only deployment."
+        }
+
         $workspace = New-FabricWorkspace -DisplayName $workspaceName
         Write-Host "Created feature workspace '$workspaceName' ($($workspace.id))."
         return $workspace.id
+    }
+
+    if ($UsePowerBiImport -and ![string]::IsNullOrWhiteSpace($DevWorkspaceId)) {
+        Write-Host "Using Dev workspace ID: $DevWorkspaceId"
+        return $DevWorkspaceId
     }
 
     if (![string]::IsNullOrWhiteSpace($DevWorkspaceName)) {
@@ -400,7 +576,7 @@ function New-DefinitionParts {
     return @($parts)
 }
 
-function Get-FabricItemByNameAndType {
+function Get-FabricItemsByNameAndType {
     param(
         [Parameter(Mandatory = $true)]
         [string]$WorkspaceId,
@@ -412,10 +588,99 @@ function Get-FabricItemByNameAndType {
         [string]$Type
     )
 
-    $items = Invoke-FabricApi -Method Get -Path "workspaces/$WorkspaceId/items"
-    return @($items.value) | Where-Object {
-        $_.displayName -eq $DisplayName -and $_.type -eq $Type
-    } | Select-Object -First 1
+    $typePathSegment = Get-FabricTypePathSegment -Type $Type
+    $matchedItems = @()
+
+    $powerBiRestBaseUri = Get-PowerBiRestBaseUri
+    if (![string]::IsNullOrWhiteSpace($powerBiRestBaseUri)) {
+        $powerBiRestPath = switch ($Type) {
+            'SemanticModel' { "$powerBiRestBaseUri/groups/$WorkspaceId/datasets" }
+            'Report' { "$powerBiRestBaseUri/groups/$WorkspaceId/reports" }
+            default { $null }
+        }
+
+        if (![string]::IsNullOrWhiteSpace($powerBiRestPath)) {
+            $powerBiItems = Invoke-FabricApi -Method Get -Path $powerBiRestPath
+            foreach ($item in @($powerBiItems.value)) {
+                if ($item.name -eq $DisplayName) {
+                    $matchedItems += [pscustomobject]@{
+                        id = $item.id
+                        displayName = $item.name
+                        type = $Type
+                    }
+                }
+            }
+        }
+    }
+
+    if (!(Test-UsePowerBiRestOnlyForDiscovery)) {
+        $typedItems = Invoke-FabricApiListIfSupported -Path "workspaces/$WorkspaceId/$typePathSegment"
+        if ($typedItems) {
+            foreach ($item in @($typedItems.value)) {
+                $itemName = if ($item.PSObject.Properties.Name -contains 'displayName') { $item.displayName } else { $item.name }
+                if ($itemName -eq $DisplayName) {
+                    $matchedItems += [pscustomobject]@{
+                        id = $item.id
+                        displayName = $itemName
+                        type = $Type
+                    }
+                }
+            }
+        }
+
+        $items = Invoke-FabricApiListIfSupported -Path "workspaces/$WorkspaceId/items"
+        if ($items) {
+            foreach ($item in @($items.value)) {
+                if ($item.displayName -eq $DisplayName -and $item.type -eq $Type) {
+                    $matchedItems += [pscustomobject]@{
+                        id = $item.id
+                        displayName = $item.displayName
+                        type = $item.type
+                    }
+                }
+            }
+        }
+    }
+
+    return @($matchedItems) | Sort-Object id -Unique
+}
+
+function Resolve-FabricItemByNameAndType {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$WorkspaceId,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DisplayName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Type
+    )
+
+    $matches = @(Get-FabricItemsByNameAndType -WorkspaceId $WorkspaceId -DisplayName $DisplayName -Type $Type)
+
+    if ($matches.Count -gt 1) {
+        $matchList = ($matches | ForEach-Object {
+            $itemName = if ($_.PSObject.Properties.Name -contains 'displayName') { $_.displayName } else { $_.name }
+            "$itemName ($($_.id))"
+        }) -join ', '
+        throw "Multiple $Type items named '$DisplayName' were found in workspace $WorkspaceId. Set an explicit ID. Matches: $matchList"
+    }
+
+    return $matches | Select-Object -First 1
+}
+
+function Get-FabricTypePathSegment {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Type
+    )
+
+    switch ($Type) {
+        'SemanticModel' { return 'semanticModels' }
+        'Report' { return 'reports' }
+        default { throw "Unsupported Fabric item type: $Type" }
+    }
 }
 
 function Publish-FabricItemDefinition {
@@ -426,7 +691,11 @@ function Publish-FabricItemDefinition {
         [Parameter(Mandatory = $true)]
         [pscustomobject]$ItemFolder,
 
-        [string]$SemanticModelId
+        [string]$SemanticModelId,
+
+        [string]$ExistingItemId,
+
+        [switch]$RequireExistingItems
     )
 
     $platform = Get-PlatformMetadata -ItemFolder $ItemFolder.Path
@@ -444,7 +713,18 @@ function Publish-FabricItemDefinition {
         throw "No definition files found for $displayName at $($ItemFolder.Path)"
     }
 
-    $existingItem = Get-FabricItemByNameAndType -WorkspaceId $WorkspaceId -DisplayName $displayName -Type $type
+    $existingItem = $null
+    if (![string]::IsNullOrWhiteSpace($ExistingItemId)) {
+        $existingItem = [pscustomobject]@{
+            id = $ExistingItemId
+            displayName = $displayName
+            type = $type
+        }
+    }
+    else {
+        $existingItem = Resolve-FabricItemByNameAndType -WorkspaceId $WorkspaceId -DisplayName $displayName -Type $type
+    }
+
     $definition = @{
         format = $format
         parts = $parts
@@ -452,17 +732,22 @@ function Publish-FabricItemDefinition {
 
     if ($existingItem) {
         Write-Host "Updating $type '$displayName' ($($existingItem.id))."
-        $response = Invoke-FabricApi -Method Post -Path "workspaces/$WorkspaceId/items/$($existingItem.id)/updateDefinition" -Body @{
+        $typePathSegment = Get-FabricTypePathSegment -Type $type
+        $response = Invoke-FabricApi -Method Post -Path "workspaces/$WorkspaceId/$typePathSegment/$($existingItem.id)/updateDefinition?updateMetadata=true" -Body @{
             definition = $definition
         } -ReturnResponse
         Wait-FabricResponseOperation -Response $response
         return $existingItem.id
     }
 
+    if ($RequireExistingItems) {
+        throw "$type '$displayName' was not found in workspace $WorkspaceId. Initial publish is required before update-only deployment."
+    }
+
     Write-Host "Creating $type '$displayName'."
-    $response = Invoke-FabricApi -Method Post -Path "workspaces/$WorkspaceId/items" -Body @{
+    $typePathSegment = Get-FabricTypePathSegment -Type $type
+    $response = Invoke-FabricApi -Method Post -Path "workspaces/$WorkspaceId/$typePathSegment" -Body @{
         displayName = $displayName
-        type = $type
         definition = $definition
     } -ReturnResponse
     Wait-FabricResponseOperation -Response $response
@@ -471,7 +756,7 @@ function Publish-FabricItemDefinition {
         return $response.Body.id
     }
 
-    $createdItem = Get-FabricItemByNameAndType -WorkspaceId $WorkspaceId -DisplayName $displayName -Type $type
+    $createdItem = Resolve-FabricItemByNameAndType -WorkspaceId $WorkspaceId -DisplayName $displayName -Type $type
     if (!$createdItem) {
         throw "Unable to resolve created $type '$displayName' after deployment."
     }
@@ -490,24 +775,89 @@ $script:FabricHeaders = @{
 
 $projectRoot = Get-PbipProjectRoot -Path $PbipPath
 $workspaceId = Resolve-TargetWorkspaceId
+
+if ($UsePowerBiImport) {
+    $pbixSourcePath = if ([string]::IsNullOrWhiteSpace($PbixPath)) { $projectRoot } else { $PbixPath }
+    $resolvedPbixPath = Resolve-PbixFile -Path $pbixSourcePath
+
+    Write-Host "Deploying PBIX artifact from: $resolvedPbixPath"
+    Write-Host "Target workspace ID: $workspaceId"
+
+    Publish-PowerBiPbixImport -WorkspaceId $workspaceId -FilePath $resolvedPbixPath
+    Write-Host 'Power BI PBIX deployment completed.'
+    return
+}
+
 $itemFolders = Get-PbipItemFolders -ProjectRoot $projectRoot
 
 Write-Host "Deploying PBIP project from: $projectRoot"
 Write-Host "Target workspace ID: $workspaceId"
 
-$semanticModelId = $null
+$resolvedSemanticModelId = $SemanticModelId
+$resolvedReportId = $ReportId
+
+foreach ($itemFolder in $itemFolders) {
+    $platform = Get-PlatformMetadata -ItemFolder $itemFolder.Path
+    $displayName = $platform.metadata.displayName
+    $type = $platform.metadata.type
+
+    if ($type -ne $itemFolder.Type) {
+        throw "Item type mismatch for $($itemFolder.Path): expected $($itemFolder.Type), found $type in .platform."
+    }
+
+    if ($type -eq 'SemanticModel' -and [string]::IsNullOrWhiteSpace($resolvedSemanticModelId)) {
+        $existingSemanticModel = Resolve-FabricItemByNameAndType -WorkspaceId $workspaceId -DisplayName $displayName -Type $type
+        if ($existingSemanticModel) {
+            $resolvedSemanticModelId = $existingSemanticModel.id
+            Write-Host "Resolved SemanticModel '$displayName' ($resolvedSemanticModelId)."
+        }
+    }
+
+    if ($type -eq 'Report' -and [string]::IsNullOrWhiteSpace($resolvedReportId)) {
+        $existingReport = Resolve-FabricItemByNameAndType -WorkspaceId $workspaceId -DisplayName $displayName -Type $type
+        if ($existingReport) {
+            $resolvedReportId = $existingReport.id
+            Write-Host "Resolved Report '$displayName' ($resolvedReportId)."
+        }
+    }
+}
+
+if ($RequireExistingItems -and [string]::IsNullOrWhiteSpace($resolvedSemanticModelId)) {
+    throw 'Semantic model was not found. Publish it once from Power BI Desktop or provide SemanticModelId before running update-only deployment.'
+}
+
+if ($RequireExistingItems -and [string]::IsNullOrWhiteSpace($resolvedReportId)) {
+    throw 'Report was not found. Publish it once from Power BI Desktop or provide ReportId before running update-only deployment.'
+}
+
+Write-Host "##vso[task.setvariable variable=SemanticModelId;isOutput=true]$resolvedSemanticModelId"
+Write-Host "##vso[task.setvariable variable=ReportId;isOutput=true]$resolvedReportId"
+
+if ($ResolveOnly) {
+    Write-Host 'Resolved existing Fabric item IDs.'
+    return
+}
 
 foreach ($itemFolder in $itemFolders) {
     if ($itemFolder.Type -eq 'SemanticModel') {
-        $semanticModelId = Publish-FabricItemDefinition -WorkspaceId $workspaceId -ItemFolder $itemFolder
+        $resolvedSemanticModelId = Publish-FabricItemDefinition `
+            -WorkspaceId $workspaceId `
+            -ItemFolder $itemFolder `
+            -ExistingItemId $resolvedSemanticModelId `
+            -RequireExistingItems:$RequireExistingItems
         continue
     }
 
-    if ([string]::IsNullOrWhiteSpace($semanticModelId)) {
+    if ([string]::IsNullOrWhiteSpace($resolvedSemanticModelId)) {
         throw 'Cannot deploy report before a semantic model has been deployed or resolved.'
     }
 
-    Publish-FabricItemDefinition -WorkspaceId $workspaceId -ItemFolder $itemFolder -SemanticModelId $semanticModelId | Out-Null
+    Publish-FabricItemDefinition `
+        -WorkspaceId $workspaceId `
+        -ItemFolder $itemFolder `
+        -SemanticModelId $resolvedSemanticModelId `
+        -ExistingItemId $resolvedReportId `
+        -RequireExistingItems:$RequireExistingItems | Out-Null
 }
 
 Write-Host 'Fabric PBIP deployment completed.'
