@@ -535,6 +535,11 @@
             <p>Use the Deployment Manifest Builder to explain owners, artifacts, environments, parameters, gates, approvals, exceptions, and rollback.</p>
           </article>
           <article class="card">
+            <h3>GCC High deployment option</h3>
+            <p><strong>GCC High validates PBIP but deploys a checked-in PBIX through the Power BI REST imports API. Commit the PBIP, PBIX, and deployment-manifest.json together.</strong></p>
+            <a class="button" href="architecture/gcc-high-deployment.md">Read GCC High behavior</a>
+          </article>
+          <article class="card">
             <h3>Pre-PR confidence</h3>
             <p>Use readiness scans and DAX test metadata so report creators and reviewers understand what is ready before a pull request is opened.</p>
           </article>
@@ -707,11 +712,12 @@
               <h3>Pipeline Config Generator</h3>
               <span class="chip accent">Pipeline setup</span>
             </div>
-            <p>Generate Azure DevOps, GitHub Actions, or GitLab CI YAML from one PBIP delivery profile.</p>
+            <p>Generate Azure DevOps, GitHub Actions, or GitLab CI YAML from one PBIP delivery profile, including notes for the GCC High PBIX import pattern.</p>
             <div class="chip-row">
               <span class="chip">Platform team</span>
               <span class="chip">DevOps engineers</span>
               <span class="chip">BI leads</span>
+              <span class="chip">GCC High</span>
             </div>
             <a class="button" href="https://github.com/Coding-Forge/Fabric-BI-DevOps/blob/main/tools/pipeline-config-generator/index.html" target="_blank" rel="noopener">Open in GitHub</a>
           </article>

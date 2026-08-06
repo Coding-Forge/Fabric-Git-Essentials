@@ -93,7 +93,9 @@ Optional endpoint variables support non-public cloud tenants without changing th
 
 For Azure Government, override these values with the endpoint set for your cloud, for example using the `.us` Entra authority host and the appropriate GCC, GCC High, or DoD Power BI/Fabric API endpoint published for your tenant.
 
-For GCC High deployments, save a `.pbix` file next to the PBIP project and commit it with the PBIP source changes. The pipeline still validates the PBIP project, but after the gates pass it detects GCC High endpoint settings and deploys the checked-in PBIX with the Power BI REST `imports` API using `CreateOrOverwrite`, avoiding Fabric PBIP definition APIs that may reject service-principal semantic model operations in GCC High.
+**GCC High caveat:** **GCC High deployments do not push PBIP definitions with Fabric REST APIs. The pipeline validates the PBIP project, then imports the checked-in PBIX with the older Power BI REST `imports` API using `CreateOrOverwrite`. Commit the PBIP, matching PBIX, and `deployment-manifest.json` together.**
+
+See [GCC High deployment behavior](../docs/architecture/gcc-high-deployment.md) for the full flow and endpoint values.
 
 Generate and commit a PBIX deployment manifest with the PBIX so the pipeline can verify the deployable artifact before import:
 

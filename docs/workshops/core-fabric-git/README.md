@@ -177,8 +177,10 @@ Example:
 - Validate PBIP structure and run dataset/report quality rules  
 - Run DAX unit tests and publish JUnit results  
 - Publish `pbip-drop` to Azure DevOps  
-- Deploy validated PBIP content to Dev or feature workspaces using `scripts/deploy-dynamic.ps1`  
+- Deploy validated artifacts to Dev or feature workspaces using `scripts/deploy-dynamic.ps1`
 - Set the pipeline as a required status check on `main`  
+
+**GCC High caveat:** **GCC High validates PBIP but deploys a checked-in PBIX with Power BI REST `imports`. Commit the PBIP, PBIX, and `deployment-manifest.json` together. Commercial Fabric continues to deploy PBIP definitions with Fabric REST APIs.**
 
 This lab uses the workshop's self-contained PBIP pipeline. For enterprise rollout across many Fabric repos, the same Validate/Test/Publish pattern can be centralized as a shared template repo with thin consumer YAML files per project.
 
@@ -288,7 +290,6 @@ For the reusable multi-repo variant, see [shared/universal-pipeline/README.md](.
 | **Selective deployment** | Promotes a subset of items rather than the full workspace |
 
 See [Lab 3](labs/lab3-deployment-pipelines.md) for the full step-by-step walkthrough.
-
 
 
 

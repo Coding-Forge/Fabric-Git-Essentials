@@ -107,6 +107,8 @@ Optional repository or environment variables for non-public cloud deployments:
 
 For Azure Government, set these to the authority, API base URI, and OAuth scope for the specific GCC, GCC High, or DoD environment used by the tenant.
 
+**GCC High caveat:** **The tested GCC High deployment behavior in this accelerator is the Azure DevOps path that validates PBIP and imports a checked-in PBIX with Power BI REST `imports`. Do not assume GCC High service principals can push PBIP definitions through Fabric REST semantic model APIs.** See [GCC High deployment behavior](../docs/architecture/gcc-high-deployment.md).
+
 Repository variables you can define for default skip behavior:
 - `PBIP_CI_SKIP_DATASET_RULES`
 - `PBIP_CI_SKIP_REPORT_RULES`

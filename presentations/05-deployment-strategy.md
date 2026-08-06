@@ -87,6 +87,8 @@ Feature Workspace                     Dev Workspace deployment
 
 Validation, tests, and publishing must be **green** before any workspace deployment happens.
 
+**GCC High caveat:** **Commercial Fabric deploys PBIP definitions. GCC High validates PBIP but deploys a checked-in PBIX through the Power BI REST `imports` API. The PBIP, PBIX, and `deployment-manifest.json` must be committed together.**
+
 ---
 <!-- class: dark -->
 
@@ -144,7 +146,8 @@ stages:
 1. Publish creates `pbip-drop`
 2. Deploy stage downloads the artifact
 3. `scripts/deploy-dynamic.ps1` authenticates with a service principal
-4. Semantic model deploys first, then report definitions are updated
+4. Commercial Fabric: semantic model deploys first, then report definitions are updated
+5. GCC High: manifest is validated, then PBIX is imported with Power BI REST
 
 Good for: repeatable Dev deployments and isolated feature branch validation.
 

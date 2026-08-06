@@ -39,6 +39,8 @@ Publish validated artifacts
 Deploy to Dev or feature workspaces when configured
 ```
 
+**GCC High caveat:** **Commercial Fabric deploys PBIP definitions with Fabric REST APIs. GCC High validates PBIP, then deploys a checked-in PBIX with the older Power BI REST `imports` API. For GCC High, commit the PBIP, matching PBIX, and `deployment-manifest.json` together.** See [GCC High deployment behavior](docs/architecture/gcc-high-deployment.md).
+
 ## No-code accelerator tools
 
 The `tools/` folder contains static browser tools that help teams manage BI DevOps artifacts without hand-editing JSON.
@@ -99,6 +101,7 @@ Both tools generate the same `Rules-Report.json` and `Rules-Dataset.json` files 
 | Synthetic DIB sample data | [docs/workshops/sample-data/dib-supply-chain/README.md](docs/workshops/sample-data/dib-supply-chain/README.md) |
 | Repository change checklist | [docs/repo-change-checklist.md](docs/repo-change-checklist.md) |
 | CI/CD architecture | [docs/architecture/cicd-architecture.md](docs/architecture/cicd-architecture.md) |
+| GCC High deployment behavior | [docs/architecture/gcc-high-deployment.md](docs/architecture/gcc-high-deployment.md) |
 | Branching strategy | [docs/architecture/branching-strategy.md](docs/architecture/branching-strategy.md) |
 | Workspace strategy | [docs/architecture/workspace-strategy.md](docs/architecture/workspace-strategy.md) |
 | Governance checklist | [docs/governance/governance-checklist.md](docs/governance/governance-checklist.md) |
@@ -118,6 +121,8 @@ PBIP artifacts are intentionally not committed in this reference repository. Bri
 ```text
 shared/pbip-local/
 ```
+
+**GCC High caveat:** **If the target is GCC High, also save the matching `.pbix` beside the PBIP and generate `deployment-manifest.json` with `shared/scripts/New-PbixDeploymentManifest.ps1`. The pipeline validates PBIP but imports PBIX for deployment.**
 
 Keep reusable CI/CD assets in source control:
 

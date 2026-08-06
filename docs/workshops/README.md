@@ -45,6 +45,8 @@ Use `-Platform GitHub`, `-Platform GitLab`, or `-Platform All` for other deliver
 | [Core Fabric Git Workshop](core-fabric-git/README.md) | BI developers, Fabric admins, DevOps engineers, BI leads | Teach Fabric workspace Git integration, PBIP source control, branching, PR flow, CI/CD validation, and deployment pipelines |
 | [Accelerator Toolkit Workshop](accelerator-toolkit/README.md) | BI leads, report creators, semantic model owners, platform engineers, governance owners, release managers | Teach how to use the no-code accelerator tools to create standards, rules, policies, review evidence, pipeline config, release readiness, adoption metrics, and reference outputs |
 
+**GCC High caveat:** **When a workshop targets GCC High, explain that PBIP remains the validated source, but deployment imports a checked-in PBIX through Power BI REST. The PBIP, PBIX, and `deployment-manifest.json` must be committed together.** See [GCC High deployment behavior](../architecture/gcc-high-deployment.md).
+
 ## Sample data
 
 | Dataset | Purpose |

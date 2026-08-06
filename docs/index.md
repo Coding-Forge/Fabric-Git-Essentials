@@ -59,6 +59,9 @@ This wiki provides all workshop plans, labs, governance materials, and architect
 - [Workspace Strategy](./architecture/workspace-strategy.md)  
 - [Branching Strategy — Feature Branch Development](./architecture/branching-strategy.md)
 - [Sparse Clone Guide — Toolkit, platform, and workshop profiles](./sparse-clone-guide.md)
+- [GCC High Deployment Behavior — PBIP validation with PBIX import](./architecture/gcc-high-deployment.md)
+
+**GCC High caveat:** **Commercial Fabric deployments push PBIP definitions with Fabric REST APIs. GCC High deployments validate PBIP but deploy a checked-in PBIX through the Power BI REST `imports` API. Commit the PBIP, matching PBIX, and `deployment-manifest.json` together.**
 
 ---
 

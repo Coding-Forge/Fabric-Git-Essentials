@@ -110,6 +110,37 @@ What to check:
 - build agent outbound connectivity
 - whether fallback rule downloads succeeded separately from tool downloads
 
+## GCC High Deployment Uses PBIX Import
+
+Symptom:
+
+- deployment logs show `Power BI PBIX deployment completed`
+- the pipeline requires `deployment-manifest.json`
+- a GCC High run fails before import because the PBIX hash or PBIP source hash does not match the manifest
+
+Cause:
+
+- **GCC High deployment intentionally validates PBIP but deploys PBIX. It does not push PBIP definitions with Fabric REST semantic model APIs.**
+
+What to check:
+
+- the target endpoint variables identify GCC High
+- the PBIX was saved from Power BI Desktop after PBIP changes
+- `deployment-manifest.json` was regenerated after saving the PBIX
+- the PBIP, PBIX, and `deployment-manifest.json` were committed together
+
+Regenerate the manifest:
+
+```powershell
+.\shared\scripts\New-PbixDeploymentManifest.ps1 `
+  -PbipPath .\shared\pbip-local `
+  -PbixFile .\shared\pbip-local\<project>.pbix
+```
+
+Reference:
+
+- [GCC High deployment behavior](architecture/gcc-high-deployment.md)
+
 ## DAX Test Stage Shows Skipped DAX Execution
 
 Symptom:

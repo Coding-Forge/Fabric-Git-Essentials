@@ -41,7 +41,11 @@
       <div class="panel-body grid">
         <div class="grid two">
           <label>Platform<select id="platform"><option>Azure DevOps</option><option>GitHub Actions</option><option>GitLab CI</option></select></label>
+          <label>Cloud target<select id="cloudTarget"><option>Commercial Fabric</option><option>GCC High</option></select></label>
+        </div>
+        <div class="grid two">
           <label>Pipeline name<input id="pipelineName" value="Fabric PBIP CI/CD"></label>
+          <label>Deployment behavior<input id="deploymentBehavior" value="Commercial: PBIP definitions. GCC High: PBIX import." readonly></label>
         </div>
         <div class="grid two">
           <label>Project root<input id="projectRoot" value="shared"></label>
@@ -89,7 +93,7 @@ feature/*</textarea></label>
   </main>
   <div id="toast" class="toast" role="status"></div>
   <script>
-    const ids=["platform","pipelineName","projectRoot","pbipPath","pythonVersion","deployScript","branches","datasetRules","reportRules","daxTests","publishArtifact","deployDev","featureDeploy","stageCount","secretCount","runnerCount","lineCount","statusChips","yamlOutput","notesOutput","jsonOutput","checklistOutput","toast"];
+    const ids=["platform","cloudTarget","pipelineName","deploymentBehavior","projectRoot","pbipPath","pythonVersion","deployScript","branches","datasetRules","reportRules","daxTests","publishArtifact","deployDev","featureDeploy","stageCount","secretCount","runnerCount","lineCount","statusChips","yamlOutput","notesOutput","jsonOutput","checklistOutput","toast"];
     const els=Object.fromEntries(ids.map(id=>[id,document.getElementById(id)]));
     let current={profile:{},yaml:"",notes:"",checklist:""};
 
@@ -98,6 +102,7 @@ feature/*</textarea></label>
     function profile(){
       return {
         platform:els.platform.value,
+        cloudTarget:els.cloudTarget.value,
         pipelineName:els.pipelineName.value||"Fabric PBIP CI/CD",
         projectRoot:els.projectRoot.value||"shared",
         pbipPath:els.pbipPath.value||"shared/pbip-local",
@@ -384,10 +389,11 @@ ${jobs.join("\n\n")}`;
     function setupNotes(p){
       const file=p.platform==="Azure DevOps"?"azure-pipelines.yml":p.platform==="GitHub Actions"?".github/workflows/powerbi-ci.yml":".gitlab-ci.yml";
       const s=secrets(p);
-      return [`# Pipeline setup notes`,"",`- Platform: ${p.platform}`,`- Recommended file path: ${file}`,`- Project root: ${p.projectRoot}`,`- PBIP path: ${p.pbipPath}`,`- Enabled capabilities: ${Object.entries(p.features).filter(([,v])=>v).map(([k])=>k).join(", ")||"validation only"}`,"",`## Required runners`,"","- Linux runner for PBIP validation, DAX metadata tests, and artifact publishing.","- Windows runner for Tabular Editor, Fab Inspector, and deployment steps.","",`## Secrets and variables`,...(s.length?s.map(x=>`- ${x}`):["- No deployment secrets required for the selected profile."]),"",`## Review checklist`,"","- Confirm paths match the target repo layout.","- Confirm branch triggers match the team's branching strategy.","- Confirm protected branch policy requires this pipeline before merge.","- Confirm deployment secrets are masked/protected and scoped to approved branches."].join("\n");
+      const gcc=p.cloudTarget==="GCC High";
+      return [`# Pipeline setup notes`,"",`- Platform: ${p.platform}`,`- Cloud target: ${p.cloudTarget}`,`- Recommended file path: ${file}`,`- Project root: ${p.projectRoot}`,`- PBIP path: ${p.pbipPath}`,`- Enabled capabilities: ${Object.entries(p.features).filter(([,v])=>v).map(([k])=>k).join(", ")||"validation only"}`,"",`## Required runners`,"","- Linux runner for PBIP validation, DAX metadata tests, and artifact publishing.","- Windows runner for Tabular Editor, Fab Inspector, and deployment steps.","",`## Secrets and variables`,...(s.length?s.map(x=>`- ${x}`):["- No deployment secrets required for the selected profile."]),...(gcc?["","## GCC High deployment caveat","","**GCC High validates PBIP but deploys a checked-in PBIX with the older Power BI REST imports API. Commit the PBIP, PBIX, and deployment-manifest.json together.**","","Configure endpoints:","- AuthorityHost=https://login.microsoftonline.us","- FabricApiBaseUri=https://api.high.powerbigov.us/v1","- FabricApiScope=https://high.analysis.usgovcloudapi.net/powerbi/api/.default","","Generate the manifest after saving PBIX:","```powershell",".\\shared\\scripts\\New-PbixDeploymentManifest.ps1 `","  -PbipPath .\\shared\\pbip-local `","  -PbixFile .\\shared\\pbip-local\\<project>.pbix","```"]:[]),"",`## Review checklist`,"","- Confirm paths match the target repo layout.","- Confirm branch triggers match the team's branching strategy.","- Confirm protected branch policy requires this pipeline before merge.","- Confirm deployment secrets are masked/protected and scoped to approved branches."].join("\n");
     }
     function checklist(p){
-      return [`# Pipeline review checklist`,"",`- [ ] Commit YAML to the correct location for ${p.platform}.`,"- [ ] Confirm PBIP validation passes for the selected PBIP path.",p.features.datasetRules?"- [ ] Confirm Windows runner can download and run Tabular Editor.":"- [ ] Dataset quality rules intentionally skipped.",p.features.reportRules?"- [ ] Confirm Windows runner can download and run Fab Inspector.":"- [ ] Report quality rules intentionally skipped.",p.features.daxTests?"- [ ] Confirm DAX test metadata validates and publishes JUnit output.":"- [ ] DAX tests intentionally skipped.",p.features.publishArtifact?"- [ ] Confirm PBIP artifact publish path is correct.":"- [ ] Artifact publishing intentionally skipped.",(p.features.deployDev||p.features.featureDeploy)?"- [ ] Confirm deployment service principal and workspace variables are configured.":"- [ ] Deployment intentionally skipped.","- [ ] Require the pipeline as a branch policy/status check before merge."].join("\n");
+      return [`# Pipeline review checklist`,"",`- [ ] Commit YAML to the correct location for ${p.platform}.`,"- [ ] Confirm PBIP validation passes for the selected PBIP path.",p.features.datasetRules?"- [ ] Confirm Windows runner can download and run Tabular Editor.":"- [ ] Dataset quality rules intentionally skipped.",p.features.reportRules?"- [ ] Confirm Windows runner can download and run Fab Inspector.":"- [ ] Report quality rules intentionally skipped.",p.features.daxTests?"- [ ] Confirm DAX test metadata validates and publishes JUnit output.":"- [ ] DAX tests intentionally skipped.",p.features.publishArtifact?"- [ ] Confirm PBIP artifact publish path is correct.":"- [ ] Artifact publishing intentionally skipped.",(p.features.deployDev||p.features.featureDeploy)?"- [ ] Confirm deployment service principal and workspace variables are configured.":"- [ ] Deployment intentionally skipped.",p.cloudTarget==="GCC High"?"- [ ] **GCC High:** commit PBIP, PBIX, and deployment-manifest.json together; deployment imports PBIX, not PBIP definitions.":"- [ ] Commercial Fabric: PBIP definition deployment uses Fabric REST APIs.","- [ ] Require the pipeline as a branch policy/status check before merge."].join("\n");
     }
     function generate(){
       const p=profile();
@@ -403,7 +409,8 @@ ${jobs.join("\n\n")}`;
       els.secretCount.textContent=secrets(p).length;
       els.runnerCount.textContent=runnerCount;
       els.lineCount.textContent=current.yaml.split(/\r?\n/).length;
-      els.statusChips.innerHTML=`<span class="chip success">${p.platform}</span><span class="chip">${p.features.deployDev||p.features.featureDeploy?"Deploy enabled":"CI only"}</span><span class="chip ${runnerCount>1?"warning":"success"}">${runnerCount>1?"Windows runner needed":"Linux runner only"}</span>`;
+      els.deploymentBehavior.value=p.cloudTarget==="GCC High"?"GCC High: validate PBIP, deploy PBIX import with manifest.":"Commercial: deploy PBIP definitions with Fabric REST.";
+      els.statusChips.innerHTML=`<span class="chip success">${p.platform}</span><span class="chip ${p.cloudTarget==="GCC High"?"warning":"success"}">${p.cloudTarget}</span><span class="chip">${p.features.deployDev||p.features.featureDeploy?"Deploy enabled":"CI only"}</span><span class="chip ${runnerCount>1?"warning":"success"}">${runnerCount>1?"Windows runner needed":"Linux runner only"}</span>`;
       els.yamlOutput.textContent=current.yaml;
       els.notesOutput.textContent=current.notes;
       els.jsonOutput.textContent=JSON.stringify(current.profile,null,2);
@@ -419,7 +426,7 @@ ${jobs.join("\n\n")}`;
     }
     function download(name,content,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)}
     function toast(m){els.toast.textContent=m;els.toast.classList.add("visible");clearTimeout(toast.timer);toast.timer=setTimeout(()=>els.toast.classList.remove("visible"),2800)}
-    function seed(){els.pipelineName.value="FinOps PBIP CI/CD";els.projectRoot.value="shared";els.pbipPath.value="shared/pbip-local";els.deployDev.checked=true;els.featureDeploy.checked=true;generate();toast("Starter profile loaded.")}
+    function seed(){els.pipelineName.value="FinOps PBIP CI/CD";els.cloudTarget.value="Commercial Fabric";els.projectRoot.value="shared";els.pbipPath.value="shared/pbip-local";els.deployDev.checked=true;els.featureDeploy.checked=true;generate();toast("Starter profile loaded.")}
     document.querySelectorAll("input,select,textarea").forEach(x=>x.addEventListener("input",generate));
     document.querySelectorAll("input[type=checkbox],select").forEach(x=>x.addEventListener("change",generate));
     document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>activate(b.dataset.tab)));

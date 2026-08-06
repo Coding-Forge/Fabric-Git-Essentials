@@ -83,7 +83,7 @@ These pipelines use common assets from [`../shared/`](../shared/):
 
 - `shared/pbip-local/` — local PBIP artifacts (place your `.pbip` project here)
 - `shared/scripts/Prepare-QualityRules.ps1` — branch-aware quality rule preparation
-- `shared/scripts/deploy-dynamic.ps1` — Fabric REST API deployment script
+- `shared/scripts/deploy-dynamic.ps1` — Fabric/Power BI deployment script
 - `shared/tests/validate_pbip_structure.py` — PBIP structure validator
 - `shared/tests/run_dax_tests.py` — DAX unit test runner
 - `shared/Rules-Dataset.json` — dataset quality rule configuration
@@ -91,6 +91,8 @@ These pipelines use common assets from [`../shared/`](../shared/):
 - `shared/dax-tests.json` — metadata-driven DAX test catalog
 - `tools/` — no-code accelerator builders, scanners, and launchpad
 - `images/` — tool screenshots used by docs and the launchpad
+
+**GCC High caveat:** **The tested GCC High deployment path in this accelerator validates PBIP and deploys a checked-in PBIX with Power BI REST `imports`. Do not assume GCC High service principals can push PBIP definitions through Fabric REST semantic model APIs.** See [GCC High deployment behavior](../docs/architecture/gcc-high-deployment.md).
 
 ## Sparse Clone (GitLab profile)
 

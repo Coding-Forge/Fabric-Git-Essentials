@@ -235,7 +235,17 @@ The deployment stages download `pbip-drop` and run `scripts/deploy-dynamic.ps1`.
 | **Deploy_Dev** | `main` or `develop` | Existing Dev workspace, resolved by `DEV_WORKSPACE_NAME` or `DevWorkspaceId` |
 | **Deploy_Feature** | `feature/*` | Existing or newly created workspace named from `FeatureWorkspacePrefix` plus the safe branch name |
 
-The script authenticates to the Fabric REST API with `TenantId`, `AppId`, and `ClientSecret`, finds PBIP report and semantic model folders from the `.pbip` file, deploys semantic models first, and then updates report definitions to point at the deployed semantic model ID.
+The script authenticates with `TenantId`, `AppId`, and `ClientSecret`, then deploys according to the target cloud. Commercial Fabric uses Fabric REST APIs to deploy PBIP semantic model and report definitions from the `.pbip` file.
+
+**GCC High caveat:** **GCC High does not push PBIP definitions with Fabric REST APIs. GCC High validates PBIP, validates `deployment-manifest.json`, and imports the checked-in PBIX with the Power BI REST `imports` API using `CreateOrOverwrite`. The PBIP, PBIX, and manifest must be committed together.**
+
+For GCC High, generate the manifest after saving the PBIX:
+
+```powershell
+.\shared\scripts\New-PbixDeploymentManifest.ps1 `
+  -PbipPath .\shared\pbip-local `
+  -PbixFile .\shared\pbip-local\<project>.pbix
+```
 
 Before running the pipeline, confirm the service principal is allowed by Fabric tenant settings and added to the Dev workspace. Feature workspace creation also requires the service principal to have permission to create workspaces.
 
@@ -255,7 +265,7 @@ Before running the pipeline, confirm the service principal is allowed by Fabric 
 2. Confirm all stages are green.
 3. Open the **Tests** tab to verify JUnit results were published.
 4. Open the **Artifacts** tab and confirm `pbip-drop` exists.
-5. Open the deployment logs and confirm `Fabric PBIP deployment completed.` appears.
+5. Open the deployment logs and confirm the expected deployment message appears: `Fabric PBIP deployment completed.` for commercial Fabric, or `Power BI PBIX deployment completed.` for GCC High.
 
 ---
 
@@ -322,6 +332,7 @@ Use the CI/CD Platform Parity Matrix to understand how this pipeline pattern map
 - [ ] Publish stage outputs the `pbip-drop` artifact
 - [ ] `Deploy_Dev` succeeds for `main` or `develop`, or `Deploy_Feature` succeeds for `feature/*`
 - [ ] Deployment logs show `scripts/deploy-dynamic.ps1` completed successfully
+- [ ] **For GCC High only:** PBIP, PBIX, and `deployment-manifest.json` are committed together, and logs show `Power BI PBIX deployment completed.`
 - [ ] Pipeline is configured as a required PR check on `main`
 - [ ] A PR to `main` passes the pipeline end-to-end
 - [ ] Platform Parity Matrix was reviewed for Azure DevOps, GitHub Actions, and GitLab implications
@@ -339,6 +350,7 @@ Use the CI/CD Platform Parity Matrix to understand how this pipeline pattern map
 | Missing deployment variable | Define `TenantId`, `AppId`, and `ClientSecret` in the pipeline UI or linked variable group. Add `DevWorkspaceId` or set `DEV_WORKSPACE_NAME` for Dev deployments. |
 | Feature deployment fails | Set `FeatureWorkspacePrefix` and confirm the service principal can create or access Fabric workspaces. |
 | Deployment script not found | Confirm `DEPLOY_SCRIPT_PATH` points to `scripts/deploy-dynamic.ps1` and that the script is included in the published artifact. |
+| GCC High PBIX manifest validation fails | **Regenerate `deployment-manifest.json` after saving the PBIX from Power BI Desktop, then commit the PBIP, PBIX, and manifest together.** |
 | Branch policy does not block PR | Confirm build validation is marked Required and linked to the correct pipeline definition. |
 
 ---

@@ -194,6 +194,8 @@ Core steps:
 
 Both stages download `pbip-drop` and run `scripts/deploy-dynamic.ps1`.
 
+**GCC High caveat:** **GCC High still validates PBIP, but deployment imports the checked-in PBIX through the Power BI REST `imports` API. Users must commit the PBIP, PBIX, and `deployment-manifest.json` together.**
+
 ---
 
 ## Part 6 - Run in Azure DevOps
@@ -226,6 +228,7 @@ Result: PRs to `main` must pass this pipeline.
 - [ ] Test stage publishes JUnit results
 - [ ] Publish stage generates `pbip-drop`
 - [ ] Branch-appropriate deploy stage completes
+- [ ] **For GCC High:** deployment logs show PBIX import behavior, not Fabric PBIP `updateDefinition`
 - [ ] Branch policy requires this build on `main`
 
 ---

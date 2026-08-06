@@ -22,7 +22,7 @@ It acts as a companion index to the main workshop plan, ensuring you can quickly
 | **Lab #1 — Connect Workspace to Git**<br>(10:30–11:30) | Lab Guide for Git connection; Branded slides; CI/CD architecture diagrams |
 | **Collaboration Patterns & Best Practices**<br>(11:30–12:15) | DataOps deck; Governance essentials; RACI examples; Go‑Live assessment |
 | **Deployment Strategy: Dev→Test→Prod**<br>(13:00–13:45) | CI/CD Delivery Guide; Enterprise‑scale Power BI Dev examples; Deployment pipeline docs |
-| **Lab #2 — CI/CD Pipeline for the Power BI Project**<br>(13:45–14:45) | CI/CD lab guide (YAML examples, PBIP validation, artifact publication, workspace deployment); ADO test integration; MS Learn pipeline tutorials |
+| **Lab #2 — CI/CD Pipeline for the Power BI Project**<br>(13:45–14:45) | CI/CD lab guide (YAML examples, PBIP validation, artifact publication, workspace deployment); ADO test integration; MS Learn pipeline tutorials; GCC High deployment behavior |
 | **Toolkit Workshop — Accelerator tools, examples, and final outputs**<br>(Optional extension) | Tool-focused labs for standards, rule authoring, DAX metadata, manifests, readiness, diffs, impact analysis, pipeline config, PR summaries, exceptions, release readiness, adoption metrics, and reference output comparison |
 | **Dashboard Design Solving Session**<br>(15:00–16:00) | Visualization best practices; Persona & decision frameworks; Wireframe examples |
 | **Publishing Artifacts & Release Checklist**<br>(16:00–16:30) | Release checklist; Prod readiness; RLS/CLS validation; Sensitivity labels guidance |
@@ -172,6 +172,8 @@ Lab #2 Outcomes:
 - PR branch policies enforced; the CI/CD pipeline is a required status check on `main`  
 - PBIP validation, testing, artifact publication, and workspace deployment occur automatically on configured branches  
 - Participants use the same pipeline and project files found in the `projects` folder  
+
+**GCC High caveat:** **For GCC High, the pipeline validates PBIP but deploys a checked-in PBIX with Power BI REST `imports`. Participants must commit the PBIP, matching PBIX, and `deployment-manifest.json` together.**
 
 ---
 

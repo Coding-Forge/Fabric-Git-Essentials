@@ -109,13 +109,15 @@ flowchart TD
 | **Test** | DAX unit tests via `run_dax_tests.py` | Fails build; JUnit results published |
 | **Publish** | `PublishPipelineArtifact` creates `pbip-drop` | Skipped if prior stage fails |
 | **Deploy_Dev** | Downloads `pbip-drop` and runs `scripts/deploy-dynamic.ps1` against the Dev workspace | Runs only for `main` and `develop`; fails if deployment variables or workspace target are missing |
-| **Deploy_Feature** | Downloads `pbip-drop`, creates or reuses a prefixed feature workspace, and deploys the PBIP definition | Runs only for `feature/*`; fails if `FeatureWorkspacePrefix` is missing |
+| **Deploy_Feature** | Downloads `pbip-drop`, creates or reuses a prefixed feature workspace, and deploys the artifact | Runs only for `feature/*`; fails if `FeatureWorkspacePrefix` is missing |
 
 In the shared-template pattern, these same stages live in one central template file and are reused by many consumer repos via `extends:`.
 
 ### Deployment Script
 
-`scripts/deploy-dynamic.ps1` authenticates with the Fabric REST API using a service principal, resolves the target workspace from the branch, and creates or updates Fabric semantic model and report items from the published PBIP definition. The script expects `.platform` metadata, deploys semantic models before reports, and rewrites report dataset references to the deployed semantic model ID.
+`scripts/deploy-dynamic.ps1` authenticates with a service principal, resolves the target workspace from the branch, and deploys according to the target cloud. Commercial Fabric creates or updates Fabric semantic model and report items from the published PBIP definition. The script expects `.platform` metadata, deploys semantic models before reports, and rewrites report dataset references to the deployed semantic model ID.
+
+**GCC High caveat:** **GCC High does not use Fabric PBIP definition deployment in this accelerator. It validates PBIP, validates `deployment-manifest.json`, then imports the checked-in PBIX with the older Power BI REST `imports` API using `CreateOrOverwrite`.** See [GCC High deployment behavior](gcc-high-deployment.md).
 
 Required pipeline variables are `TenantId`, `AppId`, and `ClientSecret`. Dev deployments also need either `DevWorkspaceId` or `DEV_WORKSPACE_NAME`; feature deployments require `FeatureWorkspacePrefix`.
 
@@ -196,7 +198,7 @@ The **branch-out strategy** extends the standard Dev/Test/Prod topology with per
 
 - **Service principal** used for automated pipeline operations; no personal credentials stored in the pipeline.  
 - Secrets (client secrets, connection strings, API keys) stored in secured variable groups or **Azure Key Vault** and referenced via pipeline variable groups linked to the Key Vault.  
-- Azure Government tenants should keep the same CI/CD pattern but override `AuthorityHost`, `FabricApiBaseUri`, and `FabricApiScope` / `AUTHORITY_HOST`, `FABRIC_API_BASE_URI`, and `FABRIC_API_SCOPE` with the endpoint set for the target GCC, GCC High, or DoD cloud.
+- Azure Government tenants should keep the same CI/CD pattern but override `AuthorityHost`, `FabricApiBaseUri`, and `FabricApiScope` / `AUTHORITY_HOST`, `FABRIC_API_BASE_URI`, and `FABRIC_API_SCOPE` with the endpoint set for the target GCC, GCC High, or DoD cloud. **For GCC High, the deployment package is PBIX, not direct PBIP definition update.**
 - Branch policies on `main` require:
   - Minimum **1 reviewer** approval  
   - Linked CI build passing  
@@ -208,9 +210,9 @@ The **branch-out strategy** extends the standard Dev/Test/Prod topology with per
 ## Related Documents
 
 - [Lab 2 — CI Pipeline Validation for the Power BI Project](../workshops/core-fabric-git/labs/lab2-ci-pipeline.md)  
+- [GCC High Deployment Behavior](gcc-high-deployment.md)
 - [Workspace Strategy](workspace-strategy.md)  
 - [Governance Checklist](../governance/governance-checklist.md)  
 - [Fabric + Git Integration Architecture](fabric-git-integration.md)
-
 
 

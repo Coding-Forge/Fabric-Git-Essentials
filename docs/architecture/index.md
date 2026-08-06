@@ -7,6 +7,7 @@ This section contains architecture diagrams used throughout the Enterprise BI De
 - Fabric + Git Integration
 - PBIP Development Workflow
 - CI Pipeline Architecture
+- GCC High Deployment Behavior
 - GitHub Best Practices for Fabric Git Integration
 - Dev → Test → Prod Deployment Pipelines
 - End-to-End Fabric DevOps Architecture
@@ -18,6 +19,7 @@ Select a diagram from the list below:
 - [github-fabric-git-best-practices.md](github-fabric-git-best-practices.md)
 - [pbip-dev-workflow.md](pbip-dev-workflow.md)
 - [ci-pipeline.md](ci-pipeline.md)
+- [gcc-high-deployment.md](gcc-high-deployment.md)
 - [deployment-pipeline.md](deployment-pipeline.md)
 - [end-to-end-devops.md](end-to-end-devops.md)
 - [powerbi-embedded.md](powerbi-embedded.md)
