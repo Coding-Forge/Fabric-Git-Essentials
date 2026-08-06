@@ -196,6 +196,7 @@ The **branch-out strategy** extends the standard Dev/Test/Prod topology with per
 
 - **Service principal** used for automated pipeline operations; no personal credentials stored in the pipeline.  
 - Secrets (client secrets, connection strings, API keys) stored in secured variable groups or **Azure Key Vault** and referenced via pipeline variable groups linked to the Key Vault.  
+- Azure Government tenants should keep the same CI/CD pattern but override `AuthorityHost`, `FabricApiBaseUri`, and `FabricApiScope` / `AUTHORITY_HOST`, `FABRIC_API_BASE_URI`, and `FABRIC_API_SCOPE` with the endpoint set for the target GCC, GCC High, or DoD cloud.
 - Branch policies on `main` require:
   - Minimum **1 reviewer** approval  
   - Linked CI build passing  

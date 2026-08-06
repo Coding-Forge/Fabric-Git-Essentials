@@ -83,6 +83,16 @@ The deployment stages require these variables in the pipeline UI or in a linked 
 | `DevWorkspaceId` | Fabric workspace GUID for Dev deployment |
 | `FeatureWorkspacePrefix` | Prefix for auto-created feature workspaces |
 
+Optional endpoint variables support non-public cloud tenants without changing the script:
+
+| Variable | Default | Description |
+|---|---|---|
+| `AuthorityHost` | `https://login.microsoftonline.com` | Microsoft Entra authority host used to request the service principal token |
+| `FabricApiBaseUri` | `https://api.fabric.microsoft.com/v1` | Base URI for Fabric/Power BI REST calls |
+| `FabricApiScope` | `https://api.fabric.microsoft.com/.default` | OAuth scope/resource for the API token |
+
+For Azure Government, override these values with the endpoint set for your cloud, for example using the `.us` Entra authority host and the appropriate GCC, GCC High, or DoD Power BI/Fabric API endpoint published for your tenant.
+
 The included pipeline references the variable group:
 
 ```yaml

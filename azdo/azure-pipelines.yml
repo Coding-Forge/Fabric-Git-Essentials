@@ -7,6 +7,10 @@
 # - ClientSecret
 # - DevWorkspaceId
 # - FeatureWorkspacePrefix (feature branches only)
+# Optional cloud endpoint overrides:
+# - AuthorityHost
+# - FabricApiBaseUri
+# - FabricApiScope
 #
 # The service principal must be allowed by tenant settings and added to the target Fabric workspace.
 
@@ -38,6 +42,12 @@ variables:
     value: 'scripts/deploy-dynamic.ps1'
   - name: DEV_WORKSPACE_NAME
     value: 'Git-Essentials'
+  - name: AuthorityHost
+    value: 'https://login.microsoftonline.com'
+  - name: FabricApiBaseUri
+    value: 'https://api.fabric.microsoft.com/v1'
+  - name: FabricApiScope
+    value: 'https://api.fabric.microsoft.com/.default'
 
 stages:
 # -----------------------------------------------------------------------------------------------------
@@ -324,6 +334,9 @@ stages:
             CLIENT_SECRET: $(ClientSecret)
             DEV_WORKSPACE_ID: $(DevWorkspaceId)
             DEV_WORKSPACE_NAME: $(DEV_WORKSPACE_NAME)
+            AUTHORITY_HOST: $(AuthorityHost)
+            FABRIC_API_BASE_URI: $(FabricApiBaseUri)
+            FABRIC_API_SCOPE: $(FabricApiScope)
           inputs:
             targetType: 'inline'
             script: |
@@ -362,6 +375,9 @@ stages:
                 -ClientSecret $env:CLIENT_SECRET `
                 -DevWorkspaceId $env:DEV_WORKSPACE_ID `
                 -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
+                -AuthorityHost $env:AUTHORITY_HOST `
+                -FabricApiBaseUri $env:FABRIC_API_BASE_URI `
+                -FabricApiScope $env:FABRIC_API_SCOPE `
                 -PbipPath $pbipPath
 
 # -----------------------------------------------------------------------------------------------------
@@ -391,6 +407,9 @@ stages:
             DEV_WORKSPACE_ID: $(DevWorkspaceId)
             DEV_WORKSPACE_NAME: $(DEV_WORKSPACE_NAME)
             FEATURE_WORKSPACE_PREFIX: $(FeatureWorkspacePrefix)
+            AUTHORITY_HOST: $(AuthorityHost)
+            FABRIC_API_BASE_URI: $(FabricApiBaseUri)
+            FABRIC_API_SCOPE: $(FabricApiScope)
           inputs:
             targetType: 'inline'
             script: |
@@ -427,5 +446,8 @@ stages:
                 -DevWorkspaceId $env:DEV_WORKSPACE_ID `
                 -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
                 -FeatureWorkspacePrefix $env:FEATURE_WORKSPACE_PREFIX `
+                -AuthorityHost $env:AUTHORITY_HOST `
+                -FabricApiBaseUri $env:FABRIC_API_BASE_URI `
+                -FabricApiScope $env:FABRIC_API_SCOPE `
                 -PbipPath $pbipPath
 

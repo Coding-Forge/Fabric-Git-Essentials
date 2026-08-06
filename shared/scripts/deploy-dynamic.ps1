@@ -18,6 +18,12 @@ param(
 
     [string]$FeatureWorkspacePrefix,
 
+    [string]$AuthorityHost = 'https://login.microsoftonline.com',
+
+    [string]$FabricApiBaseUri = 'https://api.fabric.microsoft.com/v1',
+
+    [string]$FabricApiScope = 'https://api.fabric.microsoft.com/.default',
+
     [Parameter(Mandatory = $true)]
     [string]$PbipPath
 )
@@ -25,7 +31,21 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$script:FabricBaseUri = 'https://api.fabric.microsoft.com/v1'
+$requiredEndpointParameters = @{
+    AuthorityHost = $AuthorityHost
+    FabricApiBaseUri = $FabricApiBaseUri
+    FabricApiScope = $FabricApiScope
+}
+
+foreach ($parameterName in $requiredEndpointParameters.Keys) {
+    if ([string]::IsNullOrWhiteSpace($requiredEndpointParameters[$parameterName])) {
+        throw "$parameterName cannot be blank."
+    }
+}
+
+$script:AuthorityHost = $AuthorityHost.TrimEnd('/')
+$script:FabricBaseUri = $FabricApiBaseUri.TrimEnd('/')
+$script:FabricScope = $FabricApiScope
 $script:FabricHeaders = $null
 
 function ConvertTo-SafeDisplayName {
@@ -57,12 +77,12 @@ function Get-FabricAccessToken {
         [string]$Secret
     )
 
-    $tokenUri = "https://login.microsoftonline.com/$TenantId/oauth2/v2.0/token"
+    $tokenUri = "$($script:AuthorityHost)/$TenantId/oauth2/v2.0/token"
     $body = @{
         client_id = $ClientId
         client_secret = $Secret
         grant_type = 'client_credentials'
-        scope = 'https://api.fabric.microsoft.com/.default'
+        scope = $script:FabricScope
     }
 
     Write-Host 'Authenticating to Microsoft Fabric REST API.'

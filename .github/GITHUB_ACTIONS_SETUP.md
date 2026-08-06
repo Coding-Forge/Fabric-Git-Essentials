@@ -100,6 +100,13 @@ Repository or environment variables required for deployment:
 - `DEV_WORKSPACE_NAME` (optional if `DEV_WORKSPACE_ID` is set)
 - `FEATURE_WORKSPACE_PREFIX` (required for `feature/*` deployments)
 
+Optional repository or environment variables for non-public cloud deployments:
+- `AUTHORITY_HOST` (defaults to `https://login.microsoftonline.com`)
+- `FABRIC_API_BASE_URI` (defaults to `https://api.fabric.microsoft.com/v1`)
+- `FABRIC_API_SCOPE` (defaults to `https://api.fabric.microsoft.com/.default`)
+
+For Azure Government, set these to the authority, API base URI, and OAuth scope for the specific GCC, GCC High, or DoD environment used by the tenant.
+
 Repository variables you can define for default skip behavior:
 - `PBIP_CI_SKIP_DATASET_RULES`
 - `PBIP_CI_SKIP_REPORT_RULES`
