@@ -105,7 +105,7 @@ Generate and commit a PBIX deployment manifest with the PBIX so the pipeline can
   -PbixFile .\shared\pbip-local\<your-project>.pbix
 ```
 
-The manifest is written to `shared\pbip-local\deployment-manifest.json` and records the PBIX file name, PBIX SHA-256 hash, PBIP source SHA-256 hash, and generation timestamp. GCC High PBIX import deployment fails if the manifest is missing or stale.
+The manifest is written to `shared\pbip-local\deployment-manifest.json` using the same schema as the Deployment Manifest Builder. The script records or refreshes `artifacts.pbixFile`, `artifacts.pbixSha256`, `artifacts.pbipSourceSha256`, `artifacts.pbixGeneratedUtc`, and `artifacts.pbixGeneratedBy`. GCC High PBIX import deployment fails if the manifest is missing or stale. You can load the same manifest in `tools/deployment-manifest-builder/index.html` to complete owner, environment, approval, and rollback metadata.
 
 The included pipeline references the variable group:
 

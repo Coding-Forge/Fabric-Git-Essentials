@@ -265,11 +265,12 @@ function Resolve-PbixFile {
     $manifestPath = Join-Path $resolvedPath 'deployment-manifest.json'
     if (Test-Path -Path $manifestPath -PathType Leaf) {
         $manifest = Get-Content -Path $manifestPath -Raw | ConvertFrom-Json
-        if ([string]::IsNullOrWhiteSpace($manifest.pbixFile)) {
-            throw "PBIX deployment manifest is missing required property: pbixFile"
+        $manifestArtifacts = if ($manifest.artifacts) { $manifest.artifacts } else { $manifest }
+        if ([string]::IsNullOrWhiteSpace($manifestArtifacts.pbixFile)) {
+            throw "PBIX deployment manifest is missing required property: artifacts.pbixFile"
         }
 
-        $manifestPbixPath = Join-Path $resolvedPath $manifest.pbixFile
+        $manifestPbixPath = Join-Path $resolvedPath $manifestArtifacts.pbixFile
         if (!(Test-Path -Path $manifestPbixPath -PathType Leaf)) {
             throw "PBIX file named by deployment manifest was not found: $manifestPbixPath"
         }

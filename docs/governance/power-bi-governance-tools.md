@@ -170,7 +170,7 @@ Open:
 tools/deployment-manifest-builder/index.html
 ```
 
-The Deployment Manifest Builder creates a readable deployment contract for a PBIP solution. It can scan an existing PBIP folder to infer a starter manifest from the `.pbip`, `.Report`, `.SemanticModel`, rule, DAX test, and exception files, then lets users complete the business ownership and environment details. It helps users understand the business purpose, owners, artifacts, Dev/Test/Prod workspaces, environment-specific parameters, validation gates, approvals, rollback plan, and known exceptions.
+The Deployment Manifest Builder creates a readable deployment contract for a PBIP solution. It can scan an existing PBIP folder to infer a starter manifest from the `.pbip`, `.Report`, `.SemanticModel`, rule, DAX test, and exception files, then lets users complete the business ownership and environment details. It also loads and preserves the GCC High PBIX/hash fields written by `shared/scripts/New-PbixDeploymentManifest.ps1`. It helps users understand the business purpose, owners, artifacts, Dev/Test/Prod workspaces, environment-specific parameters, validation gates, approvals, rollback plan, and known exceptions.
 
 ![Deployment Manifest Builder](../../images/deployment-manifest-builder.png)
 
@@ -179,6 +179,7 @@ The Deployment Manifest Builder creates a readable deployment contract for a PBI
 - Explain what the PBIP solution is and who owns it
 - Scan an existing PBIP folder and infer a draft manifest
 - List the PBIP, report, semantic model, quality rule, and DAX test assets
+- Review GCC High PBIX file, PBIX SHA-256, PBIP source SHA-256, and generation metadata
 - Map Dev/Test/Prod workspaces and connection profiles
 - Document parameters that change by environment
 - Capture required validation gates and approvals

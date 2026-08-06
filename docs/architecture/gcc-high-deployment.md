@@ -59,18 +59,29 @@ Generate the manifest with:
   -PbixFile .\shared\pbip-local\<project>.pbix
 ```
 
-The manifest records:
+The manifest uses the same toolkit deployment-manifest schema produced by the Deployment Manifest Builder. The hash script creates the manifest if it does not exist, or updates the PBIX/hash fields in an existing toolkit manifest. The required GCC High fields live under `artifacts`:
 
 ```json
 {
-  "artifactName": "<project>",
-  "pbixFile": "<project>.pbix",
-  "pbixSha256": "<PBIX file hash>",
-  "pbipSourceSha256": "<PBIP source hash>",
-  "generatedUtc": "<UTC timestamp>",
-  "generatedBy": "Power BI Desktop"
+  "version": 1,
+  "solution": {
+    "name": "<project>",
+    "criticality": "medium"
+  },
+  "artifacts": {
+    "pbipFile": "<project>.pbip",
+    "reportPath": "<project>.Report",
+    "semanticModelPath": "<project>.SemanticModel",
+    "pbixFile": "<project>.pbix",
+    "pbixSha256": "<PBIX file hash>",
+    "pbipSourceSha256": "<PBIP source hash>",
+    "pbixGeneratedUtc": "<UTC timestamp>",
+    "pbixGeneratedBy": "Power BI Desktop"
+  }
 }
 ```
+
+You can load this same `deployment-manifest.json` in `tools/deployment-manifest-builder/index.html` to complete ownership, environment, approval, rollback, and release metadata. Rerun `New-PbixDeploymentManifest.ps1` after saving a new PBIX; it preserves the broader toolkit manifest and refreshes the hash fields.
 
 ## Pipeline enforcement
 
