@@ -83,6 +83,28 @@ The deployment stages require these variables in the pipeline UI or in a linked 
 | `DevWorkspaceId` | Fabric workspace GUID for Dev deployment |
 | `FeatureWorkspacePrefix` | Prefix for auto-created feature workspaces |
 
+Optional endpoint variables support non-public cloud tenants without changing the script:
+
+| Variable | Default | Description |
+|---|---|---|
+| `AuthorityHost` | `https://login.microsoftonline.com` | Microsoft Entra authority host used to request the service principal token |
+| `FabricApiBaseUri` | `https://api.fabric.microsoft.com/v1` | Base URI for Fabric/Power BI REST calls |
+| `FabricApiScope` | `https://api.fabric.microsoft.com/.default` | OAuth scope/resource for the API token |
+
+For Azure Government, override these values with the endpoint set for your cloud, for example using the `.us` Entra authority host and the appropriate GCC, GCC High, or DoD Power BI/Fabric API endpoint published for your tenant.
+
+For GCC High deployments, save a `.pbix` file next to the PBIP project and commit it with the PBIP source changes. The pipeline still validates the PBIP project, but after the gates pass it detects GCC High endpoint settings and deploys the checked-in PBIX with the Power BI REST `imports` API using `CreateOrOverwrite`, avoiding Fabric PBIP definition APIs that may reject service-principal semantic model operations in GCC High.
+
+Generate and commit a PBIX deployment manifest with the PBIX so the pipeline can verify the deployable artifact before import:
+
+```powershell
+.\shared\scripts\New-PbixDeploymentManifest.ps1 `
+  -PbipPath .\shared\pbip-local `
+  -PbixFile .\shared\pbip-local\<your-project>.pbix
+```
+
+The manifest is written to `shared\pbip-local\deployment-manifest.json` and records the PBIX file name, PBIX SHA-256 hash, PBIP source SHA-256 hash, and generation timestamp. GCC High PBIX import deployment fails if the manifest is missing or stale.
+
 The included pipeline references the variable group:
 
 ```yaml

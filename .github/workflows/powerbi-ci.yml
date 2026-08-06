@@ -38,6 +38,9 @@ env:
   PBIP_PATH: shared/pbip-local
   PYTHON_VERSION: "3.11"
   DEPLOY_SCRIPT_PATH: shared/scripts/deploy-dynamic.ps1
+  AUTHORITY_HOST: ${{ vars.AUTHORITY_HOST || 'https://login.microsoftonline.com' }}
+  FABRIC_API_BASE_URI: ${{ vars.FABRIC_API_BASE_URI || 'https://api.fabric.microsoft.com/v1' }}
+  FABRIC_API_SCOPE: ${{ vars.FABRIC_API_SCOPE || 'https://api.fabric.microsoft.com/.default' }}
   # Optional repo/org variables to set defaults across all runs.
   # Valid values: true or false.
   SKIP_DATASET_RULES: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_dataset_rules || vars.PBIP_CI_SKIP_DATASET_RULES || 'false' }}
@@ -422,6 +425,9 @@ jobs:
             -ClientSecret $env:CLIENT_SECRET `
             -DevWorkspaceId $env:DEV_WORKSPACE_ID `
             -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
+            -AuthorityHost "$env:AUTHORITY_HOST" `
+            -FabricApiBaseUri "$env:FABRIC_API_BASE_URI" `
+            -FabricApiScope "$env:FABRIC_API_SCOPE" `
             -PbipPath $resolvedPbipPath
 
   deploy_feature:
@@ -506,5 +512,8 @@ jobs:
             -DevWorkspaceId $env:DEV_WORKSPACE_ID `
             -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
             -FeatureWorkspacePrefix $env:FEATURE_WORKSPACE_PREFIX `
+            -AuthorityHost "$env:AUTHORITY_HOST" `
+            -FabricApiBaseUri "$env:FABRIC_API_BASE_URI" `
+            -FabricApiScope "$env:FABRIC_API_SCOPE" `
             -PbipPath $resolvedPbipPath
 
