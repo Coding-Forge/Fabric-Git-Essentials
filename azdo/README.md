@@ -95,6 +95,16 @@ For Azure Government, override these values with the endpoint set for your cloud
 
 For GCC High deployments, save a `.pbix` file next to the PBIP project and commit it with the PBIP source changes. The pipeline still validates the PBIP project, but after the gates pass it detects GCC High endpoint settings and deploys the checked-in PBIX with the Power BI REST `imports` API using `CreateOrOverwrite`, avoiding Fabric PBIP definition APIs that may reject service-principal semantic model operations in GCC High.
 
+Generate and commit a PBIX deployment manifest with the PBIX so the pipeline can verify the deployable artifact before import:
+
+```powershell
+.\shared\scripts\New-PbixDeploymentManifest.ps1 `
+  -PbipPath .\shared\pbip-local `
+  -PbixFile .\shared\pbip-local\<your-project>.pbix
+```
+
+The manifest is written to `shared\pbip-local\deployment-manifest.json` and records the PBIX file name, PBIX SHA-256 hash, PBIP source SHA-256 hash, and generation timestamp. GCC High PBIX import deployment fails if the manifest is missing or stale.
+
 The included pipeline references the variable group:
 
 ```yaml

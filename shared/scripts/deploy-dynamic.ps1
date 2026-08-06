@@ -262,6 +262,21 @@ function Resolve-PbixFile {
         return $resolvedPath
     }
 
+    $manifestPath = Join-Path $resolvedPath 'deployment-manifest.json'
+    if (Test-Path -Path $manifestPath -PathType Leaf) {
+        $manifest = Get-Content -Path $manifestPath -Raw | ConvertFrom-Json
+        if ([string]::IsNullOrWhiteSpace($manifest.pbixFile)) {
+            throw "PBIX deployment manifest is missing required property: pbixFile"
+        }
+
+        $manifestPbixPath = Join-Path $resolvedPath $manifest.pbixFile
+        if (!(Test-Path -Path $manifestPbixPath -PathType Leaf)) {
+            throw "PBIX file named by deployment manifest was not found: $manifestPbixPath"
+        }
+
+        return (Resolve-Path -Path $manifestPbixPath).Path
+    }
+
     $pbixFiles = @(Get-ChildItem -Path $resolvedPath -Filter '*.pbix' -File)
     if ($pbixFiles.Count -eq 0) {
         throw "No .pbix file found under $resolvedPath. Add a PBIX deployable artifact next to the PBIP project for Power BI REST import deployment."
@@ -273,6 +288,21 @@ function Resolve-PbixFile {
     }
 
     return $pbixFiles[0].FullName
+}
+
+function Test-PbixDeploymentManifest {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectRoot
+    )
+
+    $manifestScriptPath = Join-Path $PSScriptRoot 'New-PbixDeploymentManifest.ps1'
+    if (!(Test-Path -Path $manifestScriptPath -PathType Leaf)) {
+        throw "PBIX deployment manifest script not found: $manifestScriptPath"
+    }
+
+    $manifestPath = Join-Path $ProjectRoot 'deployment-manifest.json'
+    & $manifestScriptPath -PbipPath $ProjectRoot -ManifestPath $manifestPath -ValidateOnly
 }
 
 function Wait-PowerBiImport {
@@ -779,6 +809,7 @@ $workspaceId = Resolve-TargetWorkspaceId
 if ($UsePowerBiImport) {
     $pbixSourcePath = if ([string]::IsNullOrWhiteSpace($PbixPath)) { $projectRoot } else { $PbixPath }
     $resolvedPbixPath = Resolve-PbixFile -Path $pbixSourcePath
+    Test-PbixDeploymentManifest -ProjectRoot $projectRoot
 
     Write-Host "Deploying PBIX artifact from: $resolvedPbixPath"
     Write-Host "Target workspace ID: $workspaceId"
