@@ -59,12 +59,16 @@ Use **Toolkit** mode when you want platform, profile, and workshop options. Use 
 
 The sparse clone scripts use sparse checkout only as a temporary file selection mechanism.
 
-The final working directory is left as a **normal, non-sparse Git repository**:
+The final working directory is left as a **normal, non-sparse Git repository** containing only the selected profile files:
 
-- Sparse checkout is disabled before the script completes.
-- All source remotes are removed.
+- Sparse checkout is used only to materialize the selected files.
+- The temporary source clone metadata is removed.
+- A fresh Git repository is initialized in the destination.
+- The selected files are staged and committed as a new initial commit when Git identity is configured.
 - No active remote points back to the parent repository.
 - Users should create their own empty remote repo and add it with `git remote add origin <new-repo-url>`.
+
+If Git `user.name` or `user.email` is not configured, the scripts leave the selected files staged so the user can make the initial commit after configuring Git identity.
 
 The scripts also intentionally do **not** use partial clone blob filtering such as `--filter=blob:none`. This keeps the resulting workshop or toolkit working directory commit-safe after the source remotes are removed. If blob filtering is used and the source remote is removed, Git may be unable to resolve missing blob objects when users make their first commit in the cloned repo.
 
@@ -178,7 +182,7 @@ Use those when you want the original platform profile behavior. Use `Clone-Spars
 
 ## Remote behavior
 
-All sparse clone scripts remove the source `origin` remote after checkout.
+All sparse clone scripts create a fresh standalone repo with no source `origin` remote after checkout. The new repo contains only the selected files for the chosen profile.
 
 Add your project repository remote before pushing:
 

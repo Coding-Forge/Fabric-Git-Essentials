@@ -117,22 +117,21 @@ function ConvertTo-SparsePattern {
 }
 
 function Complete-IndependentClone {
-    git sparse-checkout disable
+    Remove-Item -LiteralPath (Join-Path (Get-Location) '.git') -Recurse -Force
+    git init -b $Branch
     if ($LASTEXITCODE -ne 0) {
-        throw 'git sparse-checkout disable failed.'
+        git init
+        if ($LASTEXITCODE -ne 0) { throw 'git init failed.' }
+        git checkout -b $Branch
+        if ($LASTEXITCODE -ne 0) { throw "Failed to create branch: $Branch" }
     }
-    git config --unset core.sparseCheckout 2>$null
-    git config --unset core.sparseCheckoutCone 2>$null
-    git config --worktree --unset core.sparseCheckout 2>$null
-    git config --worktree --unset core.sparseCheckoutCone 2>$null
-    Remove-Item -LiteralPath (Join-Path (Get-Location) '.git\info\sparse-checkout') -Force -ErrorAction SilentlyContinue
 
-    $remotes = @(git remote)
-    foreach ($remote in $remotes) {
-        git remote remove $remote
-        if ($LASTEXITCODE -ne 0) {
-            throw "Failed to remove remote: $remote"
-        }
+    git add -A
+    if ($LASTEXITCODE -ne 0) { throw 'git add failed.' }
+
+    git commit -m 'Initial sparse profile materialization'
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning 'Initial commit failed, likely because Git user.name/user.email is not configured. Files are staged for the first commit.'
     }
 }
 
@@ -158,8 +157,7 @@ try {
     Write-Host "Profile: $Profile"
     Write-Host "Include workshop material: $($IncludeWorkshop.IsPresent)"
     Write-Host "Included paths: $($paths -join ', ')"
-    Write-Host 'Sparse checkout disabled.'
-    Write-Host 'Removed all source remotes.'
+    Write-Host 'Converted sparse checkout to a new standalone repository.'
     Write-Host 'Create a new empty repo, then add it with: git remote add origin <new-repo-url>'
     Write-Host "Working directory: $(Get-Location)"
 }

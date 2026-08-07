@@ -159,7 +159,7 @@ Use the sparse clone scripts when you want only the folders needed for a specifi
 | Toolkit | `shared/scripts/Clone-SparseToolkitProfile.ps1` | Platform-specific folders plus either standard toolkit assets or minimal CI/CD assets. Workshop files are excluded unless `-IncludeWorkshop` is passed. |
 | PowerShell UI | `shared/scripts/Start-SparseCloneUI.ps1` | Form-based Windows UI for running toolkit or platform-specific sparse clone scripts |
 
-The clone scripts use sparse checkout only during setup. They finish by disabling sparse checkout and removing all source remotes, leaving a normal standalone repository. Create a new empty remote repository, then attach it with `git remote add origin <new-repo-url>`.
+The clone scripts use sparse checkout only during setup. They finish by converting the selected files into a fresh standalone repository with a new initial commit, so unselected platform folders are not carried forward. Create a new empty remote repository, then attach it with `git remote add origin <new-repo-url>`.
 
 For detailed sparse clone scenarios, see [Sparse Clone Guide](docs/sparse-clone-guide.md).
 
@@ -223,7 +223,7 @@ Toolkit clone with no CI/CD platform folder:
   -Platform None
 ```
 
-Each sparse clone script removes the source `origin` remote after checkout so a team can add its own project repository remote before pushing.
+Each sparse clone script converts the selected files into a fresh standalone repository with no source remote so a team can add its own project repository remote before pushing.
 
 ## Contributing
 

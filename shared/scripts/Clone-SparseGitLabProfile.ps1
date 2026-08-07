@@ -33,18 +33,21 @@ if (Test-Path -LiteralPath $Destination) {
 }
 
 function Complete-IndependentClone {
-    git sparse-checkout disable
-    if ($LASTEXITCODE -ne 0) { throw 'git sparse-checkout disable failed.' }
-    git config --unset core.sparseCheckout 2>$null
-    git config --unset core.sparseCheckoutCone 2>$null
-    git config --worktree --unset core.sparseCheckout 2>$null
-    git config --worktree --unset core.sparseCheckoutCone 2>$null
-    Remove-Item -LiteralPath (Join-Path (Get-Location) '.git\info\sparse-checkout') -Force -ErrorAction SilentlyContinue
+    Remove-Item -LiteralPath (Join-Path (Get-Location) '.git') -Recurse -Force
+    git init -b $Branch
+    if ($LASTEXITCODE -ne 0) {
+        git init
+        if ($LASTEXITCODE -ne 0) { throw 'git init failed.' }
+        git checkout -b $Branch
+        if ($LASTEXITCODE -ne 0) { throw "Failed to create branch: $Branch" }
+    }
 
-    $remotes = @(git remote)
-    foreach ($remote in $remotes) {
-        git remote remove $remote
-        if ($LASTEXITCODE -ne 0) { throw "Failed to remove remote: $remote" }
+    git add -A
+    if ($LASTEXITCODE -ne 0) { throw 'git add failed.' }
+
+    git commit -m 'Initial sparse profile materialization'
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning 'Initial commit failed, likely because Git user.name/user.email is not configured. Files are staged for the first commit.'
     }
 }
 
@@ -66,8 +69,7 @@ try {
     Write-Host ''
     Write-Host 'GitLab profile materialized as a normal standalone working tree.'
     Write-Host 'Included folders: gitlab, shared, docs, tools, images'
-    Write-Host 'Sparse checkout disabled.'
-    Write-Host 'Removed all source remotes.'
+    Write-Host 'Converted sparse checkout to a new standalone repository.'
     Write-Host 'Create a new empty repo, then add it with: git remote add origin <new-gitlab-repo-url>'
     Write-Host "Working directory: $(Get-Location)"
 }
