@@ -43,7 +43,8 @@ repo-root/
 
 Notes:
 - `shared/pbip-local/` contains the PBIP project checked by CI.
-- `Rules-Dataset.json` and `Rules-Report.json` are optional. If missing, the workflow downloads community fallback rules.
+- `shared/Rules-Dataset.json` is included so sample PBIP projects do not fall back to stricter community rules during onboarding.
+- `Rules-Report.json` is optional. If missing, the workflow downloads community fallback rules.
 - The workflow assumes the current workshop folder layout and uses paths under `shared/`.
 
 ## How to set up a project repo in GitHub
@@ -55,7 +56,7 @@ Notes:
    - `shared/tests/validate_pbip_structure.py`
    - `shared/tests/run_dax_tests.py`
    - optional `shared/dax-tests.json`
-   - optional `shared/Rules-Dataset.json`
+   - `shared/Rules-Dataset.json`
    - optional `shared/Rules-Report.json`
 3. Copy `tools/` and `images/` if you want the no-code accelerator builders, scanners, launchpad, and screenshots.
 4. Copy the workflow file into `.github/workflows/powerbi-ci.yml`.
