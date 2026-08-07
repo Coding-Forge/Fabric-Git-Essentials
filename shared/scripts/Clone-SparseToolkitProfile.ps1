@@ -46,7 +46,7 @@ function Get-PlatformPaths {
 
     switch ($PlatformName) {
         'AzDo' { return @('azdo/') }
-        'GitHub' { return @('.github/') }
+        'GitHub' { return @('.github/GITHUB_ACTIONS_SETUP.md', '.github/workflows/powerbi-ci.yml') }
         'GitLab' { return @('gitlab/') }
         'All' { return @('azdo/', '.github/', 'gitlab/') }
         'None' { return @() }

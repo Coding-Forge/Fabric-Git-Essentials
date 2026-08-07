@@ -77,9 +77,9 @@ The scripts also intentionally do **not** use partial clone blob filtering such 
 | Platform value | Includes |
 |---|---|
 | `AzDo` | `azdo/` |
-| `GitHub` | `.github/` |
+| `GitHub` | `.github/workflows/powerbi-ci.yml`, `.github/GITHUB_ACTIONS_SETUP.md` |
 | `GitLab` | `gitlab/` |
-| `All` | `azdo/`, `.github/`, `gitlab/` |
+| `All` | `azdo/`, `.github/workflows/powerbi-ci.yml`, `.github/GITHUB_ACTIONS_SETUP.md`, `gitlab/` |
 | `None` | No CI/CD platform folder |
 
 ## Profile argument

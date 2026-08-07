@@ -154,7 +154,7 @@ Use the sparse clone scripts when you want only the folders needed for a specifi
 | Profile | Script | Included folders |
 |---|---|---|
 | Azure DevOps | `shared/scripts/Clone-SparseAzDoProfile.ps1` | `azdo`, `shared`, `docs`, `tools`, `images` |
-| GitHub Actions | `shared/scripts/Clone-SparseGitHubProfile.ps1` | `.github`, `shared`, `docs`, `tools`, `images` |
+| GitHub Actions | `shared/scripts/Clone-SparseGitHubProfile.ps1` | `.github/workflows/powerbi-ci.yml`, `.github/GITHUB_ACTIONS_SETUP.md`, `shared`, `docs`, `tools`, `images` |
 | GitLab CI/CD | `shared/scripts/Clone-SparseGitLabProfile.ps1` | `gitlab`, `shared`, `docs`, `tools`, `images` |
 | Toolkit | `shared/scripts/Clone-SparseToolkitProfile.ps1` | Platform-specific folders plus either standard toolkit assets or minimal CI/CD assets. Workshop files are excluded unless `-IncludeWorkshop` is passed. |
 | PowerShell UI | `shared/scripts/Start-SparseCloneUI.ps1` | Form-based Windows UI for running toolkit or platform-specific sparse clone scripts |

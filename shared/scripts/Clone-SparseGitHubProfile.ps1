@@ -60,15 +60,23 @@ if ($LASTEXITCODE -ne 0 -or !(Test-Path -LiteralPath $Destination)) {
 
 Push-Location $Destination
 try {
-    # GitHub profile: GitHub workflows + shared CI assets + docs + no-code accelerator tools.
-    git sparse-checkout init --cone
-    git sparse-checkout set .github shared docs tools images
+    # GitHub profile: GitHub Actions workflow + setup guide + shared CI assets + docs + no-code accelerator tools.
+    git sparse-checkout init --no-cone
+    git sparse-checkout set --no-cone `
+        '/.github/GITHUB_ACTIONS_SETUP.md' `
+        '/.github/workflows/powerbi-ci.yml' `
+        '/shared/**' `
+        '/docs/**' `
+        '/tools/**' `
+        '/images/**' `
+        '/README.md' `
+        '/.gitignore'
     git checkout $Branch
     Complete-IndependentClone
 
     Write-Host ''
     Write-Host 'GitHub profile materialized as a normal standalone working tree.'
-    Write-Host 'Included folders: .github, shared, docs, tools, images'
+    Write-Host 'Included paths: .github/workflows/powerbi-ci.yml, .github/GITHUB_ACTIONS_SETUP.md, shared, docs, tools, images, README.md, .gitignore'
     Write-Host 'Converted sparse checkout to a new standalone repository.'
     Write-Host 'Create a new empty repo, then add it with: git remote add origin <new-github-repo-url>'
     Write-Host "Working directory: $(Get-Location)"
