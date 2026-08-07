@@ -1,6 +1,6 @@
 # Enterprise BI DevOps with Microsoft Fabric
 
-> **Version:** 1.1 | **Author:** Brandon Campbell | **Updated:** July 2026
+> **Version:** 1.2 | **Author:** Brandon Campbell | **Updated:** August 2026
 
 Enterprise BI DevOps with Microsoft Fabric helps teams turn Power BI and Fabric delivery into a governed, repeatable engineering practice. It combines CI/CD patterns, quality gates, deployment guidance, no-code governance tools, and workshop-ready reference material for Microsoft Fabric and Power BI PBIP projects.
 
@@ -102,6 +102,8 @@ Both tools generate the same `Rules-Report.json` and `Rules-Dataset.json` files 
 | Repository change checklist | [docs/repo-change-checklist.md](docs/repo-change-checklist.md) |
 | CI/CD architecture | [docs/architecture/cicd-architecture.md](docs/architecture/cicd-architecture.md) |
 | GCC High deployment behavior | [docs/architecture/gcc-high-deployment.md](docs/architecture/gcc-high-deployment.md) |
+| Azure DevOps deployment walkthrough | [docs/deployment/azure-devops-gcc-high-walkthrough.md](docs/deployment/azure-devops-gcc-high-walkthrough.md) |
+| GitHub Actions deployment walkthrough | [docs/deployment/github-actions-gcc-high-walkthrough.md](docs/deployment/github-actions-gcc-high-walkthrough.md) |
 | Branching strategy | [docs/architecture/branching-strategy.md](docs/architecture/branching-strategy.md) |
 | Workspace strategy | [docs/architecture/workspace-strategy.md](docs/architecture/workspace-strategy.md) |
 | Governance checklist | [docs/governance/governance-checklist.md](docs/governance/governance-checklist.md) |

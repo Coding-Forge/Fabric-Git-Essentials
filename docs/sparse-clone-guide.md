@@ -86,8 +86,8 @@ The scripts also intentionally do **not** use partial clone blob filtering such 
 
 | Profile | Includes | Excludes |
 |---|---|---|
-| `Minimal` | `README.md`, `shared/`, selected platform folder | `tools/`, `images/`, `docs/`, `presentations/`, `powerpoint/`, workshop support files |
-| `Standard` | `README.md`, `shared/`, `tools/`, `images/`, selected governance/docs assets, selected platform folder | Workshop folders unless `-IncludeWorkshop` is passed |
+| `Minimal` | `README.md`, `shared/`, `docs/deployment/`, GCC High behavior doc, selected platform folder | `tools/`, `images/`, most `docs/`, `presentations/`, `powerpoint/`, workshop support files |
+| `Standard` | `README.md`, `shared/`, `tools/`, `images/`, deployment walkthroughs, selected governance/docs assets, selected platform folder | Workshop folders unless `-IncludeWorkshop` is passed |
 
 `Standard` is the default profile.
 

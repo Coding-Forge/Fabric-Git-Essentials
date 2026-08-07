@@ -66,7 +66,9 @@ function Get-ProfilePaths {
     if ($ProfileName -eq 'Minimal') {
         return @($platformPaths + @(
             'README.md',
-            'shared/'
+            'shared/',
+            'docs/deployment/',
+            'docs/architecture/gcc-high-deployment.md'
         ) | Select-Object -Unique)
     }
 
@@ -78,6 +80,8 @@ function Get-ProfilePaths {
         'docs/index.md',
         'docs/index.html',
         'docs/images/',
+        'docs/deployment/',
+        'docs/architecture/gcc-high-deployment.md',
         'docs/governance/',
         'docs/enterprise-quality-rules-pattern.md'
     )

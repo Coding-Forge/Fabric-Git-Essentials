@@ -4,6 +4,8 @@ This folder contains the GitHub Actions workflow for running Enterprise BI DevOp
 
 Use this guide when you want to create or prepare a GitHub-hosted project repo that follows the workshop CI/CD pattern.
 
+For the end-to-end walkthrough, see [GitHub Actions deployment walkthrough](../docs/deployment/github-actions-gcc-high-walkthrough.md).
+
 ## What gets added to the repo
 
 The GitHub Actions workflow lives at [.github/workflows/powerbi-ci.yml](.github/workflows/powerbi-ci.yml).
@@ -96,6 +98,8 @@ Repository secrets required for deployment:
 - `APP_ID`
 - `CLIENT_SECRET`
 - `DEV_WORKSPACE_ID` (optional if `DEV_WORKSPACE_NAME` is set)
+
+**Workspace permission requirement:** **The service principal must be added to the target Power BI/Fabric workspace as Admin or Member. It must have write permissions to the workspace. Viewer is not sufficient.**
 
 Repository or environment variables required for deployment:
 - `DEV_WORKSPACE_NAME` (optional if `DEV_WORKSPACE_ID` is set)

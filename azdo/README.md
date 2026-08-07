@@ -4,6 +4,8 @@ This folder contains Azure DevOps-specific pipeline entry points for running Ent
 
 Use this guide when you want to create or prepare an Azure DevOps-hosted project repo that follows the shared validation, quality, test, publish, and deployment pattern.
 
+For the end-to-end walkthrough, see [Azure DevOps deployment walkthrough](../docs/deployment/azure-devops-gcc-high-walkthrough.md).
+
 ## Files
 
 | File | Purpose |
@@ -121,8 +123,8 @@ Create that variable group or update the YAML to match your organization's varia
 The service principal must be:
 
 - Allowed by Fabric tenant settings.
-- Added to the target Fabric workspace.
-- Granted permission to create/update items required by the deployment script.
+- **Added to the target Fabric/Power BI workspace as Admin or Member. It must have write permissions to the workspace. Viewer is not sufficient.**
+- Granted permission to create/update/import items required by the deployment script.
 
 ### 4. Configure branch policy
 

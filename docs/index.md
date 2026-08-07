@@ -60,6 +60,8 @@ This wiki provides all workshop plans, labs, governance materials, and architect
 - [Branching Strategy — Feature Branch Development](./architecture/branching-strategy.md)
 - [Sparse Clone Guide — Toolkit, platform, and workshop profiles](./sparse-clone-guide.md)
 - [GCC High Deployment Behavior — PBIP validation with PBIX import](./architecture/gcc-high-deployment.md)
+- [Azure DevOps Deployment Walkthrough](./deployment/azure-devops-gcc-high-walkthrough.md)
+- [GitHub Actions Deployment Walkthrough](./deployment/github-actions-gcc-high-walkthrough.md)
 
 **GCC High caveat:** **Commercial Fabric deployments push PBIP definitions with Fabric REST APIs. GCC High deployments validate PBIP but deploy a checked-in PBIX through the Power BI REST `imports` API. Commit the PBIP, matching PBIX, and `deployment-manifest.json` together.**
 
