@@ -140,6 +140,7 @@
         <label class="file-button">Scan PBIP folder
           <input id="scanFolder" type="file" multiple webkitdirectory>
         </label>
+        <button id="saveJson" type="button">Save in place</button>
         <button id="downloadJson" class="primary" type="button">Download deployment-manifest.json</button>
         <button id="downloadMarkdown" type="button">Download manifest summary</button>
         <button id="seedExample" type="button">Use starter manifest</button>
@@ -293,6 +294,7 @@ BI Lead approval|required</textarea></label>
     Object.assign(els, {
       loadFile: document.getElementById("loadFile"),
       scanFolder: document.getElementById("scanFolder"),
+      saveJson: document.getElementById("saveJson"),
       downloadJson: document.getElementById("downloadJson"),
       downloadMarkdown: document.getElementById("downloadMarkdown"),
       seedExample: document.getElementById("seedExample"),
@@ -307,6 +309,7 @@ BI Lead approval|required</textarea></label>
       exceptionCount: document.getElementById("exceptionCount"),
       toast: document.getElementById("toast")
     });
+    let manifestFileHandle = null;
 
     function buildManifest() {
       return {
@@ -709,6 +712,32 @@ BI Lead approval|required</textarea></label>
       URL.revokeObjectURL(url);
     }
 
+    async function saveManifestInPlace() {
+      const text = JSON.stringify(buildManifest(), null, 2);
+      if (!window.showSaveFilePicker) {
+        download("deployment-manifest.json", text, "application/json");
+        toast("Browser does not support save-in-place; downloaded manifest instead.");
+        return;
+      }
+
+      if (!manifestFileHandle) {
+        manifestFileHandle = await window.showSaveFilePicker({
+          suggestedName: "deployment-manifest.json",
+          types: [
+            {
+              description: "JSON files",
+              accept: { "application/json": [".json"] }
+            }
+          ]
+        });
+      }
+
+      const writable = await manifestFileHandle.createWritable();
+      await writable.write(text);
+      await writable.close();
+      toast(`Saved ${manifestFileHandle.name || "deployment-manifest.json"}`);
+    }
+
     async function copyText(text) {
       await navigator.clipboard.writeText(text);
       toast("Copied to clipboard.");
@@ -734,6 +763,13 @@ BI Lead approval|required</textarea></label>
 
     fields.forEach(id => els[id].addEventListener("input", render));
     els.seedExample.addEventListener("click", seed);
+    els.saveJson.addEventListener("click", async () => {
+      try {
+        await saveManifestInPlace();
+      } catch (error) {
+        if (error.name !== "AbortError") toast(error.message);
+      }
+    });
     els.downloadJson.addEventListener("click", () => download("deployment-manifest.json", JSON.stringify(buildManifest(), null, 2), "application/json"));
     els.downloadMarkdown.addEventListener("click", () => download("Deployment-Manifest-Summary.md", buildMarkdown(buildManifest()), "text/markdown"));
     els.copyJson.addEventListener("click", () => copyText(JSON.stringify(buildManifest(), null, 2)));
@@ -742,6 +778,7 @@ BI Lead approval|required</textarea></label>
       const file = event.target.files[0];
       if (!file) return;
       try {
+        manifestFileHandle = null;
         loadManifest(JSON.parse(await file.text()));
         toast(`Loaded ${file.name}`);
       } catch (error) {
