@@ -1,6 +1,6 @@
 # GCC High deployment behavior
 
-This accelerator supports Azure DevOps CI/CD for Power BI PBIP projects in commercial Fabric and GCC High, but the deployment behavior is intentionally different.
+This accelerator supports Azure DevOps and GitHub Actions CI/CD for Power BI PBIP projects in commercial Fabric and GCC High, but the deployment behavior is intentionally different.
 
 ## Critical behavior difference
 

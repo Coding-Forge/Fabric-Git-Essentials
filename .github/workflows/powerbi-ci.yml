@@ -358,7 +358,7 @@ jobs:
           name: pbip-artifacts
           path: pbip-drop
 
-      - name: Deploy PBIP to Dev workspace
+      - name: Deploy artifacts to Dev workspace
         shell: pwsh
         env:
           TENANT_ID: ${{ secrets.TENANT_ID }}
@@ -418,17 +418,31 @@ jobs:
 
             Write-Host "Resolved PBIP folder for deployment: $resolvedPbipPath"
 
-          & $deployScriptPath `
-            -Branch "$env:GITHUB_REF" `
-            -TenantId $env:TENANT_ID `
-            -AppId $env:APP_ID `
-            -ClientSecret $env:CLIENT_SECRET `
-            -DevWorkspaceId $env:DEV_WORKSPACE_ID `
-            -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
-            -AuthorityHost "$env:AUTHORITY_HOST" `
-            -FabricApiBaseUri "$env:FABRIC_API_BASE_URI" `
-            -FabricApiScope "$env:FABRIC_API_SCOPE" `
-            -PbipPath $resolvedPbipPath
+          $isGccHigh = (
+            $env:AUTHORITY_HOST -like 'https://login.microsoftonline.us*' -and
+            $env:FABRIC_API_BASE_URI -like 'https://api.high.powerbigov.us*'
+          )
+          Write-Host "GCC High deployment: $isGccHigh"
+
+          $deployParameters = @{
+            Branch = "$env:GITHUB_REF"
+            TenantId = $env:TENANT_ID
+            AppId = $env:APP_ID
+            ClientSecret = $env:CLIENT_SECRET
+            DevWorkspaceId = $env:DEV_WORKSPACE_ID
+            DevWorkspaceName = $env:DEV_WORKSPACE_NAME
+            AuthorityHost = "$env:AUTHORITY_HOST"
+            FabricApiBaseUri = "$env:FABRIC_API_BASE_URI"
+            FabricApiScope = "$env:FABRIC_API_SCOPE"
+            PbipPath = $resolvedPbipPath
+          }
+
+          if ($isGccHigh) {
+            $deployParameters.UsePowerBiImport = $true
+            $deployParameters.PbixPath = $resolvedPbipPath
+          }
+
+          & $deployScriptPath @deployParameters
 
   deploy_feature:
     name: Deploy to Feature Workspace
@@ -446,7 +460,7 @@ jobs:
           name: pbip-artifacts
           path: pbip-drop
 
-      - name: Deploy PBIP to feature workspace
+      - name: Deploy artifacts to feature workspace
         shell: pwsh
         env:
           TENANT_ID: ${{ secrets.TENANT_ID }}
@@ -504,16 +518,30 @@ jobs:
 
             Write-Host "Resolved PBIP folder for deployment: $resolvedPbipPath"
 
-          & $deployScriptPath `
-            -Branch "$env:GITHUB_REF" `
-            -TenantId $env:TENANT_ID `
-            -AppId $env:APP_ID `
-            -ClientSecret $env:CLIENT_SECRET `
-            -DevWorkspaceId $env:DEV_WORKSPACE_ID `
-            -DevWorkspaceName $env:DEV_WORKSPACE_NAME `
-            -FeatureWorkspacePrefix $env:FEATURE_WORKSPACE_PREFIX `
-            -AuthorityHost "$env:AUTHORITY_HOST" `
-            -FabricApiBaseUri "$env:FABRIC_API_BASE_URI" `
-            -FabricApiScope "$env:FABRIC_API_SCOPE" `
-            -PbipPath $resolvedPbipPath
+          $isGccHigh = (
+            $env:AUTHORITY_HOST -like 'https://login.microsoftonline.us*' -and
+            $env:FABRIC_API_BASE_URI -like 'https://api.high.powerbigov.us*'
+          )
+          Write-Host "GCC High deployment: $isGccHigh"
+
+          $deployParameters = @{
+            Branch = "$env:GITHUB_REF"
+            TenantId = $env:TENANT_ID
+            AppId = $env:APP_ID
+            ClientSecret = $env:CLIENT_SECRET
+            DevWorkspaceId = $env:DEV_WORKSPACE_ID
+            DevWorkspaceName = $env:DEV_WORKSPACE_NAME
+            FeatureWorkspacePrefix = $env:FEATURE_WORKSPACE_PREFIX
+            AuthorityHost = "$env:AUTHORITY_HOST"
+            FabricApiBaseUri = "$env:FABRIC_API_BASE_URI"
+            FabricApiScope = "$env:FABRIC_API_SCOPE"
+            PbipPath = $resolvedPbipPath
+          }
+
+          if ($isGccHigh) {
+            $deployParameters.UsePowerBiImport = $true
+            $deployParameters.PbixPath = $resolvedPbipPath
+          }
+
+          & $deployScriptPath @deployParameters
 
