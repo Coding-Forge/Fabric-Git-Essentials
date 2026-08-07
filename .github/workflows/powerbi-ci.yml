@@ -110,6 +110,7 @@ jobs:
           if (!(Test-Path $sourceRulesPath)) {
               $sourceRulesPath = Join-Path $tempPath "Rules-Dataset.fallback.json"
           }
+          Write-Host "Using dataset rules source: $sourceRulesPath"
 
           $effectiveRulesPath = Join-Path $tempPath "Rules-Dataset.effective.json"
           $qualityBranch = "$env:GITHUB_REF"
@@ -122,6 +123,12 @@ jobs:
             -SourcePath $sourceRulesPath `
             -OutputPath $effectiveRulesPath `
             -SourceBranch $qualityBranch
+
+          $effectiveRules = Get-Content -Path $effectiveRulesPath -Raw | ConvertFrom-Json
+          Write-Host "Effective dataset rule count: $(@($effectiveRules).Count)"
+          if ($effectiveRules.ID -contains 'NUMERIC_COLUMN_SUMMARIZE_BY') {
+              throw "Effective dataset rules still include NUMERIC_COLUMN_SUMMARIZE_BY. Add or refresh shared/Rules-Dataset.json."
+          }
 
       - name: Run dataset rules
         shell: pwsh
@@ -174,9 +181,21 @@ jobs:
               }
 
               Write-Host "Running rules for: $itemPath"
-              & $toolPath "$itemPath" -A "$rulesPath" -V
-              if ($LASTEXITCODE -ne 0) {
-                  throw "Tabular Editor rules failed for $itemPath with exit code $LASTEXITCODE"
+              $stdoutPath = Join-Path $tempPath "TabularEditor.stdout.log"
+              $stderrPath = Join-Path $tempPath "TabularEditor.stderr.log"
+              $arguments = @("""$itemPath""", "-A", """$rulesPath""", "-V")
+              $process = Start-Process -FilePath $toolPath -ArgumentList $arguments -NoNewWindow -Wait -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+
+              if (Test-Path $stdoutPath) {
+                  Get-Content $stdoutPath | ForEach-Object { Write-Host $_ }
+              }
+
+              if (Test-Path $stderrPath) {
+                  Get-Content $stderrPath | ForEach-Object { Write-Error $_ }
+              }
+
+              if ($process.ExitCode -ne 0) {
+                  throw "Tabular Editor rules failed for $itemPath with exit code $($process.ExitCode)"
               }
           }
 
